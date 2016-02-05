@@ -224,6 +224,7 @@ public:
     qint64 helpGetAppUpdate(const QString &deviceModel, const QString &systemVersion, const QString &appVersion, const QString &langCode);
 
     // additional public methods
+    void init(qint32 timeout);
     void init();
     bool isConnected();
     bool isLoggedIn();
@@ -471,6 +472,9 @@ private Q_SLOTS:
     void onMessagesAcceptEncryptionEncryptedChat(qint64, const EncryptedChat &chat);
     void onMessagesDiscardEncryptionResult(qint64, bool ok);
     void onSequenceNumberGap(qint32 chatId, qint32 startSeqNo, qint32 endSeqNo);
+
+protected:
+    void timerEvent(QTimerEvent *e);
 
 private:
     TelegramPrivate *prv;
