@@ -14,7 +14,7 @@
 #define LQTG_PUSH_ASSERT qt_assert("x",__FILE__,__LINE__)
 #endif
 
-#ifdef LQTG_DISABLE_LOG
+#ifndef LQTG_ENABLE_LOG
 #define LQTG_FETCH_LOG
 #define LQTG_PUSH_LOG
 #else
