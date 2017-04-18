@@ -428,6 +428,8 @@ qint64 Telegram::messagesCreateEncryptedChat(const InputUser &user) {
     qCDebug(TG_LIB_SECRET) << "creating new encrypted chat";
     // generate a new object where store all the needed secret chat data
     SecretChat *secretChat = new SecretChat(prv->mSettings);
+    secretChat->setAdminId(prv->mSettings->ourId());
+    secretChat->setParticipantId(user.userId());
     secretChat->setRequestedUser(user);
     return generateGAorB(secretChat);
 }
