@@ -31,3 +31,5 @@ Makefile*
 *.qmlproject.user
 *.qmlproject.user.*
 *.DS_Store
+
+build_*
