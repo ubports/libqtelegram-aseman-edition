@@ -268,30 +268,43 @@ DecryptedMessage Decrypter::fetchDecryptedMessage() {
     ASSERT(x == (qint32)DecryptedMessage::typeDecryptedMessage_level8 ||
            x == (qint32)DecryptedMessage::typeDecryptedMessageService_level8 ||
            x == (qint32)DecryptedMessage::typeDecryptedMessage ||
-           x == (qint32)DecryptedMessage::typeDecryptedMessageService);
+           x == (qint32)DecryptedMessage::typeDecryptedMessageService ||
+           x == (qint32)DecryptedMessage::typeDecryptedMessage_level45);
     DecryptedMessage message((DecryptedMessage::DecryptedMessageType)x);
-    message.setRandomId(fetchLong());
 
     switch (x) {
     case DecryptedMessage::typeDecryptedMessage_level8: {
+	message.setRandomId(fetchLong());
         message.setRandomBytes(fetchBytes());
         message.setMessage(fetchQString());
         message.setMedia(fetchDecryptedMessageMedia());
         break;
     }
     case DecryptedMessage::typeDecryptedMessageService_level8: {
+	message.setRandomId(fetchLong());
         message.setRandomBytes(fetchBytes());
         message.setAction(fetchDecryptedMessageAction());
         break;
     }
     case DecryptedMessage::typeDecryptedMessage: {
+	message.setRandomId(fetchLong());
         message.setTtl(fetchInt());
         message.setMessage(fetchQString());
         message.setMedia(fetchDecryptedMessageMedia());
         break;
     }
     case DecryptedMessage::typeDecryptedMessageService: {
+	message.setRandomId(fetchLong());
         message.setAction(fetchDecryptedMessageAction());
+        break;
+    }
+    case DecryptedMessage::typeDecryptedMessage_level45: {
+        qint32 flags = fetchInt();
+    	message.setRandomId(fetchLong());
+        message.setTtl(fetchInt());
+        message.setMessage(fetchQString());
+        if (flags & (1<<9))
+        	message.setMedia(fetchDecryptedMessageMedia());
         break;
     }
     }

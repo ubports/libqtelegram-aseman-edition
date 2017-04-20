@@ -72,6 +72,7 @@ enum TLValues {
     TL_DecryptedMessageLayer = 0x1be31789,
     TL_DecryptedMessage_layer8 = 0x1f814f1f,
     TL_DecryptedMessage = 0x204d3878,
+    TL_DecryptedMessage_layer45 = 0x36b091de,
     TL_DecryptedMessageService_layer8 = 0xaa48327d,
     TL_DecryptedMessageService = 0x73164160,
     TL_DecryptedMessageMediaEmpty = 0x89f5c4a,
