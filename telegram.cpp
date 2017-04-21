@@ -1077,7 +1077,8 @@ void Telegram::createSharedKey(SecretChat *secretChat, BIGNUM *p, QByteArray gAO
 // error and internal managements
 void Telegram::onError(qint64 id, qint32 errorCode, const QString &errorText, const QString &functionName) {
     if(errorCode == 400) {
-        if(errorText == "ENCRYPTION_ALREADY_DECLINED") { /* This is an already declined chat, remove it from DB */
+        if(errorText == "ENCRYPTION_ID_INVALID" || /* We receive this when a chat has crashed */
+           errorText == "ENCRYPTION_ALREADY_DECLINED") { /* This is an already declined chat, remove it from DB */
             this->onMessagesDiscardEncryptionResult(id, true);
             return;
         }
