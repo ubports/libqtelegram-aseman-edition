@@ -73,12 +73,14 @@ public:
     int initTimeout;
     int initTimerId;
 
+    QString configPath;
+    QString phoneNumber;
     QString publicKeyFile;
     Settings *mSettings;
     CryptoUtils *mCrypto;
 
     Api *mApi;
-    QPointer<DcProvider> mDcProvider;
+    DcProvider *mDcProvider;
     FileHandler::Ptr mFileHandler;
 
     QString m_phoneCodeHash;
@@ -173,13 +175,13 @@ void Telegram::setPhoneNumber(const QString &phoneNumber) {
 }
 
 void Telegram::init() {
-    init(timeOut());
+    init(10000);
 }
 
 void Telegram::init(qint32 timeout) {
     // check the auth values stored in settings, check the available DCs config data if there is
     // connection to servers, and emit signals depending on user authenticated or not.
-    if(mApi)
+    if(prv->mApi)
         return;
 
     if(prv->mEncrypter) delete prv->mEncrypter;
@@ -205,13 +207,13 @@ void Telegram::init(qint32 timeout) {
     prv->mDcProvider = new DcProvider(prv->mSettings, prv->mCrypto);
     prv->mDcProvider->setParent(this);
 
-    connect(prv->mDcProvider.data(), &DcProvider::fatalError, this, &Telegram::fatalError);
+    connect(prv->mDcProvider, SIGNAL(fatalError()), this, SIGNAL(fatalError()));
     // activate dc provider ready signal
-    connect(prv->mDcProvider.data(), &DcProvider::dcProviderReady, this, &Telegram::onDcProviderReady);
+    connect(prv->mDcProvider, SIGNAL(dcProviderReady()), this, SLOT(onDcProviderReady()));
     // activate rest of dc provider signal connections
-    connect(prv->mDcProvider.data(), &DcProvider::authNeeded, this, &Telegram::authNeeded);
-    connect(prv->mDcProvider.data(), &DcProvider::authTransferCompleted, this, &Telegram::onAuthLoggedIn);
-    connect(prv->mDcProvider.data(), &DcProvider::error, this, &Telegram::error);
+    connect(prv->mDcProvider, SIGNAL(authNeeded()), this, SIGNAL(authNeeded()));
+    connect(prv->mDcProvider, SIGNAL(authTransferCompleted()), this, SLOT(onAuthLoggedIn()));
+    connect(prv->mDcProvider, SIGNAL(error(qint64,qint32,const QString&)), this, SIGNAL(error(qint64,qint32,const QString&)));
 
     prv->mSecretState = SecretState(prv->mSettings);
     prv->mEncrypter = new Encrypter(prv->mSettings);
@@ -884,12 +886,14 @@ void Telegram::timerEvent(QTimerEvent *e)
     {
         killTimer(prv->initTimerId);
         prv->initTimerId = 0;
-        qDebug() << "Timeout error initializing. Retrying...";
-        if(!mApi)
+        if(!prv->mApi)
+	{
+            qWarning() << "Timeout error initializing. Retrying...";
             init(prv->initTimeout);
+	}
     }
     else
-        TelegramCore::timerEvent(e);
+        QObject::timerEvent(e);
 }
 
 SecretChatMessage Telegram::toSecretChatMessage(const EncryptedMessage &encrypted) {
