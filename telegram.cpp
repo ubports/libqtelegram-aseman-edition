@@ -1374,7 +1374,7 @@ qint64 Telegram::authResetAuthorizations() {
 
 qint64 Telegram::authCheckPassword(const QByteArray &password) {
     CHECK_API;
-    return prv->mApi->authCheckPassword( QCryptographicHash::hash(password, QCryptographicHash::Sha3_256) );
+    return prv->mApi->authCheckPassword(password);
 }
 
 qint64 Telegram::accountRegisterDevice(const QString &token, const QString &appVersion, bool appSandbox) {
