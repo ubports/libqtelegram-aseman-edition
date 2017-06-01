@@ -1,0 +1,42 @@
+# Audio
+
+## Types
+
+* [typeAudioEmpty](#audiotypeaudioempty)
+* [typeAudio](#audiotypeaudio)
+
+## Audio::typeAudioEmpty
+
+#### Schema:
+
+```c++
+audioEmpty#586988d8 id:long = Audio;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|id|qint64|
+
+## Audio::typeAudio
+
+#### Schema:
+
+```c++
+audio#c7ac6496 id:long access_hash:long user_id:int date:int duration:int mime_type:string size:int dc_id:int = Audio;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|id|qint64|
+|accessHash|qint64|
+|userId|qint32|
+|date|qint32|
+|duration|qint32|
+|mimeType|QString|
+|size|qint32|
+|dcId|qint32|
+
