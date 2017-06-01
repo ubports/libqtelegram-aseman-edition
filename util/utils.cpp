@@ -30,15 +30,22 @@
 
 #include <QDebug>
 #include <QEventLoop>
-#include <QtMultimedia/QMediaPlayer>
-#include <QtMultimedia/QMediaContent>
-#include <QtMultimedia/QMediaResource>
 #include <QProcess>
 #include <QStringList>
 #include <QtCore>
 
 
 Q_LOGGING_CATEGORY(TG_UTIL_UTILS, "tg.util.utils")
+
+#ifdef DEBUG
+#define RES_PRE 8
+#define RES_AFTER 8
+#define MAX_BLOCKS 1000000
+void *blocks[MAX_BLOCKS];
+void *free_blocks[MAX_BLOCKS];
+qint32 usedBlocks;
+qint32 freeBlocksCnt;
+#endif
 
 #if defined(Q_OS_MAC)
 #include <sys/time.h>
@@ -55,7 +62,7 @@ int clock_gettime(int /*clk_id*/, struct timespec* t) {
 //clock_gettime is not implemented on Win
 // took from https://stackoverflow.com/questions/5404277/porting-clock-gettime-to-windows
 
-#ifdef Q_CC_MSVC
+#if defined(Q_CC_MSVC) && (!defined(_INC_TIME) || defined(_CRT_NO_TIME_T))
 struct timespec {
     long int tv_sec;    /* Seconds.  */
     long int tv_nsec;   /* Nanoseconds.  */
@@ -135,6 +142,14 @@ qint32 Utils::randomBytes(void *buffer, qint32 count) {
         returnValue = RAND_pseudo_bytes ((uchar *)buffer, count);
     }
     return returnValue;
+}
+
+QByteArray Utils::generateRandomBytes() {
+    qint32 n = 15 + 4 * (lrand48() % 3);
+    QScopedArrayPointer<char> rnd(new char[n]);
+    Utils::randomBytes(rnd.data(), n);
+    QByteArray randomBytes(rnd.data());
+    return randomBytes;
 }
 
 qint32 Utils::serializeBignum(BIGNUM *b, char *buffer, qint32 maxlen) {
@@ -259,13 +274,21 @@ void Utils::secureZeroMemory(void *dst, int val, size_t count) {
 
 RSA *Utils::rsaLoadPublicKey(const QString &publicKeyName) {
     RSA *pubKey = NULL;
-    FILE *f = fopen (publicKeyName.toLocal8Bit().data(), "r");
-    if (f == NULL) {
+    QFile file(publicKeyName);
+    if(!file.open(QFile::ReadOnly)) {
         qCWarning(TG_UTIL_UTILS) << "Couldn't open public key file" << publicKeyName;
         return NULL;
     }
-    pubKey = PEM_read_RSAPublicKey (f, NULL, NULL, NULL);
-    fclose (f);
+
+    QByteArray fileData = file.readAll();
+    BIO *bufio = BIO_new_mem_buf((void*)fileData.data(), fileData.length());
+    pubKey = PEM_read_bio_RSAPublicKey (bufio, NULL, NULL, NULL);
+
+    BUF_MEM *bptr;
+    BIO_get_mem_ptr(bufio, &bptr);
+    BIO_set_close(bufio, BIO_NOCLOSE); /* So BIO_free() leaves BUF_MEM alone */
+    BIO_free(bufio);
+
     if (pubKey == NULL) {
         qCWarning(TG_UTIL_UTILS) << "PEM_read_RSAPublicKey returns NULL";
         return NULL;
