@@ -6,6 +6,15 @@
 #define LQTG_TYPE_USER
 
 #include "telegramtypeobject.h"
+
+#include <QMetaType>
+#include <QVariant>
+#include "core/inboundpkt.h"
+#include "core/outboundpkt.h"
+#include "../coretypes.h"
+
+#include <QDataStream>
+
 #include <QtGlobal>
 #include <QString>
 #include "userprofilephoto.h"
@@ -14,7 +23,7 @@
 class LIBQTELEGRAMSHARED_EXPORT User : public TelegramTypeObject
 {
 public:
-    enum UserType {
+    enum UserClassType {
         typeUserEmpty = 0x200250ba,
         typeUserSelf = 0x1c60e608,
         typeUserContact = 0xcab35e18,
@@ -23,8 +32,9 @@ public:
         typeUserDeleted = 0xd6016d7a
     };
 
-    User(UserType classType = typeUserEmpty, InboundPkt *in = 0);
+    User(UserClassType classType = typeUserEmpty, InboundPkt *in = 0);
     User(InboundPkt *in);
+    User(const Null&);
     virtual ~User();
 
     void setAccessHash(qint64 accessHash);
@@ -51,13 +61,21 @@ public:
     void setUsername(const QString &username);
     QString username() const;
 
-    void setClassType(UserType classType);
-    UserType classType() const;
+    void setClassType(UserClassType classType);
+    UserClassType classType() const;
 
     bool fetch(InboundPkt *in);
     bool push(OutboundPkt *out) const;
 
-    bool operator ==(const User &b);
+    QMap<QString, QVariant> toMap() const;
+    static User fromMap(const QMap<QString, QVariant> &map);
+
+    bool operator ==(const User &b) const;
+
+    bool operator==(bool stt) const { return isNull() != stt; }
+    bool operator!=(bool stt) const { return !operator ==(stt); }
+
+    QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
     qint64 m_accessHash;
@@ -68,7 +86,614 @@ private:
     UserProfilePhoto m_photo;
     UserStatus m_status;
     QString m_username;
-    UserType m_classType;
+    UserClassType m_classType;
 };
+
+Q_DECLARE_METATYPE(User)
+
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator<<(QDataStream &stream, const User &item);
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, User &item);
+
+inline User::User(UserClassType classType, InboundPkt *in) :
+    m_accessHash(0),
+    m_id(0),
+    m_classType(classType)
+{
+    if(in) fetch(in);
+}
+
+inline User::User(InboundPkt *in) :
+    m_accessHash(0),
+    m_id(0),
+    m_classType(typeUserEmpty)
+{
+    fetch(in);
+}
+
+inline User::User(const Null &null) :
+    TelegramTypeObject(null),
+    m_accessHash(0),
+    m_id(0),
+    m_classType(typeUserEmpty)
+{
+}
+
+inline User::~User() {
+}
+
+inline void User::setAccessHash(qint64 accessHash) {
+    m_accessHash = accessHash;
+}
+
+inline qint64 User::accessHash() const {
+    return m_accessHash;
+}
+
+inline void User::setFirstName(const QString &firstName) {
+    m_firstName = firstName;
+}
+
+inline QString User::firstName() const {
+    return m_firstName;
+}
+
+inline void User::setId(qint32 id) {
+    m_id = id;
+}
+
+inline qint32 User::id() const {
+    return m_id;
+}
+
+inline void User::setLastName(const QString &lastName) {
+    m_lastName = lastName;
+}
+
+inline QString User::lastName() const {
+    return m_lastName;
+}
+
+inline void User::setPhone(const QString &phone) {
+    m_phone = phone;
+}
+
+inline QString User::phone() const {
+    return m_phone;
+}
+
+inline void User::setPhoto(const UserProfilePhoto &photo) {
+    m_photo = photo;
+}
+
+inline UserProfilePhoto User::photo() const {
+    return m_photo;
+}
+
+inline void User::setStatus(const UserStatus &status) {
+    m_status = status;
+}
+
+inline UserStatus User::status() const {
+    return m_status;
+}
+
+inline void User::setUsername(const QString &username) {
+    m_username = username;
+}
+
+inline QString User::username() const {
+    return m_username;
+}
+
+inline bool User::operator ==(const User &b) const {
+    return m_classType == b.m_classType &&
+           m_accessHash == b.m_accessHash &&
+           m_firstName == b.m_firstName &&
+           m_id == b.m_id &&
+           m_lastName == b.m_lastName &&
+           m_phone == b.m_phone &&
+           m_photo == b.m_photo &&
+           m_status == b.m_status &&
+           m_username == b.m_username;
+}
+
+inline void User::setClassType(User::UserClassType classType) {
+    m_classType = classType;
+}
+
+inline User::UserClassType User::classType() const {
+    return m_classType;
+}
+
+inline bool User::fetch(InboundPkt *in) {
+    LQTG_FETCH_LOG;
+    int x = in->fetchInt();
+    switch(x) {
+    case typeUserEmpty: {
+        m_id = in->fetchInt();
+        m_classType = static_cast<UserClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeUserSelf: {
+        m_id = in->fetchInt();
+        m_firstName = in->fetchQString();
+        m_lastName = in->fetchQString();
+        m_username = in->fetchQString();
+        m_phone = in->fetchQString();
+        m_photo.fetch(in);
+        m_status.fetch(in);
+        m_classType = static_cast<UserClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeUserContact: {
+        m_id = in->fetchInt();
+        m_firstName = in->fetchQString();
+        m_lastName = in->fetchQString();
+        m_username = in->fetchQString();
+        m_accessHash = in->fetchLong();
+        m_phone = in->fetchQString();
+        m_photo.fetch(in);
+        m_status.fetch(in);
+        m_classType = static_cast<UserClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeUserRequest: {
+        m_id = in->fetchInt();
+        m_firstName = in->fetchQString();
+        m_lastName = in->fetchQString();
+        m_username = in->fetchQString();
+        m_accessHash = in->fetchLong();
+        m_phone = in->fetchQString();
+        m_photo.fetch(in);
+        m_status.fetch(in);
+        m_classType = static_cast<UserClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeUserForeign: {
+        m_id = in->fetchInt();
+        m_firstName = in->fetchQString();
+        m_lastName = in->fetchQString();
+        m_username = in->fetchQString();
+        m_accessHash = in->fetchLong();
+        m_photo.fetch(in);
+        m_status.fetch(in);
+        m_classType = static_cast<UserClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeUserDeleted: {
+        m_id = in->fetchInt();
+        m_firstName = in->fetchQString();
+        m_lastName = in->fetchQString();
+        m_username = in->fetchQString();
+        m_classType = static_cast<UserClassType>(x);
+        return true;
+    }
+        break;
+    
+    default:
+        LQTG_FETCH_ASSERT;
+        return false;
+    }
+}
+
+inline bool User::push(OutboundPkt *out) const {
+    out->appendInt(m_classType);
+    switch(m_classType) {
+    case typeUserEmpty: {
+        out->appendInt(m_id);
+        return true;
+    }
+        break;
+    
+    case typeUserSelf: {
+        out->appendInt(m_id);
+        out->appendQString(m_firstName);
+        out->appendQString(m_lastName);
+        out->appendQString(m_username);
+        out->appendQString(m_phone);
+        m_photo.push(out);
+        m_status.push(out);
+        return true;
+    }
+        break;
+    
+    case typeUserContact: {
+        out->appendInt(m_id);
+        out->appendQString(m_firstName);
+        out->appendQString(m_lastName);
+        out->appendQString(m_username);
+        out->appendLong(m_accessHash);
+        out->appendQString(m_phone);
+        m_photo.push(out);
+        m_status.push(out);
+        return true;
+    }
+        break;
+    
+    case typeUserRequest: {
+        out->appendInt(m_id);
+        out->appendQString(m_firstName);
+        out->appendQString(m_lastName);
+        out->appendQString(m_username);
+        out->appendLong(m_accessHash);
+        out->appendQString(m_phone);
+        m_photo.push(out);
+        m_status.push(out);
+        return true;
+    }
+        break;
+    
+    case typeUserForeign: {
+        out->appendInt(m_id);
+        out->appendQString(m_firstName);
+        out->appendQString(m_lastName);
+        out->appendQString(m_username);
+        out->appendLong(m_accessHash);
+        m_photo.push(out);
+        m_status.push(out);
+        return true;
+    }
+        break;
+    
+    case typeUserDeleted: {
+        out->appendInt(m_id);
+        out->appendQString(m_firstName);
+        out->appendQString(m_lastName);
+        out->appendQString(m_username);
+        return true;
+    }
+        break;
+    
+    default:
+        return false;
+    }
+}
+
+inline QMap<QString, QVariant> User::toMap() const {
+    QMap<QString, QVariant> result;
+    switch(static_cast<int>(m_classType)) {
+    case typeUserEmpty: {
+        result["classType"] = "User::typeUserEmpty";
+        result["id"] = QVariant::fromValue<qint32>(id());
+        return result;
+    }
+        break;
+    
+    case typeUserSelf: {
+        result["classType"] = "User::typeUserSelf";
+        result["id"] = QVariant::fromValue<qint32>(id());
+        result["firstName"] = QVariant::fromValue<QString>(firstName());
+        result["lastName"] = QVariant::fromValue<QString>(lastName());
+        result["username"] = QVariant::fromValue<QString>(username());
+        result["phone"] = QVariant::fromValue<QString>(phone());
+        result["photo"] = m_photo.toMap();
+        result["status"] = m_status.toMap();
+        return result;
+    }
+        break;
+    
+    case typeUserContact: {
+        result["classType"] = "User::typeUserContact";
+        result["id"] = QVariant::fromValue<qint32>(id());
+        result["firstName"] = QVariant::fromValue<QString>(firstName());
+        result["lastName"] = QVariant::fromValue<QString>(lastName());
+        result["username"] = QVariant::fromValue<QString>(username());
+        result["accessHash"] = QVariant::fromValue<qint64>(accessHash());
+        result["phone"] = QVariant::fromValue<QString>(phone());
+        result["photo"] = m_photo.toMap();
+        result["status"] = m_status.toMap();
+        return result;
+    }
+        break;
+    
+    case typeUserRequest: {
+        result["classType"] = "User::typeUserRequest";
+        result["id"] = QVariant::fromValue<qint32>(id());
+        result["firstName"] = QVariant::fromValue<QString>(firstName());
+        result["lastName"] = QVariant::fromValue<QString>(lastName());
+        result["username"] = QVariant::fromValue<QString>(username());
+        result["accessHash"] = QVariant::fromValue<qint64>(accessHash());
+        result["phone"] = QVariant::fromValue<QString>(phone());
+        result["photo"] = m_photo.toMap();
+        result["status"] = m_status.toMap();
+        return result;
+    }
+        break;
+    
+    case typeUserForeign: {
+        result["classType"] = "User::typeUserForeign";
+        result["id"] = QVariant::fromValue<qint32>(id());
+        result["firstName"] = QVariant::fromValue<QString>(firstName());
+        result["lastName"] = QVariant::fromValue<QString>(lastName());
+        result["username"] = QVariant::fromValue<QString>(username());
+        result["accessHash"] = QVariant::fromValue<qint64>(accessHash());
+        result["photo"] = m_photo.toMap();
+        result["status"] = m_status.toMap();
+        return result;
+    }
+        break;
+    
+    case typeUserDeleted: {
+        result["classType"] = "User::typeUserDeleted";
+        result["id"] = QVariant::fromValue<qint32>(id());
+        result["firstName"] = QVariant::fromValue<QString>(firstName());
+        result["lastName"] = QVariant::fromValue<QString>(lastName());
+        result["username"] = QVariant::fromValue<QString>(username());
+        return result;
+    }
+        break;
+    
+    default:
+        return result;
+    }
+}
+
+inline User User::fromMap(const QMap<QString, QVariant> &map) {
+    User result;
+    if(map.value("classType").toString() == "User::typeUserEmpty") {
+        result.setClassType(typeUserEmpty);
+        result.setId( map.value("id").value<qint32>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "User::typeUserSelf") {
+        result.setClassType(typeUserSelf);
+        result.setId( map.value("id").value<qint32>() );
+        result.setFirstName( map.value("firstName").value<QString>() );
+        result.setLastName( map.value("lastName").value<QString>() );
+        result.setUsername( map.value("username").value<QString>() );
+        result.setPhone( map.value("phone").value<QString>() );
+        result.setPhoto( UserProfilePhoto::fromMap(map.value("photo").toMap()) );
+        result.setStatus( UserStatus::fromMap(map.value("status").toMap()) );
+        return result;
+    }
+    if(map.value("classType").toString() == "User::typeUserContact") {
+        result.setClassType(typeUserContact);
+        result.setId( map.value("id").value<qint32>() );
+        result.setFirstName( map.value("firstName").value<QString>() );
+        result.setLastName( map.value("lastName").value<QString>() );
+        result.setUsername( map.value("username").value<QString>() );
+        result.setAccessHash( map.value("accessHash").value<qint64>() );
+        result.setPhone( map.value("phone").value<QString>() );
+        result.setPhoto( UserProfilePhoto::fromMap(map.value("photo").toMap()) );
+        result.setStatus( UserStatus::fromMap(map.value("status").toMap()) );
+        return result;
+    }
+    if(map.value("classType").toString() == "User::typeUserRequest") {
+        result.setClassType(typeUserRequest);
+        result.setId( map.value("id").value<qint32>() );
+        result.setFirstName( map.value("firstName").value<QString>() );
+        result.setLastName( map.value("lastName").value<QString>() );
+        result.setUsername( map.value("username").value<QString>() );
+        result.setAccessHash( map.value("accessHash").value<qint64>() );
+        result.setPhone( map.value("phone").value<QString>() );
+        result.setPhoto( UserProfilePhoto::fromMap(map.value("photo").toMap()) );
+        result.setStatus( UserStatus::fromMap(map.value("status").toMap()) );
+        return result;
+    }
+    if(map.value("classType").toString() == "User::typeUserForeign") {
+        result.setClassType(typeUserForeign);
+        result.setId( map.value("id").value<qint32>() );
+        result.setFirstName( map.value("firstName").value<QString>() );
+        result.setLastName( map.value("lastName").value<QString>() );
+        result.setUsername( map.value("username").value<QString>() );
+        result.setAccessHash( map.value("accessHash").value<qint64>() );
+        result.setPhoto( UserProfilePhoto::fromMap(map.value("photo").toMap()) );
+        result.setStatus( UserStatus::fromMap(map.value("status").toMap()) );
+        return result;
+    }
+    if(map.value("classType").toString() == "User::typeUserDeleted") {
+        result.setClassType(typeUserDeleted);
+        result.setId( map.value("id").value<qint32>() );
+        result.setFirstName( map.value("firstName").value<QString>() );
+        result.setLastName( map.value("lastName").value<QString>() );
+        result.setUsername( map.value("username").value<QString>() );
+        return result;
+    }
+    return result;
+}
+
+inline QByteArray User::getHash(QCryptographicHash::Algorithm alg) const {
+    QByteArray data;
+    QDataStream str(&data, QIODevice::WriteOnly);
+    str << *this;
+    return QCryptographicHash::hash(data, alg);
+}
+
+inline QDataStream &operator<<(QDataStream &stream, const User &item) {
+    stream << static_cast<uint>(item.classType());
+    switch(item.classType()) {
+    case User::typeUserEmpty:
+        stream << item.id();
+        break;
+    case User::typeUserSelf:
+        stream << item.id();
+        stream << item.firstName();
+        stream << item.lastName();
+        stream << item.username();
+        stream << item.phone();
+        stream << item.photo();
+        stream << item.status();
+        break;
+    case User::typeUserContact:
+        stream << item.id();
+        stream << item.firstName();
+        stream << item.lastName();
+        stream << item.username();
+        stream << item.accessHash();
+        stream << item.phone();
+        stream << item.photo();
+        stream << item.status();
+        break;
+    case User::typeUserRequest:
+        stream << item.id();
+        stream << item.firstName();
+        stream << item.lastName();
+        stream << item.username();
+        stream << item.accessHash();
+        stream << item.phone();
+        stream << item.photo();
+        stream << item.status();
+        break;
+    case User::typeUserForeign:
+        stream << item.id();
+        stream << item.firstName();
+        stream << item.lastName();
+        stream << item.username();
+        stream << item.accessHash();
+        stream << item.photo();
+        stream << item.status();
+        break;
+    case User::typeUserDeleted:
+        stream << item.id();
+        stream << item.firstName();
+        stream << item.lastName();
+        stream << item.username();
+        break;
+    }
+    return stream;
+}
+
+inline QDataStream &operator>>(QDataStream &stream, User &item) {
+    uint type = 0;
+    stream >> type;
+    item.setClassType(static_cast<User::UserClassType>(type));
+    switch(type) {
+    case User::typeUserEmpty: {
+        qint32 m_id;
+        stream >> m_id;
+        item.setId(m_id);
+    }
+        break;
+    case User::typeUserSelf: {
+        qint32 m_id;
+        stream >> m_id;
+        item.setId(m_id);
+        QString m_first_name;
+        stream >> m_first_name;
+        item.setFirstName(m_first_name);
+        QString m_last_name;
+        stream >> m_last_name;
+        item.setLastName(m_last_name);
+        QString m_username;
+        stream >> m_username;
+        item.setUsername(m_username);
+        QString m_phone;
+        stream >> m_phone;
+        item.setPhone(m_phone);
+        UserProfilePhoto m_photo;
+        stream >> m_photo;
+        item.setPhoto(m_photo);
+        UserStatus m_status;
+        stream >> m_status;
+        item.setStatus(m_status);
+    }
+        break;
+    case User::typeUserContact: {
+        qint32 m_id;
+        stream >> m_id;
+        item.setId(m_id);
+        QString m_first_name;
+        stream >> m_first_name;
+        item.setFirstName(m_first_name);
+        QString m_last_name;
+        stream >> m_last_name;
+        item.setLastName(m_last_name);
+        QString m_username;
+        stream >> m_username;
+        item.setUsername(m_username);
+        qint64 m_access_hash;
+        stream >> m_access_hash;
+        item.setAccessHash(m_access_hash);
+        QString m_phone;
+        stream >> m_phone;
+        item.setPhone(m_phone);
+        UserProfilePhoto m_photo;
+        stream >> m_photo;
+        item.setPhoto(m_photo);
+        UserStatus m_status;
+        stream >> m_status;
+        item.setStatus(m_status);
+    }
+        break;
+    case User::typeUserRequest: {
+        qint32 m_id;
+        stream >> m_id;
+        item.setId(m_id);
+        QString m_first_name;
+        stream >> m_first_name;
+        item.setFirstName(m_first_name);
+        QString m_last_name;
+        stream >> m_last_name;
+        item.setLastName(m_last_name);
+        QString m_username;
+        stream >> m_username;
+        item.setUsername(m_username);
+        qint64 m_access_hash;
+        stream >> m_access_hash;
+        item.setAccessHash(m_access_hash);
+        QString m_phone;
+        stream >> m_phone;
+        item.setPhone(m_phone);
+        UserProfilePhoto m_photo;
+        stream >> m_photo;
+        item.setPhoto(m_photo);
+        UserStatus m_status;
+        stream >> m_status;
+        item.setStatus(m_status);
+    }
+        break;
+    case User::typeUserForeign: {
+        qint32 m_id;
+        stream >> m_id;
+        item.setId(m_id);
+        QString m_first_name;
+        stream >> m_first_name;
+        item.setFirstName(m_first_name);
+        QString m_last_name;
+        stream >> m_last_name;
+        item.setLastName(m_last_name);
+        QString m_username;
+        stream >> m_username;
+        item.setUsername(m_username);
+        qint64 m_access_hash;
+        stream >> m_access_hash;
+        item.setAccessHash(m_access_hash);
+        UserProfilePhoto m_photo;
+        stream >> m_photo;
+        item.setPhoto(m_photo);
+        UserStatus m_status;
+        stream >> m_status;
+        item.setStatus(m_status);
+    }
+        break;
+    case User::typeUserDeleted: {
+        qint32 m_id;
+        stream >> m_id;
+        item.setId(m_id);
+        QString m_first_name;
+        stream >> m_first_name;
+        item.setFirstName(m_first_name);
+        QString m_last_name;
+        stream >> m_last_name;
+        item.setLastName(m_last_name);
+        QString m_username;
+        stream >> m_username;
+        item.setUsername(m_username);
+    }
+        break;
+    }
+    return stream;
+}
+
 
 #endif // LQTG_TYPE_USER

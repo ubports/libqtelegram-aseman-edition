@@ -6,6 +6,15 @@
 #define LQTG_TYPE_MESSAGE
 
 #include "telegramtypeobject.h"
+
+#include <QMetaType>
+#include <QVariant>
+#include "core/inboundpkt.h"
+#include "core/outboundpkt.h"
+#include "../coretypes.h"
+
+#include <QDataStream>
+
 #include "messageaction.h"
 #include <QtGlobal>
 #include "messagemedia.h"
@@ -15,14 +24,15 @@
 class LIBQTELEGRAMSHARED_EXPORT Message : public TelegramTypeObject
 {
 public:
-    enum MessageType {
+    enum MessageClassType {
         typeMessageEmpty = 0x83e5de54,
         typeMessage = 0xa7ab1991,
         typeMessageService = 0x1d86f70e
     };
 
-    Message(MessageType classType = typeMessageEmpty, InboundPkt *in = 0);
+    Message(MessageClassType classType = typeMessageEmpty, InboundPkt *in = 0);
     Message(InboundPkt *in);
+    Message(const Null&);
     virtual ~Message();
 
     void setAction(const MessageAction &action);
@@ -58,13 +68,21 @@ public:
     void setToId(const Peer &toId);
     Peer toId() const;
 
-    void setClassType(MessageType classType);
-    MessageType classType() const;
+    void setClassType(MessageClassType classType);
+    MessageClassType classType() const;
 
     bool fetch(InboundPkt *in);
     bool push(OutboundPkt *out) const;
 
-    bool operator ==(const Message &b);
+    QMap<QString, QVariant> toMap() const;
+    static Message fromMap(const QMap<QString, QVariant> &map);
+
+    bool operator ==(const Message &b) const;
+
+    bool operator==(bool stt) const { return isNull() != stt; }
+    bool operator!=(bool stt) const { return !operator ==(stt); }
+
+    QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
     MessageAction m_action;
@@ -78,7 +96,438 @@ private:
     QString m_message;
     qint32 m_replyToMsgId;
     Peer m_toId;
-    MessageType m_classType;
+    MessageClassType m_classType;
 };
+
+Q_DECLARE_METATYPE(Message)
+
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator<<(QDataStream &stream, const Message &item);
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, Message &item);
+
+inline Message::Message(MessageClassType classType, InboundPkt *in) :
+    m_date(0),
+    m_flags(0),
+    m_fromId(0),
+    m_fwdDate(0),
+    m_fwdFromId(0),
+    m_id(0),
+    m_replyToMsgId(0),
+    m_classType(classType)
+{
+    if(in) fetch(in);
+}
+
+inline Message::Message(InboundPkt *in) :
+    m_date(0),
+    m_flags(0),
+    m_fromId(0),
+    m_fwdDate(0),
+    m_fwdFromId(0),
+    m_id(0),
+    m_replyToMsgId(0),
+    m_classType(typeMessageEmpty)
+{
+    fetch(in);
+}
+
+inline Message::Message(const Null &null) :
+    TelegramTypeObject(null),
+    m_date(0),
+    m_flags(0),
+    m_fromId(0),
+    m_fwdDate(0),
+    m_fwdFromId(0),
+    m_id(0),
+    m_replyToMsgId(0),
+    m_classType(typeMessageEmpty)
+{
+}
+
+inline Message::~Message() {
+}
+
+inline void Message::setAction(const MessageAction &action) {
+    m_action = action;
+}
+
+inline MessageAction Message::action() const {
+    return m_action;
+}
+
+inline void Message::setDate(qint32 date) {
+    m_date = date;
+}
+
+inline qint32 Message::date() const {
+    return m_date;
+}
+
+inline void Message::setFlags(qint32 flags) {
+    m_flags = flags;
+}
+
+inline qint32 Message::flags() const {
+    return m_flags;
+}
+
+inline void Message::setFromId(qint32 fromId) {
+    m_fromId = fromId;
+}
+
+inline qint32 Message::fromId() const {
+    return m_fromId;
+}
+
+inline void Message::setFwdDate(qint32 fwdDate) {
+    m_fwdDate = fwdDate;
+}
+
+inline qint32 Message::fwdDate() const {
+    return m_fwdDate;
+}
+
+inline void Message::setFwdFromId(qint32 fwdFromId) {
+    m_fwdFromId = fwdFromId;
+}
+
+inline qint32 Message::fwdFromId() const {
+    return m_fwdFromId;
+}
+
+inline void Message::setId(qint32 id) {
+    m_id = id;
+}
+
+inline qint32 Message::id() const {
+    return m_id;
+}
+
+inline void Message::setMedia(const MessageMedia &media) {
+    m_media = media;
+}
+
+inline MessageMedia Message::media() const {
+    return m_media;
+}
+
+inline void Message::setMessage(const QString &message) {
+    m_message = message;
+}
+
+inline QString Message::message() const {
+    return m_message;
+}
+
+inline void Message::setReplyToMsgId(qint32 replyToMsgId) {
+    m_replyToMsgId = replyToMsgId;
+}
+
+inline qint32 Message::replyToMsgId() const {
+    return m_replyToMsgId;
+}
+
+inline void Message::setToId(const Peer &toId) {
+    m_toId = toId;
+}
+
+inline Peer Message::toId() const {
+    return m_toId;
+}
+
+inline bool Message::operator ==(const Message &b) const {
+    return m_classType == b.m_classType &&
+           m_action == b.m_action &&
+           m_date == b.m_date &&
+           m_flags == b.m_flags &&
+           m_fromId == b.m_fromId &&
+           m_fwdDate == b.m_fwdDate &&
+           m_fwdFromId == b.m_fwdFromId &&
+           m_id == b.m_id &&
+           m_media == b.m_media &&
+           m_message == b.m_message &&
+           m_replyToMsgId == b.m_replyToMsgId &&
+           m_toId == b.m_toId;
+}
+
+inline void Message::setClassType(Message::MessageClassType classType) {
+    m_classType = classType;
+}
+
+inline Message::MessageClassType Message::classType() const {
+    return m_classType;
+}
+
+inline bool Message::fetch(InboundPkt *in) {
+    LQTG_FETCH_LOG;
+    int x = in->fetchInt();
+    switch(x) {
+    case typeMessageEmpty: {
+        m_id = in->fetchInt();
+        m_classType = static_cast<MessageClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeMessage: {
+        m_flags = in->fetchInt();
+        m_id = in->fetchInt();
+        m_fromId = in->fetchInt();
+        m_toId.fetch(in);
+        if(m_flags & 1<<2) {
+            m_fwdFromId = in->fetchInt();
+        }
+        if(m_flags & 1<<2) {
+            m_fwdDate = in->fetchInt();
+        }
+        if(m_flags & 1<<3) {
+            m_replyToMsgId = in->fetchInt();
+        }
+        m_date = in->fetchInt();
+        m_message = in->fetchQString();
+        m_media.fetch(in);
+        m_classType = static_cast<MessageClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeMessageService: {
+        m_flags = in->fetchInt();
+        m_id = in->fetchInt();
+        m_fromId = in->fetchInt();
+        m_toId.fetch(in);
+        m_date = in->fetchInt();
+        m_action.fetch(in);
+        m_classType = static_cast<MessageClassType>(x);
+        return true;
+    }
+        break;
+    
+    default:
+        LQTG_FETCH_ASSERT;
+        return false;
+    }
+}
+
+inline bool Message::push(OutboundPkt *out) const {
+    out->appendInt(m_classType);
+    switch(m_classType) {
+    case typeMessageEmpty: {
+        out->appendInt(m_id);
+        return true;
+    }
+        break;
+    
+    case typeMessage: {
+        out->appendInt(m_flags);
+        out->appendInt(m_id);
+        out->appendInt(m_fromId);
+        m_toId.push(out);
+        out->appendInt(m_fwdFromId);
+        out->appendInt(m_fwdDate);
+        out->appendInt(m_replyToMsgId);
+        out->appendInt(m_date);
+        out->appendQString(m_message);
+        m_media.push(out);
+        return true;
+    }
+        break;
+    
+    case typeMessageService: {
+        out->appendInt(m_flags);
+        out->appendInt(m_id);
+        out->appendInt(m_fromId);
+        m_toId.push(out);
+        out->appendInt(m_date);
+        m_action.push(out);
+        return true;
+    }
+        break;
+    
+    default:
+        return false;
+    }
+}
+
+inline QMap<QString, QVariant> Message::toMap() const {
+    QMap<QString, QVariant> result;
+    switch(static_cast<int>(m_classType)) {
+    case typeMessageEmpty: {
+        result["classType"] = "Message::typeMessageEmpty";
+        result["id"] = QVariant::fromValue<qint32>(id());
+        return result;
+    }
+        break;
+    
+    case typeMessage: {
+        result["classType"] = "Message::typeMessage";
+        result["id"] = QVariant::fromValue<qint32>(id());
+        result["fromId"] = QVariant::fromValue<qint32>(fromId());
+        result["toId"] = m_toId.toMap();
+        result["fwdFromId"] = QVariant::fromValue<qint32>(fwdFromId());
+        result["fwdDate"] = QVariant::fromValue<qint32>(fwdDate());
+        result["replyToMsgId"] = QVariant::fromValue<qint32>(replyToMsgId());
+        result["date"] = QVariant::fromValue<qint32>(date());
+        result["message"] = QVariant::fromValue<QString>(message());
+        result["media"] = m_media.toMap();
+        return result;
+    }
+        break;
+    
+    case typeMessageService: {
+        result["classType"] = "Message::typeMessageService";
+        result["flags"] = QVariant::fromValue<qint32>(flags());
+        result["id"] = QVariant::fromValue<qint32>(id());
+        result["fromId"] = QVariant::fromValue<qint32>(fromId());
+        result["toId"] = m_toId.toMap();
+        result["date"] = QVariant::fromValue<qint32>(date());
+        result["action"] = m_action.toMap();
+        return result;
+    }
+        break;
+    
+    default:
+        return result;
+    }
+}
+
+inline Message Message::fromMap(const QMap<QString, QVariant> &map) {
+    Message result;
+    if(map.value("classType").toString() == "Message::typeMessageEmpty") {
+        result.setClassType(typeMessageEmpty);
+        result.setId( map.value("id").value<qint32>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "Message::typeMessage") {
+        result.setClassType(typeMessage);
+        result.setId( map.value("id").value<qint32>() );
+        result.setFromId( map.value("fromId").value<qint32>() );
+        result.setToId( Peer::fromMap(map.value("toId").toMap()) );
+        result.setFwdFromId( map.value("fwdFromId").value<qint32>() );
+        result.setFwdDate( map.value("fwdDate").value<qint32>() );
+        result.setReplyToMsgId( map.value("replyToMsgId").value<qint32>() );
+        result.setDate( map.value("date").value<qint32>() );
+        result.setMessage( map.value("message").value<QString>() );
+        result.setMedia( MessageMedia::fromMap(map.value("media").toMap()) );
+        return result;
+    }
+    if(map.value("classType").toString() == "Message::typeMessageService") {
+        result.setClassType(typeMessageService);
+        result.setFlags( map.value("flags").value<qint32>() );
+        result.setId( map.value("id").value<qint32>() );
+        result.setFromId( map.value("fromId").value<qint32>() );
+        result.setToId( Peer::fromMap(map.value("toId").toMap()) );
+        result.setDate( map.value("date").value<qint32>() );
+        result.setAction( MessageAction::fromMap(map.value("action").toMap()) );
+        return result;
+    }
+    return result;
+}
+
+inline QByteArray Message::getHash(QCryptographicHash::Algorithm alg) const {
+    QByteArray data;
+    QDataStream str(&data, QIODevice::WriteOnly);
+    str << *this;
+    return QCryptographicHash::hash(data, alg);
+}
+
+inline QDataStream &operator<<(QDataStream &stream, const Message &item) {
+    stream << static_cast<uint>(item.classType());
+    switch(item.classType()) {
+    case Message::typeMessageEmpty:
+        stream << item.id();
+        break;
+    case Message::typeMessage:
+        stream << item.flags();
+        stream << item.id();
+        stream << item.fromId();
+        stream << item.toId();
+        stream << item.fwdFromId();
+        stream << item.fwdDate();
+        stream << item.replyToMsgId();
+        stream << item.date();
+        stream << item.message();
+        stream << item.media();
+        break;
+    case Message::typeMessageService:
+        stream << item.flags();
+        stream << item.id();
+        stream << item.fromId();
+        stream << item.toId();
+        stream << item.date();
+        stream << item.action();
+        break;
+    }
+    return stream;
+}
+
+inline QDataStream &operator>>(QDataStream &stream, Message &item) {
+    uint type = 0;
+    stream >> type;
+    item.setClassType(static_cast<Message::MessageClassType>(type));
+    switch(type) {
+    case Message::typeMessageEmpty: {
+        qint32 m_id;
+        stream >> m_id;
+        item.setId(m_id);
+    }
+        break;
+    case Message::typeMessage: {
+        qint32 m_flags;
+        stream >> m_flags;
+        item.setFlags(m_flags);
+        qint32 m_id;
+        stream >> m_id;
+        item.setId(m_id);
+        qint32 m_from_id;
+        stream >> m_from_id;
+        item.setFromId(m_from_id);
+        Peer m_to_id;
+        stream >> m_to_id;
+        item.setToId(m_to_id);
+        qint32 m_fwd_from_id;
+        stream >> m_fwd_from_id;
+        item.setFwdFromId(m_fwd_from_id);
+        qint32 m_fwd_date;
+        stream >> m_fwd_date;
+        item.setFwdDate(m_fwd_date);
+        qint32 m_reply_to_msg_id;
+        stream >> m_reply_to_msg_id;
+        item.setReplyToMsgId(m_reply_to_msg_id);
+        qint32 m_date;
+        stream >> m_date;
+        item.setDate(m_date);
+        QString m_message;
+        stream >> m_message;
+        item.setMessage(m_message);
+        MessageMedia m_media;
+        stream >> m_media;
+        item.setMedia(m_media);
+    }
+        break;
+    case Message::typeMessageService: {
+        qint32 m_flags;
+        stream >> m_flags;
+        item.setFlags(m_flags);
+        qint32 m_id;
+        stream >> m_id;
+        item.setId(m_id);
+        qint32 m_from_id;
+        stream >> m_from_id;
+        item.setFromId(m_from_id);
+        Peer m_to_id;
+        stream >> m_to_id;
+        item.setToId(m_to_id);
+        qint32 m_date;
+        stream >> m_date;
+        item.setDate(m_date);
+        MessageAction m_action;
+        stream >> m_action;
+        item.setAction(m_action);
+    }
+        break;
+    }
+    return stream;
+}
+
 
 #endif // LQTG_TYPE_MESSAGE

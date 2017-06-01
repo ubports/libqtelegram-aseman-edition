@@ -6,6 +6,15 @@
 #define LQTG_TYPE_GEOCHATMESSAGE
 
 #include "telegramtypeobject.h"
+
+#include <QMetaType>
+#include <QVariant>
+#include "core/inboundpkt.h"
+#include "core/outboundpkt.h"
+#include "../coretypes.h"
+
+#include <QDataStream>
+
 #include "messageaction.h"
 #include <QtGlobal>
 #include "messagemedia.h"
@@ -14,14 +23,15 @@
 class LIBQTELEGRAMSHARED_EXPORT GeoChatMessage : public TelegramTypeObject
 {
 public:
-    enum GeoChatMessageType {
+    enum GeoChatMessageClassType {
         typeGeoChatMessageEmpty = 0x60311a9b,
         typeGeoChatMessage = 0x4505f8e1,
         typeGeoChatMessageService = 0xd34fa24e
     };
 
-    GeoChatMessage(GeoChatMessageType classType = typeGeoChatMessageEmpty, InboundPkt *in = 0);
+    GeoChatMessage(GeoChatMessageClassType classType = typeGeoChatMessageEmpty, InboundPkt *in = 0);
     GeoChatMessage(InboundPkt *in);
+    GeoChatMessage(const Null&);
     virtual ~GeoChatMessage();
 
     void setAction(const MessageAction &action);
@@ -45,13 +55,21 @@ public:
     void setMessage(const QString &message);
     QString message() const;
 
-    void setClassType(GeoChatMessageType classType);
-    GeoChatMessageType classType() const;
+    void setClassType(GeoChatMessageClassType classType);
+    GeoChatMessageClassType classType() const;
 
     bool fetch(InboundPkt *in);
     bool push(OutboundPkt *out) const;
 
-    bool operator ==(const GeoChatMessage &b);
+    QMap<QString, QVariant> toMap() const;
+    static GeoChatMessage fromMap(const QMap<QString, QVariant> &map);
+
+    bool operator ==(const GeoChatMessage &b) const;
+
+    bool operator==(bool stt) const { return isNull() != stt; }
+    bool operator!=(bool stt) const { return !operator ==(stt); }
+
+    QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
     MessageAction m_action;
@@ -61,7 +79,357 @@ private:
     qint32 m_id;
     MessageMedia m_media;
     QString m_message;
-    GeoChatMessageType m_classType;
+    GeoChatMessageClassType m_classType;
 };
+
+Q_DECLARE_METATYPE(GeoChatMessage)
+
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator<<(QDataStream &stream, const GeoChatMessage &item);
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, GeoChatMessage &item);
+
+inline GeoChatMessage::GeoChatMessage(GeoChatMessageClassType classType, InboundPkt *in) :
+    m_chatId(0),
+    m_date(0),
+    m_fromId(0),
+    m_id(0),
+    m_classType(classType)
+{
+    if(in) fetch(in);
+}
+
+inline GeoChatMessage::GeoChatMessage(InboundPkt *in) :
+    m_chatId(0),
+    m_date(0),
+    m_fromId(0),
+    m_id(0),
+    m_classType(typeGeoChatMessageEmpty)
+{
+    fetch(in);
+}
+
+inline GeoChatMessage::GeoChatMessage(const Null &null) :
+    TelegramTypeObject(null),
+    m_chatId(0),
+    m_date(0),
+    m_fromId(0),
+    m_id(0),
+    m_classType(typeGeoChatMessageEmpty)
+{
+}
+
+inline GeoChatMessage::~GeoChatMessage() {
+}
+
+inline void GeoChatMessage::setAction(const MessageAction &action) {
+    m_action = action;
+}
+
+inline MessageAction GeoChatMessage::action() const {
+    return m_action;
+}
+
+inline void GeoChatMessage::setChatId(qint32 chatId) {
+    m_chatId = chatId;
+}
+
+inline qint32 GeoChatMessage::chatId() const {
+    return m_chatId;
+}
+
+inline void GeoChatMessage::setDate(qint32 date) {
+    m_date = date;
+}
+
+inline qint32 GeoChatMessage::date() const {
+    return m_date;
+}
+
+inline void GeoChatMessage::setFromId(qint32 fromId) {
+    m_fromId = fromId;
+}
+
+inline qint32 GeoChatMessage::fromId() const {
+    return m_fromId;
+}
+
+inline void GeoChatMessage::setId(qint32 id) {
+    m_id = id;
+}
+
+inline qint32 GeoChatMessage::id() const {
+    return m_id;
+}
+
+inline void GeoChatMessage::setMedia(const MessageMedia &media) {
+    m_media = media;
+}
+
+inline MessageMedia GeoChatMessage::media() const {
+    return m_media;
+}
+
+inline void GeoChatMessage::setMessage(const QString &message) {
+    m_message = message;
+}
+
+inline QString GeoChatMessage::message() const {
+    return m_message;
+}
+
+inline bool GeoChatMessage::operator ==(const GeoChatMessage &b) const {
+    return m_classType == b.m_classType &&
+           m_action == b.m_action &&
+           m_chatId == b.m_chatId &&
+           m_date == b.m_date &&
+           m_fromId == b.m_fromId &&
+           m_id == b.m_id &&
+           m_media == b.m_media &&
+           m_message == b.m_message;
+}
+
+inline void GeoChatMessage::setClassType(GeoChatMessage::GeoChatMessageClassType classType) {
+    m_classType = classType;
+}
+
+inline GeoChatMessage::GeoChatMessageClassType GeoChatMessage::classType() const {
+    return m_classType;
+}
+
+inline bool GeoChatMessage::fetch(InboundPkt *in) {
+    LQTG_FETCH_LOG;
+    int x = in->fetchInt();
+    switch(x) {
+    case typeGeoChatMessageEmpty: {
+        m_chatId = in->fetchInt();
+        m_id = in->fetchInt();
+        m_classType = static_cast<GeoChatMessageClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeGeoChatMessage: {
+        m_chatId = in->fetchInt();
+        m_id = in->fetchInt();
+        m_fromId = in->fetchInt();
+        m_date = in->fetchInt();
+        m_message = in->fetchQString();
+        m_media.fetch(in);
+        m_classType = static_cast<GeoChatMessageClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeGeoChatMessageService: {
+        m_chatId = in->fetchInt();
+        m_id = in->fetchInt();
+        m_fromId = in->fetchInt();
+        m_date = in->fetchInt();
+        m_action.fetch(in);
+        m_classType = static_cast<GeoChatMessageClassType>(x);
+        return true;
+    }
+        break;
+    
+    default:
+        LQTG_FETCH_ASSERT;
+        return false;
+    }
+}
+
+inline bool GeoChatMessage::push(OutboundPkt *out) const {
+    out->appendInt(m_classType);
+    switch(m_classType) {
+    case typeGeoChatMessageEmpty: {
+        out->appendInt(m_chatId);
+        out->appendInt(m_id);
+        return true;
+    }
+        break;
+    
+    case typeGeoChatMessage: {
+        out->appendInt(m_chatId);
+        out->appendInt(m_id);
+        out->appendInt(m_fromId);
+        out->appendInt(m_date);
+        out->appendQString(m_message);
+        m_media.push(out);
+        return true;
+    }
+        break;
+    
+    case typeGeoChatMessageService: {
+        out->appendInt(m_chatId);
+        out->appendInt(m_id);
+        out->appendInt(m_fromId);
+        out->appendInt(m_date);
+        m_action.push(out);
+        return true;
+    }
+        break;
+    
+    default:
+        return false;
+    }
+}
+
+inline QMap<QString, QVariant> GeoChatMessage::toMap() const {
+    QMap<QString, QVariant> result;
+    switch(static_cast<int>(m_classType)) {
+    case typeGeoChatMessageEmpty: {
+        result["classType"] = "GeoChatMessage::typeGeoChatMessageEmpty";
+        result["chatId"] = QVariant::fromValue<qint32>(chatId());
+        result["id"] = QVariant::fromValue<qint32>(id());
+        return result;
+    }
+        break;
+    
+    case typeGeoChatMessage: {
+        result["classType"] = "GeoChatMessage::typeGeoChatMessage";
+        result["chatId"] = QVariant::fromValue<qint32>(chatId());
+        result["id"] = QVariant::fromValue<qint32>(id());
+        result["fromId"] = QVariant::fromValue<qint32>(fromId());
+        result["date"] = QVariant::fromValue<qint32>(date());
+        result["message"] = QVariant::fromValue<QString>(message());
+        result["media"] = m_media.toMap();
+        return result;
+    }
+        break;
+    
+    case typeGeoChatMessageService: {
+        result["classType"] = "GeoChatMessage::typeGeoChatMessageService";
+        result["chatId"] = QVariant::fromValue<qint32>(chatId());
+        result["id"] = QVariant::fromValue<qint32>(id());
+        result["fromId"] = QVariant::fromValue<qint32>(fromId());
+        result["date"] = QVariant::fromValue<qint32>(date());
+        result["action"] = m_action.toMap();
+        return result;
+    }
+        break;
+    
+    default:
+        return result;
+    }
+}
+
+inline GeoChatMessage GeoChatMessage::fromMap(const QMap<QString, QVariant> &map) {
+    GeoChatMessage result;
+    if(map.value("classType").toString() == "GeoChatMessage::typeGeoChatMessageEmpty") {
+        result.setClassType(typeGeoChatMessageEmpty);
+        result.setChatId( map.value("chatId").value<qint32>() );
+        result.setId( map.value("id").value<qint32>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "GeoChatMessage::typeGeoChatMessage") {
+        result.setClassType(typeGeoChatMessage);
+        result.setChatId( map.value("chatId").value<qint32>() );
+        result.setId( map.value("id").value<qint32>() );
+        result.setFromId( map.value("fromId").value<qint32>() );
+        result.setDate( map.value("date").value<qint32>() );
+        result.setMessage( map.value("message").value<QString>() );
+        result.setMedia( MessageMedia::fromMap(map.value("media").toMap()) );
+        return result;
+    }
+    if(map.value("classType").toString() == "GeoChatMessage::typeGeoChatMessageService") {
+        result.setClassType(typeGeoChatMessageService);
+        result.setChatId( map.value("chatId").value<qint32>() );
+        result.setId( map.value("id").value<qint32>() );
+        result.setFromId( map.value("fromId").value<qint32>() );
+        result.setDate( map.value("date").value<qint32>() );
+        result.setAction( MessageAction::fromMap(map.value("action").toMap()) );
+        return result;
+    }
+    return result;
+}
+
+inline QByteArray GeoChatMessage::getHash(QCryptographicHash::Algorithm alg) const {
+    QByteArray data;
+    QDataStream str(&data, QIODevice::WriteOnly);
+    str << *this;
+    return QCryptographicHash::hash(data, alg);
+}
+
+inline QDataStream &operator<<(QDataStream &stream, const GeoChatMessage &item) {
+    stream << static_cast<uint>(item.classType());
+    switch(item.classType()) {
+    case GeoChatMessage::typeGeoChatMessageEmpty:
+        stream << item.chatId();
+        stream << item.id();
+        break;
+    case GeoChatMessage::typeGeoChatMessage:
+        stream << item.chatId();
+        stream << item.id();
+        stream << item.fromId();
+        stream << item.date();
+        stream << item.message();
+        stream << item.media();
+        break;
+    case GeoChatMessage::typeGeoChatMessageService:
+        stream << item.chatId();
+        stream << item.id();
+        stream << item.fromId();
+        stream << item.date();
+        stream << item.action();
+        break;
+    }
+    return stream;
+}
+
+inline QDataStream &operator>>(QDataStream &stream, GeoChatMessage &item) {
+    uint type = 0;
+    stream >> type;
+    item.setClassType(static_cast<GeoChatMessage::GeoChatMessageClassType>(type));
+    switch(type) {
+    case GeoChatMessage::typeGeoChatMessageEmpty: {
+        qint32 m_chat_id;
+        stream >> m_chat_id;
+        item.setChatId(m_chat_id);
+        qint32 m_id;
+        stream >> m_id;
+        item.setId(m_id);
+    }
+        break;
+    case GeoChatMessage::typeGeoChatMessage: {
+        qint32 m_chat_id;
+        stream >> m_chat_id;
+        item.setChatId(m_chat_id);
+        qint32 m_id;
+        stream >> m_id;
+        item.setId(m_id);
+        qint32 m_from_id;
+        stream >> m_from_id;
+        item.setFromId(m_from_id);
+        qint32 m_date;
+        stream >> m_date;
+        item.setDate(m_date);
+        QString m_message;
+        stream >> m_message;
+        item.setMessage(m_message);
+        MessageMedia m_media;
+        stream >> m_media;
+        item.setMedia(m_media);
+    }
+        break;
+    case GeoChatMessage::typeGeoChatMessageService: {
+        qint32 m_chat_id;
+        stream >> m_chat_id;
+        item.setChatId(m_chat_id);
+        qint32 m_id;
+        stream >> m_id;
+        item.setId(m_id);
+        qint32 m_from_id;
+        stream >> m_from_id;
+        item.setFromId(m_from_id);
+        qint32 m_date;
+        stream >> m_date;
+        item.setDate(m_date);
+        MessageAction m_action;
+        stream >> m_action;
+        item.setAction(m_action);
+    }
+        break;
+    }
+    return stream;
+}
+
 
 #endif // LQTG_TYPE_GEOCHATMESSAGE

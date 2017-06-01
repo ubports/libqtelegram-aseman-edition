@@ -6,19 +6,29 @@
 #define LQTG_TYPE_CHATINVITE
 
 #include "telegramtypeobject.h"
+
+#include <QMetaType>
+#include <QVariant>
+#include "core/inboundpkt.h"
+#include "core/outboundpkt.h"
+#include "../coretypes.h"
+
+#include <QDataStream>
+
 #include "chat.h"
 #include <QString>
 
 class LIBQTELEGRAMSHARED_EXPORT ChatInvite : public TelegramTypeObject
 {
 public:
-    enum ChatInviteType {
+    enum ChatInviteClassType {
         typeChatInviteAlready = 0x5a686d7c,
         typeChatInvite = 0xce917dcd
     };
 
-    ChatInvite(ChatInviteType classType = typeChatInviteAlready, InboundPkt *in = 0);
+    ChatInvite(ChatInviteClassType classType = typeChatInviteAlready, InboundPkt *in = 0);
     ChatInvite(InboundPkt *in);
+    ChatInvite(const Null&);
     virtual ~ChatInvite();
 
     void setChat(const Chat &chat);
@@ -27,18 +37,205 @@ public:
     void setTitle(const QString &title);
     QString title() const;
 
-    void setClassType(ChatInviteType classType);
-    ChatInviteType classType() const;
+    void setClassType(ChatInviteClassType classType);
+    ChatInviteClassType classType() const;
 
     bool fetch(InboundPkt *in);
     bool push(OutboundPkt *out) const;
 
-    bool operator ==(const ChatInvite &b);
+    QMap<QString, QVariant> toMap() const;
+    static ChatInvite fromMap(const QMap<QString, QVariant> &map);
+
+    bool operator ==(const ChatInvite &b) const;
+
+    bool operator==(bool stt) const { return isNull() != stt; }
+    bool operator!=(bool stt) const { return !operator ==(stt); }
+
+    QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
     Chat m_chat;
     QString m_title;
-    ChatInviteType m_classType;
+    ChatInviteClassType m_classType;
 };
+
+Q_DECLARE_METATYPE(ChatInvite)
+
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator<<(QDataStream &stream, const ChatInvite &item);
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, ChatInvite &item);
+
+inline ChatInvite::ChatInvite(ChatInviteClassType classType, InboundPkt *in) :
+    m_classType(classType)
+{
+    if(in) fetch(in);
+}
+
+inline ChatInvite::ChatInvite(InboundPkt *in) :
+    m_classType(typeChatInviteAlready)
+{
+    fetch(in);
+}
+
+inline ChatInvite::ChatInvite(const Null &null) :
+    TelegramTypeObject(null),
+    m_classType(typeChatInviteAlready)
+{
+}
+
+inline ChatInvite::~ChatInvite() {
+}
+
+inline void ChatInvite::setChat(const Chat &chat) {
+    m_chat = chat;
+}
+
+inline Chat ChatInvite::chat() const {
+    return m_chat;
+}
+
+inline void ChatInvite::setTitle(const QString &title) {
+    m_title = title;
+}
+
+inline QString ChatInvite::title() const {
+    return m_title;
+}
+
+inline bool ChatInvite::operator ==(const ChatInvite &b) const {
+    return m_classType == b.m_classType &&
+           m_chat == b.m_chat &&
+           m_title == b.m_title;
+}
+
+inline void ChatInvite::setClassType(ChatInvite::ChatInviteClassType classType) {
+    m_classType = classType;
+}
+
+inline ChatInvite::ChatInviteClassType ChatInvite::classType() const {
+    return m_classType;
+}
+
+inline bool ChatInvite::fetch(InboundPkt *in) {
+    LQTG_FETCH_LOG;
+    int x = in->fetchInt();
+    switch(x) {
+    case typeChatInviteAlready: {
+        m_chat.fetch(in);
+        m_classType = static_cast<ChatInviteClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeChatInvite: {
+        m_title = in->fetchQString();
+        m_classType = static_cast<ChatInviteClassType>(x);
+        return true;
+    }
+        break;
+    
+    default:
+        LQTG_FETCH_ASSERT;
+        return false;
+    }
+}
+
+inline bool ChatInvite::push(OutboundPkt *out) const {
+    out->appendInt(m_classType);
+    switch(m_classType) {
+    case typeChatInviteAlready: {
+        m_chat.push(out);
+        return true;
+    }
+        break;
+    
+    case typeChatInvite: {
+        out->appendQString(m_title);
+        return true;
+    }
+        break;
+    
+    default:
+        return false;
+    }
+}
+
+inline QMap<QString, QVariant> ChatInvite::toMap() const {
+    QMap<QString, QVariant> result;
+    switch(static_cast<int>(m_classType)) {
+    case typeChatInviteAlready: {
+        result["classType"] = "ChatInvite::typeChatInviteAlready";
+        result["chat"] = m_chat.toMap();
+        return result;
+    }
+        break;
+    
+    case typeChatInvite: {
+        result["classType"] = "ChatInvite::typeChatInvite";
+        result["title"] = QVariant::fromValue<QString>(title());
+        return result;
+    }
+        break;
+    
+    default:
+        return result;
+    }
+}
+
+inline ChatInvite ChatInvite::fromMap(const QMap<QString, QVariant> &map) {
+    ChatInvite result;
+    if(map.value("classType").toString() == "ChatInvite::typeChatInviteAlready") {
+        result.setClassType(typeChatInviteAlready);
+        result.setChat( Chat::fromMap(map.value("chat").toMap()) );
+        return result;
+    }
+    if(map.value("classType").toString() == "ChatInvite::typeChatInvite") {
+        result.setClassType(typeChatInvite);
+        result.setTitle( map.value("title").value<QString>() );
+        return result;
+    }
+    return result;
+}
+
+inline QByteArray ChatInvite::getHash(QCryptographicHash::Algorithm alg) const {
+    QByteArray data;
+    QDataStream str(&data, QIODevice::WriteOnly);
+    str << *this;
+    return QCryptographicHash::hash(data, alg);
+}
+
+inline QDataStream &operator<<(QDataStream &stream, const ChatInvite &item) {
+    stream << static_cast<uint>(item.classType());
+    switch(item.classType()) {
+    case ChatInvite::typeChatInviteAlready:
+        stream << item.chat();
+        break;
+    case ChatInvite::typeChatInvite:
+        stream << item.title();
+        break;
+    }
+    return stream;
+}
+
+inline QDataStream &operator>>(QDataStream &stream, ChatInvite &item) {
+    uint type = 0;
+    stream >> type;
+    item.setClassType(static_cast<ChatInvite::ChatInviteClassType>(type));
+    switch(type) {
+    case ChatInvite::typeChatInviteAlready: {
+        Chat m_chat;
+        stream >> m_chat;
+        item.setChat(m_chat);
+    }
+        break;
+    case ChatInvite::typeChatInvite: {
+        QString m_title;
+        stream >> m_title;
+        item.setTitle(m_title);
+    }
+        break;
+    }
+    return stream;
+}
+
 
 #endif // LQTG_TYPE_CHATINVITE

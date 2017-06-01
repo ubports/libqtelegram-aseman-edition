@@ -6,33 +6,190 @@
 #define LQTG_TYPE_CONTACTFOUND
 
 #include "telegramtypeobject.h"
+
+#include <QMetaType>
+#include <QVariant>
+#include "core/inboundpkt.h"
+#include "core/outboundpkt.h"
+#include "../coretypes.h"
+
+#include <QDataStream>
+
 #include <QtGlobal>
 
 class LIBQTELEGRAMSHARED_EXPORT ContactFound : public TelegramTypeObject
 {
 public:
-    enum ContactFoundType {
+    enum ContactFoundClassType {
         typeContactFound = 0xea879f95
     };
 
-    ContactFound(ContactFoundType classType = typeContactFound, InboundPkt *in = 0);
+    ContactFound(ContactFoundClassType classType = typeContactFound, InboundPkt *in = 0);
     ContactFound(InboundPkt *in);
+    ContactFound(const Null&);
     virtual ~ContactFound();
 
     void setUserId(qint32 userId);
     qint32 userId() const;
 
-    void setClassType(ContactFoundType classType);
-    ContactFoundType classType() const;
+    void setClassType(ContactFoundClassType classType);
+    ContactFoundClassType classType() const;
 
     bool fetch(InboundPkt *in);
     bool push(OutboundPkt *out) const;
 
-    bool operator ==(const ContactFound &b);
+    QMap<QString, QVariant> toMap() const;
+    static ContactFound fromMap(const QMap<QString, QVariant> &map);
+
+    bool operator ==(const ContactFound &b) const;
+
+    bool operator==(bool stt) const { return isNull() != stt; }
+    bool operator!=(bool stt) const { return !operator ==(stt); }
+
+    QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
     qint32 m_userId;
-    ContactFoundType m_classType;
+    ContactFoundClassType m_classType;
 };
+
+Q_DECLARE_METATYPE(ContactFound)
+
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator<<(QDataStream &stream, const ContactFound &item);
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, ContactFound &item);
+
+inline ContactFound::ContactFound(ContactFoundClassType classType, InboundPkt *in) :
+    m_userId(0),
+    m_classType(classType)
+{
+    if(in) fetch(in);
+}
+
+inline ContactFound::ContactFound(InboundPkt *in) :
+    m_userId(0),
+    m_classType(typeContactFound)
+{
+    fetch(in);
+}
+
+inline ContactFound::ContactFound(const Null &null) :
+    TelegramTypeObject(null),
+    m_userId(0),
+    m_classType(typeContactFound)
+{
+}
+
+inline ContactFound::~ContactFound() {
+}
+
+inline void ContactFound::setUserId(qint32 userId) {
+    m_userId = userId;
+}
+
+inline qint32 ContactFound::userId() const {
+    return m_userId;
+}
+
+inline bool ContactFound::operator ==(const ContactFound &b) const {
+    return m_classType == b.m_classType &&
+           m_userId == b.m_userId;
+}
+
+inline void ContactFound::setClassType(ContactFound::ContactFoundClassType classType) {
+    m_classType = classType;
+}
+
+inline ContactFound::ContactFoundClassType ContactFound::classType() const {
+    return m_classType;
+}
+
+inline bool ContactFound::fetch(InboundPkt *in) {
+    LQTG_FETCH_LOG;
+    int x = in->fetchInt();
+    switch(x) {
+    case typeContactFound: {
+        m_userId = in->fetchInt();
+        m_classType = static_cast<ContactFoundClassType>(x);
+        return true;
+    }
+        break;
+    
+    default:
+        LQTG_FETCH_ASSERT;
+        return false;
+    }
+}
+
+inline bool ContactFound::push(OutboundPkt *out) const {
+    out->appendInt(m_classType);
+    switch(m_classType) {
+    case typeContactFound: {
+        out->appendInt(m_userId);
+        return true;
+    }
+        break;
+    
+    default:
+        return false;
+    }
+}
+
+inline QMap<QString, QVariant> ContactFound::toMap() const {
+    QMap<QString, QVariant> result;
+    switch(static_cast<int>(m_classType)) {
+    case typeContactFound: {
+        result["classType"] = "ContactFound::typeContactFound";
+        result["userId"] = QVariant::fromValue<qint32>(userId());
+        return result;
+    }
+        break;
+    
+    default:
+        return result;
+    }
+}
+
+inline ContactFound ContactFound::fromMap(const QMap<QString, QVariant> &map) {
+    ContactFound result;
+    if(map.value("classType").toString() == "ContactFound::typeContactFound") {
+        result.setClassType(typeContactFound);
+        result.setUserId( map.value("userId").value<qint32>() );
+        return result;
+    }
+    return result;
+}
+
+inline QByteArray ContactFound::getHash(QCryptographicHash::Algorithm alg) const {
+    QByteArray data;
+    QDataStream str(&data, QIODevice::WriteOnly);
+    str << *this;
+    return QCryptographicHash::hash(data, alg);
+}
+
+inline QDataStream &operator<<(QDataStream &stream, const ContactFound &item) {
+    stream << static_cast<uint>(item.classType());
+    switch(item.classType()) {
+    case ContactFound::typeContactFound:
+        stream << item.userId();
+        break;
+    }
+    return stream;
+}
+
+inline QDataStream &operator>>(QDataStream &stream, ContactFound &item) {
+    uint type = 0;
+    stream >> type;
+    item.setClassType(static_cast<ContactFound::ContactFoundClassType>(type));
+    switch(type) {
+    case ContactFound::typeContactFound: {
+        qint32 m_user_id;
+        stream >> m_user_id;
+        item.setUserId(m_user_id);
+    }
+        break;
+    }
+    return stream;
+}
+
 
 #endif // LQTG_TYPE_CONTACTFOUND

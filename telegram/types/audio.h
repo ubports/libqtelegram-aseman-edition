@@ -6,19 +6,29 @@
 #define LQTG_TYPE_AUDIO
 
 #include "telegramtypeobject.h"
+
+#include <QMetaType>
+#include <QVariant>
+#include "core/inboundpkt.h"
+#include "core/outboundpkt.h"
+#include "../coretypes.h"
+
+#include <QDataStream>
+
 #include <QtGlobal>
 #include <QString>
 
 class LIBQTELEGRAMSHARED_EXPORT Audio : public TelegramTypeObject
 {
 public:
-    enum AudioType {
+    enum AudioClassType {
         typeAudioEmpty = 0x586988d8,
         typeAudio = 0xc7ac6496
     };
 
-    Audio(AudioType classType = typeAudioEmpty, InboundPkt *in = 0);
+    Audio(AudioClassType classType = typeAudioEmpty, InboundPkt *in = 0);
     Audio(InboundPkt *in);
+    Audio(const Null&);
     virtual ~Audio();
 
     void setAccessHash(qint64 accessHash);
@@ -45,13 +55,21 @@ public:
     void setUserId(qint32 userId);
     qint32 userId() const;
 
-    void setClassType(AudioType classType);
-    AudioType classType() const;
+    void setClassType(AudioClassType classType);
+    AudioClassType classType() const;
 
     bool fetch(InboundPkt *in);
     bool push(OutboundPkt *out) const;
 
-    bool operator ==(const Audio &b);
+    QMap<QString, QVariant> toMap() const;
+    static Audio fromMap(const QMap<QString, QVariant> &map);
+
+    bool operator ==(const Audio &b) const;
+
+    bool operator==(bool stt) const { return isNull() != stt; }
+    bool operator!=(bool stt) const { return !operator ==(stt); }
+
+    QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
     qint64 m_accessHash;
@@ -62,7 +80,317 @@ private:
     QString m_mimeType;
     qint32 m_size;
     qint32 m_userId;
-    AudioType m_classType;
+    AudioClassType m_classType;
 };
+
+Q_DECLARE_METATYPE(Audio)
+
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator<<(QDataStream &stream, const Audio &item);
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, Audio &item);
+
+inline Audio::Audio(AudioClassType classType, InboundPkt *in) :
+    m_accessHash(0),
+    m_date(0),
+    m_dcId(0),
+    m_duration(0),
+    m_id(0),
+    m_size(0),
+    m_userId(0),
+    m_classType(classType)
+{
+    if(in) fetch(in);
+}
+
+inline Audio::Audio(InboundPkt *in) :
+    m_accessHash(0),
+    m_date(0),
+    m_dcId(0),
+    m_duration(0),
+    m_id(0),
+    m_size(0),
+    m_userId(0),
+    m_classType(typeAudioEmpty)
+{
+    fetch(in);
+}
+
+inline Audio::Audio(const Null &null) :
+    TelegramTypeObject(null),
+    m_accessHash(0),
+    m_date(0),
+    m_dcId(0),
+    m_duration(0),
+    m_id(0),
+    m_size(0),
+    m_userId(0),
+    m_classType(typeAudioEmpty)
+{
+}
+
+inline Audio::~Audio() {
+}
+
+inline void Audio::setAccessHash(qint64 accessHash) {
+    m_accessHash = accessHash;
+}
+
+inline qint64 Audio::accessHash() const {
+    return m_accessHash;
+}
+
+inline void Audio::setDate(qint32 date) {
+    m_date = date;
+}
+
+inline qint32 Audio::date() const {
+    return m_date;
+}
+
+inline void Audio::setDcId(qint32 dcId) {
+    m_dcId = dcId;
+}
+
+inline qint32 Audio::dcId() const {
+    return m_dcId;
+}
+
+inline void Audio::setDuration(qint32 duration) {
+    m_duration = duration;
+}
+
+inline qint32 Audio::duration() const {
+    return m_duration;
+}
+
+inline void Audio::setId(qint64 id) {
+    m_id = id;
+}
+
+inline qint64 Audio::id() const {
+    return m_id;
+}
+
+inline void Audio::setMimeType(const QString &mimeType) {
+    m_mimeType = mimeType;
+}
+
+inline QString Audio::mimeType() const {
+    return m_mimeType;
+}
+
+inline void Audio::setSize(qint32 size) {
+    m_size = size;
+}
+
+inline qint32 Audio::size() const {
+    return m_size;
+}
+
+inline void Audio::setUserId(qint32 userId) {
+    m_userId = userId;
+}
+
+inline qint32 Audio::userId() const {
+    return m_userId;
+}
+
+inline bool Audio::operator ==(const Audio &b) const {
+    return m_classType == b.m_classType &&
+           m_accessHash == b.m_accessHash &&
+           m_date == b.m_date &&
+           m_dcId == b.m_dcId &&
+           m_duration == b.m_duration &&
+           m_id == b.m_id &&
+           m_mimeType == b.m_mimeType &&
+           m_size == b.m_size &&
+           m_userId == b.m_userId;
+}
+
+inline void Audio::setClassType(Audio::AudioClassType classType) {
+    m_classType = classType;
+}
+
+inline Audio::AudioClassType Audio::classType() const {
+    return m_classType;
+}
+
+inline bool Audio::fetch(InboundPkt *in) {
+    LQTG_FETCH_LOG;
+    int x = in->fetchInt();
+    switch(x) {
+    case typeAudioEmpty: {
+        m_id = in->fetchLong();
+        m_classType = static_cast<AudioClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeAudio: {
+        m_id = in->fetchLong();
+        m_accessHash = in->fetchLong();
+        m_userId = in->fetchInt();
+        m_date = in->fetchInt();
+        m_duration = in->fetchInt();
+        m_mimeType = in->fetchQString();
+        m_size = in->fetchInt();
+        m_dcId = in->fetchInt();
+        m_classType = static_cast<AudioClassType>(x);
+        return true;
+    }
+        break;
+    
+    default:
+        LQTG_FETCH_ASSERT;
+        return false;
+    }
+}
+
+inline bool Audio::push(OutboundPkt *out) const {
+    out->appendInt(m_classType);
+    switch(m_classType) {
+    case typeAudioEmpty: {
+        out->appendLong(m_id);
+        return true;
+    }
+        break;
+    
+    case typeAudio: {
+        out->appendLong(m_id);
+        out->appendLong(m_accessHash);
+        out->appendInt(m_userId);
+        out->appendInt(m_date);
+        out->appendInt(m_duration);
+        out->appendQString(m_mimeType);
+        out->appendInt(m_size);
+        out->appendInt(m_dcId);
+        return true;
+    }
+        break;
+    
+    default:
+        return false;
+    }
+}
+
+inline QMap<QString, QVariant> Audio::toMap() const {
+    QMap<QString, QVariant> result;
+    switch(static_cast<int>(m_classType)) {
+    case typeAudioEmpty: {
+        result["classType"] = "Audio::typeAudioEmpty";
+        result["id"] = QVariant::fromValue<qint64>(id());
+        return result;
+    }
+        break;
+    
+    case typeAudio: {
+        result["classType"] = "Audio::typeAudio";
+        result["id"] = QVariant::fromValue<qint64>(id());
+        result["accessHash"] = QVariant::fromValue<qint64>(accessHash());
+        result["userId"] = QVariant::fromValue<qint32>(userId());
+        result["date"] = QVariant::fromValue<qint32>(date());
+        result["duration"] = QVariant::fromValue<qint32>(duration());
+        result["mimeType"] = QVariant::fromValue<QString>(mimeType());
+        result["size"] = QVariant::fromValue<qint32>(size());
+        result["dcId"] = QVariant::fromValue<qint32>(dcId());
+        return result;
+    }
+        break;
+    
+    default:
+        return result;
+    }
+}
+
+inline Audio Audio::fromMap(const QMap<QString, QVariant> &map) {
+    Audio result;
+    if(map.value("classType").toString() == "Audio::typeAudioEmpty") {
+        result.setClassType(typeAudioEmpty);
+        result.setId( map.value("id").value<qint64>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "Audio::typeAudio") {
+        result.setClassType(typeAudio);
+        result.setId( map.value("id").value<qint64>() );
+        result.setAccessHash( map.value("accessHash").value<qint64>() );
+        result.setUserId( map.value("userId").value<qint32>() );
+        result.setDate( map.value("date").value<qint32>() );
+        result.setDuration( map.value("duration").value<qint32>() );
+        result.setMimeType( map.value("mimeType").value<QString>() );
+        result.setSize( map.value("size").value<qint32>() );
+        result.setDcId( map.value("dcId").value<qint32>() );
+        return result;
+    }
+    return result;
+}
+
+inline QByteArray Audio::getHash(QCryptographicHash::Algorithm alg) const {
+    QByteArray data;
+    QDataStream str(&data, QIODevice::WriteOnly);
+    str << *this;
+    return QCryptographicHash::hash(data, alg);
+}
+
+inline QDataStream &operator<<(QDataStream &stream, const Audio &item) {
+    stream << static_cast<uint>(item.classType());
+    switch(item.classType()) {
+    case Audio::typeAudioEmpty:
+        stream << item.id();
+        break;
+    case Audio::typeAudio:
+        stream << item.id();
+        stream << item.accessHash();
+        stream << item.userId();
+        stream << item.date();
+        stream << item.duration();
+        stream << item.mimeType();
+        stream << item.size();
+        stream << item.dcId();
+        break;
+    }
+    return stream;
+}
+
+inline QDataStream &operator>>(QDataStream &stream, Audio &item) {
+    uint type = 0;
+    stream >> type;
+    item.setClassType(static_cast<Audio::AudioClassType>(type));
+    switch(type) {
+    case Audio::typeAudioEmpty: {
+        qint64 m_id;
+        stream >> m_id;
+        item.setId(m_id);
+    }
+        break;
+    case Audio::typeAudio: {
+        qint64 m_id;
+        stream >> m_id;
+        item.setId(m_id);
+        qint64 m_access_hash;
+        stream >> m_access_hash;
+        item.setAccessHash(m_access_hash);
+        qint32 m_user_id;
+        stream >> m_user_id;
+        item.setUserId(m_user_id);
+        qint32 m_date;
+        stream >> m_date;
+        item.setDate(m_date);
+        qint32 m_duration;
+        stream >> m_duration;
+        item.setDuration(m_duration);
+        QString m_mime_type;
+        stream >> m_mime_type;
+        item.setMimeType(m_mime_type);
+        qint32 m_size;
+        stream >> m_size;
+        item.setSize(m_size);
+        qint32 m_dc_id;
+        stream >> m_dc_id;
+        item.setDcId(m_dc_id);
+    }
+        break;
+    }
+    return stream;
+}
+
 
 #endif // LQTG_TYPE_AUDIO

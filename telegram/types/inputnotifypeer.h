@@ -6,13 +6,22 @@
 #define LQTG_TYPE_INPUTNOTIFYPEER
 
 #include "telegramtypeobject.h"
+
+#include <QMetaType>
+#include <QVariant>
+#include "core/inboundpkt.h"
+#include "core/outboundpkt.h"
+#include "../coretypes.h"
+
+#include <QDataStream>
+
 #include "inputgeochat.h"
 #include "inputpeer.h"
 
 class LIBQTELEGRAMSHARED_EXPORT InputNotifyPeer : public TelegramTypeObject
 {
 public:
-    enum InputNotifyPeerType {
+    enum InputNotifyPeerClassType {
         typeInputNotifyPeer = 0xb8bc5b0c,
         typeInputNotifyUsers = 0x193b4417,
         typeInputNotifyChats = 0x4a95e84e,
@@ -20,8 +29,9 @@ public:
         typeInputNotifyGeoChatPeer = 0x4d8ddec8
     };
 
-    InputNotifyPeer(InputNotifyPeerType classType = typeInputNotifyPeer, InboundPkt *in = 0);
+    InputNotifyPeer(InputNotifyPeerClassType classType = typeInputNotifyPeer, InboundPkt *in = 0);
     InputNotifyPeer(InboundPkt *in);
+    InputNotifyPeer(const Null&);
     virtual ~InputNotifyPeer();
 
     void setPeerInputGeoChat(const InputGeoChat &peerInputGeoChat);
@@ -30,18 +40,289 @@ public:
     void setPeerInput(const InputPeer &peerInput);
     InputPeer peerInput() const;
 
-    void setClassType(InputNotifyPeerType classType);
-    InputNotifyPeerType classType() const;
+    void setClassType(InputNotifyPeerClassType classType);
+    InputNotifyPeerClassType classType() const;
 
     bool fetch(InboundPkt *in);
     bool push(OutboundPkt *out) const;
 
-    bool operator ==(const InputNotifyPeer &b);
+    QMap<QString, QVariant> toMap() const;
+    static InputNotifyPeer fromMap(const QMap<QString, QVariant> &map);
+
+    bool operator ==(const InputNotifyPeer &b) const;
+
+    bool operator==(bool stt) const { return isNull() != stt; }
+    bool operator!=(bool stt) const { return !operator ==(stt); }
+
+    QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
     InputGeoChat m_peerInputGeoChat;
     InputPeer m_peerInput;
-    InputNotifyPeerType m_classType;
+    InputNotifyPeerClassType m_classType;
 };
+
+Q_DECLARE_METATYPE(InputNotifyPeer)
+
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator<<(QDataStream &stream, const InputNotifyPeer &item);
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, InputNotifyPeer &item);
+
+inline InputNotifyPeer::InputNotifyPeer(InputNotifyPeerClassType classType, InboundPkt *in) :
+    m_classType(classType)
+{
+    if(in) fetch(in);
+}
+
+inline InputNotifyPeer::InputNotifyPeer(InboundPkt *in) :
+    m_classType(typeInputNotifyPeer)
+{
+    fetch(in);
+}
+
+inline InputNotifyPeer::InputNotifyPeer(const Null &null) :
+    TelegramTypeObject(null),
+    m_classType(typeInputNotifyPeer)
+{
+}
+
+inline InputNotifyPeer::~InputNotifyPeer() {
+}
+
+inline void InputNotifyPeer::setPeerInputGeoChat(const InputGeoChat &peerInputGeoChat) {
+    m_peerInputGeoChat = peerInputGeoChat;
+}
+
+inline InputGeoChat InputNotifyPeer::peerInputGeoChat() const {
+    return m_peerInputGeoChat;
+}
+
+inline void InputNotifyPeer::setPeerInput(const InputPeer &peerInput) {
+    m_peerInput = peerInput;
+}
+
+inline InputPeer InputNotifyPeer::peerInput() const {
+    return m_peerInput;
+}
+
+inline bool InputNotifyPeer::operator ==(const InputNotifyPeer &b) const {
+    return m_classType == b.m_classType &&
+           m_peerInputGeoChat == b.m_peerInputGeoChat &&
+           m_peerInput == b.m_peerInput;
+}
+
+inline void InputNotifyPeer::setClassType(InputNotifyPeer::InputNotifyPeerClassType classType) {
+    m_classType = classType;
+}
+
+inline InputNotifyPeer::InputNotifyPeerClassType InputNotifyPeer::classType() const {
+    return m_classType;
+}
+
+inline bool InputNotifyPeer::fetch(InboundPkt *in) {
+    LQTG_FETCH_LOG;
+    int x = in->fetchInt();
+    switch(x) {
+    case typeInputNotifyPeer: {
+        m_peerInput.fetch(in);
+        m_classType = static_cast<InputNotifyPeerClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeInputNotifyUsers: {
+        m_classType = static_cast<InputNotifyPeerClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeInputNotifyChats: {
+        m_classType = static_cast<InputNotifyPeerClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeInputNotifyAll: {
+        m_classType = static_cast<InputNotifyPeerClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeInputNotifyGeoChatPeer: {
+        m_peerInputGeoChat.fetch(in);
+        m_classType = static_cast<InputNotifyPeerClassType>(x);
+        return true;
+    }
+        break;
+    
+    default:
+        LQTG_FETCH_ASSERT;
+        return false;
+    }
+}
+
+inline bool InputNotifyPeer::push(OutboundPkt *out) const {
+    out->appendInt(m_classType);
+    switch(m_classType) {
+    case typeInputNotifyPeer: {
+        m_peerInput.push(out);
+        return true;
+    }
+        break;
+    
+    case typeInputNotifyUsers: {
+        return true;
+    }
+        break;
+    
+    case typeInputNotifyChats: {
+        return true;
+    }
+        break;
+    
+    case typeInputNotifyAll: {
+        return true;
+    }
+        break;
+    
+    case typeInputNotifyGeoChatPeer: {
+        m_peerInputGeoChat.push(out);
+        return true;
+    }
+        break;
+    
+    default:
+        return false;
+    }
+}
+
+inline QMap<QString, QVariant> InputNotifyPeer::toMap() const {
+    QMap<QString, QVariant> result;
+    switch(static_cast<int>(m_classType)) {
+    case typeInputNotifyPeer: {
+        result["classType"] = "InputNotifyPeer::typeInputNotifyPeer";
+        result["peerInput"] = m_peerInput.toMap();
+        return result;
+    }
+        break;
+    
+    case typeInputNotifyUsers: {
+        result["classType"] = "InputNotifyPeer::typeInputNotifyUsers";
+        return result;
+    }
+        break;
+    
+    case typeInputNotifyChats: {
+        result["classType"] = "InputNotifyPeer::typeInputNotifyChats";
+        return result;
+    }
+        break;
+    
+    case typeInputNotifyAll: {
+        result["classType"] = "InputNotifyPeer::typeInputNotifyAll";
+        return result;
+    }
+        break;
+    
+    case typeInputNotifyGeoChatPeer: {
+        result["classType"] = "InputNotifyPeer::typeInputNotifyGeoChatPeer";
+        result["peerInputGeoChat"] = m_peerInputGeoChat.toMap();
+        return result;
+    }
+        break;
+    
+    default:
+        return result;
+    }
+}
+
+inline InputNotifyPeer InputNotifyPeer::fromMap(const QMap<QString, QVariant> &map) {
+    InputNotifyPeer result;
+    if(map.value("classType").toString() == "InputNotifyPeer::typeInputNotifyPeer") {
+        result.setClassType(typeInputNotifyPeer);
+        result.setPeerInput( InputPeer::fromMap(map.value("peerInput").toMap()) );
+        return result;
+    }
+    if(map.value("classType").toString() == "InputNotifyPeer::typeInputNotifyUsers") {
+        result.setClassType(typeInputNotifyUsers);
+        return result;
+    }
+    if(map.value("classType").toString() == "InputNotifyPeer::typeInputNotifyChats") {
+        result.setClassType(typeInputNotifyChats);
+        return result;
+    }
+    if(map.value("classType").toString() == "InputNotifyPeer::typeInputNotifyAll") {
+        result.setClassType(typeInputNotifyAll);
+        return result;
+    }
+    if(map.value("classType").toString() == "InputNotifyPeer::typeInputNotifyGeoChatPeer") {
+        result.setClassType(typeInputNotifyGeoChatPeer);
+        result.setPeerInputGeoChat( InputGeoChat::fromMap(map.value("peerInputGeoChat").toMap()) );
+        return result;
+    }
+    return result;
+}
+
+inline QByteArray InputNotifyPeer::getHash(QCryptographicHash::Algorithm alg) const {
+    QByteArray data;
+    QDataStream str(&data, QIODevice::WriteOnly);
+    str << *this;
+    return QCryptographicHash::hash(data, alg);
+}
+
+inline QDataStream &operator<<(QDataStream &stream, const InputNotifyPeer &item) {
+    stream << static_cast<uint>(item.classType());
+    switch(item.classType()) {
+    case InputNotifyPeer::typeInputNotifyPeer:
+        stream << item.peerInput();
+        break;
+    case InputNotifyPeer::typeInputNotifyUsers:
+        
+        break;
+    case InputNotifyPeer::typeInputNotifyChats:
+        
+        break;
+    case InputNotifyPeer::typeInputNotifyAll:
+        
+        break;
+    case InputNotifyPeer::typeInputNotifyGeoChatPeer:
+        stream << item.peerInputGeoChat();
+        break;
+    }
+    return stream;
+}
+
+inline QDataStream &operator>>(QDataStream &stream, InputNotifyPeer &item) {
+    uint type = 0;
+    stream >> type;
+    item.setClassType(static_cast<InputNotifyPeer::InputNotifyPeerClassType>(type));
+    switch(type) {
+    case InputNotifyPeer::typeInputNotifyPeer: {
+        InputPeer m_peer_Input;
+        stream >> m_peer_Input;
+        item.setPeerInput(m_peer_Input);
+    }
+        break;
+    case InputNotifyPeer::typeInputNotifyUsers: {
+        
+    }
+        break;
+    case InputNotifyPeer::typeInputNotifyChats: {
+        
+    }
+        break;
+    case InputNotifyPeer::typeInputNotifyAll: {
+        
+    }
+        break;
+    case InputNotifyPeer::typeInputNotifyGeoChatPeer: {
+        InputGeoChat m_peer_InputGeoChat;
+        stream >> m_peer_InputGeoChat;
+        item.setPeerInputGeoChat(m_peer_InputGeoChat);
+    }
+        break;
+    }
+    return stream;
+}
+
 
 #endif // LQTG_TYPE_INPUTNOTIFYPEER

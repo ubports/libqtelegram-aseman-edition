@@ -6,6 +6,15 @@
 #define LQTG_TYPE_CHATFULL
 
 #include "telegramtypeobject.h"
+
+#include <QMetaType>
+#include <QVariant>
+#include "core/inboundpkt.h"
+#include "core/outboundpkt.h"
+#include "../coretypes.h"
+
+#include <QDataStream>
+
 #include "photo.h"
 #include "exportedchatinvite.h"
 #include <QtGlobal>
@@ -15,12 +24,13 @@
 class LIBQTELEGRAMSHARED_EXPORT ChatFull : public TelegramTypeObject
 {
 public:
-    enum ChatFullType {
+    enum ChatFullClassType {
         typeChatFull = 0xcade0791
     };
 
-    ChatFull(ChatFullType classType = typeChatFull, InboundPkt *in = 0);
+    ChatFull(ChatFullClassType classType = typeChatFull, InboundPkt *in = 0);
     ChatFull(InboundPkt *in);
+    ChatFull(const Null&);
     virtual ~ChatFull();
 
     void setChatPhoto(const Photo &chatPhoto);
@@ -38,13 +48,21 @@ public:
     void setParticipants(const ChatParticipants &participants);
     ChatParticipants participants() const;
 
-    void setClassType(ChatFullType classType);
-    ChatFullType classType() const;
+    void setClassType(ChatFullClassType classType);
+    ChatFullClassType classType() const;
 
     bool fetch(InboundPkt *in);
     bool push(OutboundPkt *out) const;
 
-    bool operator ==(const ChatFull &b);
+    QMap<QString, QVariant> toMap() const;
+    static ChatFull fromMap(const QMap<QString, QVariant> &map);
+
+    bool operator ==(const ChatFull &b) const;
+
+    bool operator==(bool stt) const { return isNull() != stt; }
+    bool operator!=(bool stt) const { return !operator ==(stt); }
+
+    QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
     Photo m_chatPhoto;
@@ -52,7 +70,214 @@ private:
     qint32 m_id;
     PeerNotifySettings m_notifySettings;
     ChatParticipants m_participants;
-    ChatFullType m_classType;
+    ChatFullClassType m_classType;
 };
+
+Q_DECLARE_METATYPE(ChatFull)
+
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator<<(QDataStream &stream, const ChatFull &item);
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, ChatFull &item);
+
+inline ChatFull::ChatFull(ChatFullClassType classType, InboundPkt *in) :
+    m_id(0),
+    m_classType(classType)
+{
+    if(in) fetch(in);
+}
+
+inline ChatFull::ChatFull(InboundPkt *in) :
+    m_id(0),
+    m_classType(typeChatFull)
+{
+    fetch(in);
+}
+
+inline ChatFull::ChatFull(const Null &null) :
+    TelegramTypeObject(null),
+    m_id(0),
+    m_classType(typeChatFull)
+{
+}
+
+inline ChatFull::~ChatFull() {
+}
+
+inline void ChatFull::setChatPhoto(const Photo &chatPhoto) {
+    m_chatPhoto = chatPhoto;
+}
+
+inline Photo ChatFull::chatPhoto() const {
+    return m_chatPhoto;
+}
+
+inline void ChatFull::setExportedInvite(const ExportedChatInvite &exportedInvite) {
+    m_exportedInvite = exportedInvite;
+}
+
+inline ExportedChatInvite ChatFull::exportedInvite() const {
+    return m_exportedInvite;
+}
+
+inline void ChatFull::setId(qint32 id) {
+    m_id = id;
+}
+
+inline qint32 ChatFull::id() const {
+    return m_id;
+}
+
+inline void ChatFull::setNotifySettings(const PeerNotifySettings &notifySettings) {
+    m_notifySettings = notifySettings;
+}
+
+inline PeerNotifySettings ChatFull::notifySettings() const {
+    return m_notifySettings;
+}
+
+inline void ChatFull::setParticipants(const ChatParticipants &participants) {
+    m_participants = participants;
+}
+
+inline ChatParticipants ChatFull::participants() const {
+    return m_participants;
+}
+
+inline bool ChatFull::operator ==(const ChatFull &b) const {
+    return m_classType == b.m_classType &&
+           m_chatPhoto == b.m_chatPhoto &&
+           m_exportedInvite == b.m_exportedInvite &&
+           m_id == b.m_id &&
+           m_notifySettings == b.m_notifySettings &&
+           m_participants == b.m_participants;
+}
+
+inline void ChatFull::setClassType(ChatFull::ChatFullClassType classType) {
+    m_classType = classType;
+}
+
+inline ChatFull::ChatFullClassType ChatFull::classType() const {
+    return m_classType;
+}
+
+inline bool ChatFull::fetch(InboundPkt *in) {
+    LQTG_FETCH_LOG;
+    int x = in->fetchInt();
+    switch(x) {
+    case typeChatFull: {
+        m_id = in->fetchInt();
+        m_participants.fetch(in);
+        m_chatPhoto.fetch(in);
+        m_notifySettings.fetch(in);
+        m_exportedInvite.fetch(in);
+        m_classType = static_cast<ChatFullClassType>(x);
+        return true;
+    }
+        break;
+    
+    default:
+        LQTG_FETCH_ASSERT;
+        return false;
+    }
+}
+
+inline bool ChatFull::push(OutboundPkt *out) const {
+    out->appendInt(m_classType);
+    switch(m_classType) {
+    case typeChatFull: {
+        out->appendInt(m_id);
+        m_participants.push(out);
+        m_chatPhoto.push(out);
+        m_notifySettings.push(out);
+        m_exportedInvite.push(out);
+        return true;
+    }
+        break;
+    
+    default:
+        return false;
+    }
+}
+
+inline QMap<QString, QVariant> ChatFull::toMap() const {
+    QMap<QString, QVariant> result;
+    switch(static_cast<int>(m_classType)) {
+    case typeChatFull: {
+        result["classType"] = "ChatFull::typeChatFull";
+        result["id"] = QVariant::fromValue<qint32>(id());
+        result["participants"] = m_participants.toMap();
+        result["chatPhoto"] = m_chatPhoto.toMap();
+        result["notifySettings"] = m_notifySettings.toMap();
+        result["exportedInvite"] = m_exportedInvite.toMap();
+        return result;
+    }
+        break;
+    
+    default:
+        return result;
+    }
+}
+
+inline ChatFull ChatFull::fromMap(const QMap<QString, QVariant> &map) {
+    ChatFull result;
+    if(map.value("classType").toString() == "ChatFull::typeChatFull") {
+        result.setClassType(typeChatFull);
+        result.setId( map.value("id").value<qint32>() );
+        result.setParticipants( ChatParticipants::fromMap(map.value("participants").toMap()) );
+        result.setChatPhoto( Photo::fromMap(map.value("chatPhoto").toMap()) );
+        result.setNotifySettings( PeerNotifySettings::fromMap(map.value("notifySettings").toMap()) );
+        result.setExportedInvite( ExportedChatInvite::fromMap(map.value("exportedInvite").toMap()) );
+        return result;
+    }
+    return result;
+}
+
+inline QByteArray ChatFull::getHash(QCryptographicHash::Algorithm alg) const {
+    QByteArray data;
+    QDataStream str(&data, QIODevice::WriteOnly);
+    str << *this;
+    return QCryptographicHash::hash(data, alg);
+}
+
+inline QDataStream &operator<<(QDataStream &stream, const ChatFull &item) {
+    stream << static_cast<uint>(item.classType());
+    switch(item.classType()) {
+    case ChatFull::typeChatFull:
+        stream << item.id();
+        stream << item.participants();
+        stream << item.chatPhoto();
+        stream << item.notifySettings();
+        stream << item.exportedInvite();
+        break;
+    }
+    return stream;
+}
+
+inline QDataStream &operator>>(QDataStream &stream, ChatFull &item) {
+    uint type = 0;
+    stream >> type;
+    item.setClassType(static_cast<ChatFull::ChatFullClassType>(type));
+    switch(type) {
+    case ChatFull::typeChatFull: {
+        qint32 m_id;
+        stream >> m_id;
+        item.setId(m_id);
+        ChatParticipants m_participants;
+        stream >> m_participants;
+        item.setParticipants(m_participants);
+        Photo m_chat_photo;
+        stream >> m_chat_photo;
+        item.setChatPhoto(m_chat_photo);
+        PeerNotifySettings m_notify_settings;
+        stream >> m_notify_settings;
+        item.setNotifySettings(m_notify_settings);
+        ExportedChatInvite m_exported_invite;
+        stream >> m_exported_invite;
+        item.setExportedInvite(m_exported_invite);
+    }
+        break;
+    }
+    return stream;
+}
+
 
 #endif // LQTG_TYPE_CHATFULL

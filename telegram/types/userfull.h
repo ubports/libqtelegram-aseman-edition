@@ -6,6 +6,15 @@
 #define LQTG_TYPE_USERFULL
 
 #include "telegramtypeobject.h"
+
+#include <QMetaType>
+#include <QVariant>
+#include "core/inboundpkt.h"
+#include "core/outboundpkt.h"
+#include "../coretypes.h"
+
+#include <QDataStream>
+
 #include "contactslink.h"
 #include "peernotifysettings.h"
 #include "photo.h"
@@ -15,12 +24,13 @@
 class LIBQTELEGRAMSHARED_EXPORT UserFull : public TelegramTypeObject
 {
 public:
-    enum UserFullType {
+    enum UserFullClassType {
         typeUserFull = 0x771095da
     };
 
-    UserFull(UserFullType classType = typeUserFull, InboundPkt *in = 0);
+    UserFull(UserFullClassType classType = typeUserFull, InboundPkt *in = 0);
     UserFull(InboundPkt *in);
+    UserFull(const Null&);
     virtual ~UserFull();
 
     void setBlocked(bool blocked);
@@ -44,13 +54,21 @@ public:
     void setUser(const User &user);
     User user() const;
 
-    void setClassType(UserFullType classType);
-    UserFullType classType() const;
+    void setClassType(UserFullClassType classType);
+    UserFullClassType classType() const;
 
     bool fetch(InboundPkt *in);
     bool push(OutboundPkt *out) const;
 
-    bool operator ==(const UserFull &b);
+    QMap<QString, QVariant> toMap() const;
+    static UserFull fromMap(const QMap<QString, QVariant> &map);
+
+    bool operator ==(const UserFull &b) const;
+
+    bool operator==(bool stt) const { return isNull() != stt; }
+    bool operator!=(bool stt) const { return !operator ==(stt); }
+
+    QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
     bool m_blocked;
@@ -60,7 +78,248 @@ private:
     QString m_realFirstName;
     QString m_realLastName;
     User m_user;
-    UserFullType m_classType;
+    UserFullClassType m_classType;
 };
+
+Q_DECLARE_METATYPE(UserFull)
+
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator<<(QDataStream &stream, const UserFull &item);
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, UserFull &item);
+
+inline UserFull::UserFull(UserFullClassType classType, InboundPkt *in) :
+    m_blocked(false),
+    m_classType(classType)
+{
+    if(in) fetch(in);
+}
+
+inline UserFull::UserFull(InboundPkt *in) :
+    m_blocked(false),
+    m_classType(typeUserFull)
+{
+    fetch(in);
+}
+
+inline UserFull::UserFull(const Null &null) :
+    TelegramTypeObject(null),
+    m_blocked(false),
+    m_classType(typeUserFull)
+{
+}
+
+inline UserFull::~UserFull() {
+}
+
+inline void UserFull::setBlocked(bool blocked) {
+    m_blocked = blocked;
+}
+
+inline bool UserFull::blocked() const {
+    return m_blocked;
+}
+
+inline void UserFull::setLink(const ContactsLink &link) {
+    m_link = link;
+}
+
+inline ContactsLink UserFull::link() const {
+    return m_link;
+}
+
+inline void UserFull::setNotifySettings(const PeerNotifySettings &notifySettings) {
+    m_notifySettings = notifySettings;
+}
+
+inline PeerNotifySettings UserFull::notifySettings() const {
+    return m_notifySettings;
+}
+
+inline void UserFull::setProfilePhoto(const Photo &profilePhoto) {
+    m_profilePhoto = profilePhoto;
+}
+
+inline Photo UserFull::profilePhoto() const {
+    return m_profilePhoto;
+}
+
+inline void UserFull::setRealFirstName(const QString &realFirstName) {
+    m_realFirstName = realFirstName;
+}
+
+inline QString UserFull::realFirstName() const {
+    return m_realFirstName;
+}
+
+inline void UserFull::setRealLastName(const QString &realLastName) {
+    m_realLastName = realLastName;
+}
+
+inline QString UserFull::realLastName() const {
+    return m_realLastName;
+}
+
+inline void UserFull::setUser(const User &user) {
+    m_user = user;
+}
+
+inline User UserFull::user() const {
+    return m_user;
+}
+
+inline bool UserFull::operator ==(const UserFull &b) const {
+    return m_classType == b.m_classType &&
+           m_blocked == b.m_blocked &&
+           m_link == b.m_link &&
+           m_notifySettings == b.m_notifySettings &&
+           m_profilePhoto == b.m_profilePhoto &&
+           m_realFirstName == b.m_realFirstName &&
+           m_realLastName == b.m_realLastName &&
+           m_user == b.m_user;
+}
+
+inline void UserFull::setClassType(UserFull::UserFullClassType classType) {
+    m_classType = classType;
+}
+
+inline UserFull::UserFullClassType UserFull::classType() const {
+    return m_classType;
+}
+
+inline bool UserFull::fetch(InboundPkt *in) {
+    LQTG_FETCH_LOG;
+    int x = in->fetchInt();
+    switch(x) {
+    case typeUserFull: {
+        m_user.fetch(in);
+        m_link.fetch(in);
+        m_profilePhoto.fetch(in);
+        m_notifySettings.fetch(in);
+        m_blocked = in->fetchBool();
+        m_realFirstName = in->fetchQString();
+        m_realLastName = in->fetchQString();
+        m_classType = static_cast<UserFullClassType>(x);
+        return true;
+    }
+        break;
+    
+    default:
+        LQTG_FETCH_ASSERT;
+        return false;
+    }
+}
+
+inline bool UserFull::push(OutboundPkt *out) const {
+    out->appendInt(m_classType);
+    switch(m_classType) {
+    case typeUserFull: {
+        m_user.push(out);
+        m_link.push(out);
+        m_profilePhoto.push(out);
+        m_notifySettings.push(out);
+        out->appendBool(m_blocked);
+        out->appendQString(m_realFirstName);
+        out->appendQString(m_realLastName);
+        return true;
+    }
+        break;
+    
+    default:
+        return false;
+    }
+}
+
+inline QMap<QString, QVariant> UserFull::toMap() const {
+    QMap<QString, QVariant> result;
+    switch(static_cast<int>(m_classType)) {
+    case typeUserFull: {
+        result["classType"] = "UserFull::typeUserFull";
+        result["user"] = m_user.toMap();
+        result["link"] = m_link.toMap();
+        result["profilePhoto"] = m_profilePhoto.toMap();
+        result["notifySettings"] = m_notifySettings.toMap();
+        result["blocked"] = QVariant::fromValue<bool>(blocked());
+        result["realFirstName"] = QVariant::fromValue<QString>(realFirstName());
+        result["realLastName"] = QVariant::fromValue<QString>(realLastName());
+        return result;
+    }
+        break;
+    
+    default:
+        return result;
+    }
+}
+
+inline UserFull UserFull::fromMap(const QMap<QString, QVariant> &map) {
+    UserFull result;
+    if(map.value("classType").toString() == "UserFull::typeUserFull") {
+        result.setClassType(typeUserFull);
+        result.setUser( User::fromMap(map.value("user").toMap()) );
+        result.setLink( ContactsLink::fromMap(map.value("link").toMap()) );
+        result.setProfilePhoto( Photo::fromMap(map.value("profilePhoto").toMap()) );
+        result.setNotifySettings( PeerNotifySettings::fromMap(map.value("notifySettings").toMap()) );
+        result.setBlocked( map.value("blocked").value<bool>() );
+        result.setRealFirstName( map.value("realFirstName").value<QString>() );
+        result.setRealLastName( map.value("realLastName").value<QString>() );
+        return result;
+    }
+    return result;
+}
+
+inline QByteArray UserFull::getHash(QCryptographicHash::Algorithm alg) const {
+    QByteArray data;
+    QDataStream str(&data, QIODevice::WriteOnly);
+    str << *this;
+    return QCryptographicHash::hash(data, alg);
+}
+
+inline QDataStream &operator<<(QDataStream &stream, const UserFull &item) {
+    stream << static_cast<uint>(item.classType());
+    switch(item.classType()) {
+    case UserFull::typeUserFull:
+        stream << item.user();
+        stream << item.link();
+        stream << item.profilePhoto();
+        stream << item.notifySettings();
+        stream << item.blocked();
+        stream << item.realFirstName();
+        stream << item.realLastName();
+        break;
+    }
+    return stream;
+}
+
+inline QDataStream &operator>>(QDataStream &stream, UserFull &item) {
+    uint type = 0;
+    stream >> type;
+    item.setClassType(static_cast<UserFull::UserFullClassType>(type));
+    switch(type) {
+    case UserFull::typeUserFull: {
+        User m_user;
+        stream >> m_user;
+        item.setUser(m_user);
+        ContactsLink m_link;
+        stream >> m_link;
+        item.setLink(m_link);
+        Photo m_profile_photo;
+        stream >> m_profile_photo;
+        item.setProfilePhoto(m_profile_photo);
+        PeerNotifySettings m_notify_settings;
+        stream >> m_notify_settings;
+        item.setNotifySettings(m_notify_settings);
+        bool m_blocked;
+        stream >> m_blocked;
+        item.setBlocked(m_blocked);
+        QString m_real_first_name;
+        stream >> m_real_first_name;
+        item.setRealFirstName(m_real_first_name);
+        QString m_real_last_name;
+        stream >> m_real_last_name;
+        item.setRealLastName(m_real_last_name);
+    }
+        break;
+    }
+    return stream;
+}
+
 
 #endif // LQTG_TYPE_USERFULL

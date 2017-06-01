@@ -6,6 +6,15 @@
 #define LQTG_TYPE_CHATPARTICIPANTS
 
 #include "telegramtypeobject.h"
+
+#include <QMetaType>
+#include <QVariant>
+#include "core/inboundpkt.h"
+#include "core/outboundpkt.h"
+#include "../coretypes.h"
+
+#include <QDataStream>
+
 #include <QtGlobal>
 #include <QList>
 #include "chatparticipant.h"
@@ -13,13 +22,14 @@
 class LIBQTELEGRAMSHARED_EXPORT ChatParticipants : public TelegramTypeObject
 {
 public:
-    enum ChatParticipantsType {
+    enum ChatParticipantsClassType {
         typeChatParticipantsForbidden = 0xfd2bb8a,
         typeChatParticipants = 0x7841b415
     };
 
-    ChatParticipants(ChatParticipantsType classType = typeChatParticipantsForbidden, InboundPkt *in = 0);
+    ChatParticipants(ChatParticipantsClassType classType = typeChatParticipantsForbidden, InboundPkt *in = 0);
     ChatParticipants(InboundPkt *in);
+    ChatParticipants(const Null&);
     virtual ~ChatParticipants();
 
     void setAdminId(qint32 adminId);
@@ -34,20 +44,276 @@ public:
     void setVersion(qint32 version);
     qint32 version() const;
 
-    void setClassType(ChatParticipantsType classType);
-    ChatParticipantsType classType() const;
+    void setClassType(ChatParticipantsClassType classType);
+    ChatParticipantsClassType classType() const;
 
     bool fetch(InboundPkt *in);
     bool push(OutboundPkt *out) const;
 
-    bool operator ==(const ChatParticipants &b);
+    QMap<QString, QVariant> toMap() const;
+    static ChatParticipants fromMap(const QMap<QString, QVariant> &map);
+
+    bool operator ==(const ChatParticipants &b) const;
+
+    bool operator==(bool stt) const { return isNull() != stt; }
+    bool operator!=(bool stt) const { return !operator ==(stt); }
+
+    QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
     qint32 m_adminId;
     qint32 m_chatId;
     QList<ChatParticipant> m_participants;
     qint32 m_version;
-    ChatParticipantsType m_classType;
+    ChatParticipantsClassType m_classType;
 };
+
+Q_DECLARE_METATYPE(ChatParticipants)
+
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator<<(QDataStream &stream, const ChatParticipants &item);
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, ChatParticipants &item);
+
+inline ChatParticipants::ChatParticipants(ChatParticipantsClassType classType, InboundPkt *in) :
+    m_adminId(0),
+    m_chatId(0),
+    m_version(0),
+    m_classType(classType)
+{
+    if(in) fetch(in);
+}
+
+inline ChatParticipants::ChatParticipants(InboundPkt *in) :
+    m_adminId(0),
+    m_chatId(0),
+    m_version(0),
+    m_classType(typeChatParticipantsForbidden)
+{
+    fetch(in);
+}
+
+inline ChatParticipants::ChatParticipants(const Null &null) :
+    TelegramTypeObject(null),
+    m_adminId(0),
+    m_chatId(0),
+    m_version(0),
+    m_classType(typeChatParticipantsForbidden)
+{
+}
+
+inline ChatParticipants::~ChatParticipants() {
+}
+
+inline void ChatParticipants::setAdminId(qint32 adminId) {
+    m_adminId = adminId;
+}
+
+inline qint32 ChatParticipants::adminId() const {
+    return m_adminId;
+}
+
+inline void ChatParticipants::setChatId(qint32 chatId) {
+    m_chatId = chatId;
+}
+
+inline qint32 ChatParticipants::chatId() const {
+    return m_chatId;
+}
+
+inline void ChatParticipants::setParticipants(const QList<ChatParticipant> &participants) {
+    m_participants = participants;
+}
+
+inline QList<ChatParticipant> ChatParticipants::participants() const {
+    return m_participants;
+}
+
+inline void ChatParticipants::setVersion(qint32 version) {
+    m_version = version;
+}
+
+inline qint32 ChatParticipants::version() const {
+    return m_version;
+}
+
+inline bool ChatParticipants::operator ==(const ChatParticipants &b) const {
+    return m_classType == b.m_classType &&
+           m_adminId == b.m_adminId &&
+           m_chatId == b.m_chatId &&
+           m_participants == b.m_participants &&
+           m_version == b.m_version;
+}
+
+inline void ChatParticipants::setClassType(ChatParticipants::ChatParticipantsClassType classType) {
+    m_classType = classType;
+}
+
+inline ChatParticipants::ChatParticipantsClassType ChatParticipants::classType() const {
+    return m_classType;
+}
+
+inline bool ChatParticipants::fetch(InboundPkt *in) {
+    LQTG_FETCH_LOG;
+    int x = in->fetchInt();
+    switch(x) {
+    case typeChatParticipantsForbidden: {
+        m_chatId = in->fetchInt();
+        m_classType = static_cast<ChatParticipantsClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeChatParticipants: {
+        m_chatId = in->fetchInt();
+        m_adminId = in->fetchInt();
+        if(in->fetchInt() != (qint32)CoreTypes::typeVector) return false;
+        qint32 m_participants_length = in->fetchInt();
+        m_participants.clear();
+        for (qint32 i = 0; i < m_participants_length; i++) {
+            ChatParticipant type;
+            type.fetch(in);
+            m_participants.append(type);
+        }
+        m_version = in->fetchInt();
+        m_classType = static_cast<ChatParticipantsClassType>(x);
+        return true;
+    }
+        break;
+    
+    default:
+        LQTG_FETCH_ASSERT;
+        return false;
+    }
+}
+
+inline bool ChatParticipants::push(OutboundPkt *out) const {
+    out->appendInt(m_classType);
+    switch(m_classType) {
+    case typeChatParticipantsForbidden: {
+        out->appendInt(m_chatId);
+        return true;
+    }
+        break;
+    
+    case typeChatParticipants: {
+        out->appendInt(m_chatId);
+        out->appendInt(m_adminId);
+        out->appendInt(CoreTypes::typeVector);
+        out->appendInt(m_participants.count());
+        for (qint32 i = 0; i < m_participants.count(); i++) {
+            m_participants[i].push(out);
+        }
+        out->appendInt(m_version);
+        return true;
+    }
+        break;
+    
+    default:
+        return false;
+    }
+}
+
+inline QMap<QString, QVariant> ChatParticipants::toMap() const {
+    QMap<QString, QVariant> result;
+    switch(static_cast<int>(m_classType)) {
+    case typeChatParticipantsForbidden: {
+        result["classType"] = "ChatParticipants::typeChatParticipantsForbidden";
+        result["chatId"] = QVariant::fromValue<qint32>(chatId());
+        return result;
+    }
+        break;
+    
+    case typeChatParticipants: {
+        result["classType"] = "ChatParticipants::typeChatParticipants";
+        result["chatId"] = QVariant::fromValue<qint32>(chatId());
+        result["adminId"] = QVariant::fromValue<qint32>(adminId());
+        QList<QVariant> _participants;
+        Q_FOREACH(const ChatParticipant &m__type, m_participants)
+            _participants << m__type.toMap();
+        result["participants"] = _participants;
+        result["version"] = QVariant::fromValue<qint32>(version());
+        return result;
+    }
+        break;
+    
+    default:
+        return result;
+    }
+}
+
+inline ChatParticipants ChatParticipants::fromMap(const QMap<QString, QVariant> &map) {
+    ChatParticipants result;
+    if(map.value("classType").toString() == "ChatParticipants::typeChatParticipantsForbidden") {
+        result.setClassType(typeChatParticipantsForbidden);
+        result.setChatId( map.value("chatId").value<qint32>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "ChatParticipants::typeChatParticipants") {
+        result.setClassType(typeChatParticipants);
+        result.setChatId( map.value("chatId").value<qint32>() );
+        result.setAdminId( map.value("adminId").value<qint32>() );
+        QList<QVariant> map_participants = map["participants"].toList();
+        QList<ChatParticipant> _participants;
+        Q_FOREACH(const QVariant &var, map_participants)
+            _participants << ChatParticipant::fromMap(var.toMap());
+        result.setParticipants(_participants);
+        result.setVersion( map.value("version").value<qint32>() );
+        return result;
+    }
+    return result;
+}
+
+inline QByteArray ChatParticipants::getHash(QCryptographicHash::Algorithm alg) const {
+    QByteArray data;
+    QDataStream str(&data, QIODevice::WriteOnly);
+    str << *this;
+    return QCryptographicHash::hash(data, alg);
+}
+
+inline QDataStream &operator<<(QDataStream &stream, const ChatParticipants &item) {
+    stream << static_cast<uint>(item.classType());
+    switch(item.classType()) {
+    case ChatParticipants::typeChatParticipantsForbidden:
+        stream << item.chatId();
+        break;
+    case ChatParticipants::typeChatParticipants:
+        stream << item.chatId();
+        stream << item.adminId();
+        stream << item.participants();
+        stream << item.version();
+        break;
+    }
+    return stream;
+}
+
+inline QDataStream &operator>>(QDataStream &stream, ChatParticipants &item) {
+    uint type = 0;
+    stream >> type;
+    item.setClassType(static_cast<ChatParticipants::ChatParticipantsClassType>(type));
+    switch(type) {
+    case ChatParticipants::typeChatParticipantsForbidden: {
+        qint32 m_chat_id;
+        stream >> m_chat_id;
+        item.setChatId(m_chat_id);
+    }
+        break;
+    case ChatParticipants::typeChatParticipants: {
+        qint32 m_chat_id;
+        stream >> m_chat_id;
+        item.setChatId(m_chat_id);
+        qint32 m_admin_id;
+        stream >> m_admin_id;
+        item.setAdminId(m_admin_id);
+        QList<ChatParticipant> m_participants;
+        stream >> m_participants;
+        item.setParticipants(m_participants);
+        qint32 m_version;
+        stream >> m_version;
+        item.setVersion(m_version);
+    }
+        break;
+    }
+    return stream;
+}
+
 
 #endif // LQTG_TYPE_CHATPARTICIPANTS

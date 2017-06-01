@@ -6,6 +6,15 @@
 #define LQTG_TYPE_MESSAGESSENTMESSAGE
 
 #include "telegramtypeobject.h"
+
+#include <QMetaType>
+#include <QVariant>
+#include "core/inboundpkt.h"
+#include "core/outboundpkt.h"
+#include "../coretypes.h"
+
+#include <QDataStream>
+
 #include <QtGlobal>
 #include <QList>
 #include "contactslink.h"
@@ -14,13 +23,14 @@
 class LIBQTELEGRAMSHARED_EXPORT MessagesSentMessage : public TelegramTypeObject
 {
 public:
-    enum MessagesSentMessageType {
+    enum MessagesSentMessageClassType {
         typeMessagesSentMessage = 0x4c3d47f3,
         typeMessagesSentMessageLink = 0x35a1a663
     };
 
-    MessagesSentMessage(MessagesSentMessageType classType = typeMessagesSentMessage, InboundPkt *in = 0);
+    MessagesSentMessage(MessagesSentMessageClassType classType = typeMessagesSentMessage, InboundPkt *in = 0);
     MessagesSentMessage(InboundPkt *in);
+    MessagesSentMessage(const Null&);
     virtual ~MessagesSentMessage();
 
     void setDate(qint32 date);
@@ -44,13 +54,21 @@ public:
     void setSeq(qint32 seq);
     qint32 seq() const;
 
-    void setClassType(MessagesSentMessageType classType);
-    MessagesSentMessageType classType() const;
+    void setClassType(MessagesSentMessageClassType classType);
+    MessagesSentMessageClassType classType() const;
 
     bool fetch(InboundPkt *in);
     bool push(OutboundPkt *out) const;
 
-    bool operator ==(const MessagesSentMessage &b);
+    QMap<QString, QVariant> toMap() const;
+    static MessagesSentMessage fromMap(const QMap<QString, QVariant> &map);
+
+    bool operator ==(const MessagesSentMessage &b) const;
+
+    bool operator==(bool stt) const { return isNull() != stt; }
+    bool operator!=(bool stt) const { return !operator ==(stt); }
+
+    QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
     qint32 m_date;
@@ -60,7 +78,344 @@ private:
     qint32 m_pts;
     qint32 m_ptsCount;
     qint32 m_seq;
-    MessagesSentMessageType m_classType;
+    MessagesSentMessageClassType m_classType;
 };
+
+Q_DECLARE_METATYPE(MessagesSentMessage)
+
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator<<(QDataStream &stream, const MessagesSentMessage &item);
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, MessagesSentMessage &item);
+
+inline MessagesSentMessage::MessagesSentMessage(MessagesSentMessageClassType classType, InboundPkt *in) :
+    m_date(0),
+    m_id(0),
+    m_pts(0),
+    m_ptsCount(0),
+    m_seq(0),
+    m_classType(classType)
+{
+    if(in) fetch(in);
+}
+
+inline MessagesSentMessage::MessagesSentMessage(InboundPkt *in) :
+    m_date(0),
+    m_id(0),
+    m_pts(0),
+    m_ptsCount(0),
+    m_seq(0),
+    m_classType(typeMessagesSentMessage)
+{
+    fetch(in);
+}
+
+inline MessagesSentMessage::MessagesSentMessage(const Null &null) :
+    TelegramTypeObject(null),
+    m_date(0),
+    m_id(0),
+    m_pts(0),
+    m_ptsCount(0),
+    m_seq(0),
+    m_classType(typeMessagesSentMessage)
+{
+}
+
+inline MessagesSentMessage::~MessagesSentMessage() {
+}
+
+inline void MessagesSentMessage::setDate(qint32 date) {
+    m_date = date;
+}
+
+inline qint32 MessagesSentMessage::date() const {
+    return m_date;
+}
+
+inline void MessagesSentMessage::setId(qint32 id) {
+    m_id = id;
+}
+
+inline qint32 MessagesSentMessage::id() const {
+    return m_id;
+}
+
+inline void MessagesSentMessage::setLinks(const QList<ContactsLink> &links) {
+    m_links = links;
+}
+
+inline QList<ContactsLink> MessagesSentMessage::links() const {
+    return m_links;
+}
+
+inline void MessagesSentMessage::setMedia(const MessageMedia &media) {
+    m_media = media;
+}
+
+inline MessageMedia MessagesSentMessage::media() const {
+    return m_media;
+}
+
+inline void MessagesSentMessage::setPts(qint32 pts) {
+    m_pts = pts;
+}
+
+inline qint32 MessagesSentMessage::pts() const {
+    return m_pts;
+}
+
+inline void MessagesSentMessage::setPtsCount(qint32 ptsCount) {
+    m_ptsCount = ptsCount;
+}
+
+inline qint32 MessagesSentMessage::ptsCount() const {
+    return m_ptsCount;
+}
+
+inline void MessagesSentMessage::setSeq(qint32 seq) {
+    m_seq = seq;
+}
+
+inline qint32 MessagesSentMessage::seq() const {
+    return m_seq;
+}
+
+inline bool MessagesSentMessage::operator ==(const MessagesSentMessage &b) const {
+    return m_classType == b.m_classType &&
+           m_date == b.m_date &&
+           m_id == b.m_id &&
+           m_links == b.m_links &&
+           m_media == b.m_media &&
+           m_pts == b.m_pts &&
+           m_ptsCount == b.m_ptsCount &&
+           m_seq == b.m_seq;
+}
+
+inline void MessagesSentMessage::setClassType(MessagesSentMessage::MessagesSentMessageClassType classType) {
+    m_classType = classType;
+}
+
+inline MessagesSentMessage::MessagesSentMessageClassType MessagesSentMessage::classType() const {
+    return m_classType;
+}
+
+inline bool MessagesSentMessage::fetch(InboundPkt *in) {
+    LQTG_FETCH_LOG;
+    int x = in->fetchInt();
+    switch(x) {
+    case typeMessagesSentMessage: {
+        m_id = in->fetchInt();
+        m_date = in->fetchInt();
+        m_media.fetch(in);
+        m_pts = in->fetchInt();
+        m_ptsCount = in->fetchInt();
+        m_classType = static_cast<MessagesSentMessageClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeMessagesSentMessageLink: {
+        m_id = in->fetchInt();
+        m_date = in->fetchInt();
+        m_media.fetch(in);
+        m_pts = in->fetchInt();
+        m_ptsCount = in->fetchInt();
+        if(in->fetchInt() != (qint32)CoreTypes::typeVector) return false;
+        qint32 m_links_length = in->fetchInt();
+        m_links.clear();
+        for (qint32 i = 0; i < m_links_length; i++) {
+            ContactsLink type;
+            type.fetch(in);
+            m_links.append(type);
+        }
+        m_seq = in->fetchInt();
+        m_classType = static_cast<MessagesSentMessageClassType>(x);
+        return true;
+    }
+        break;
+    
+    default:
+        LQTG_FETCH_ASSERT;
+        return false;
+    }
+}
+
+inline bool MessagesSentMessage::push(OutboundPkt *out) const {
+    out->appendInt(m_classType);
+    switch(m_classType) {
+    case typeMessagesSentMessage: {
+        out->appendInt(m_id);
+        out->appendInt(m_date);
+        m_media.push(out);
+        out->appendInt(m_pts);
+        out->appendInt(m_ptsCount);
+        return true;
+    }
+        break;
+    
+    case typeMessagesSentMessageLink: {
+        out->appendInt(m_id);
+        out->appendInt(m_date);
+        m_media.push(out);
+        out->appendInt(m_pts);
+        out->appendInt(m_ptsCount);
+        out->appendInt(CoreTypes::typeVector);
+        out->appendInt(m_links.count());
+        for (qint32 i = 0; i < m_links.count(); i++) {
+            m_links[i].push(out);
+        }
+        out->appendInt(m_seq);
+        return true;
+    }
+        break;
+    
+    default:
+        return false;
+    }
+}
+
+inline QMap<QString, QVariant> MessagesSentMessage::toMap() const {
+    QMap<QString, QVariant> result;
+    switch(static_cast<int>(m_classType)) {
+    case typeMessagesSentMessage: {
+        result["classType"] = "MessagesSentMessage::typeMessagesSentMessage";
+        result["id"] = QVariant::fromValue<qint32>(id());
+        result["date"] = QVariant::fromValue<qint32>(date());
+        result["media"] = m_media.toMap();
+        result["pts"] = QVariant::fromValue<qint32>(pts());
+        result["ptsCount"] = QVariant::fromValue<qint32>(ptsCount());
+        return result;
+    }
+        break;
+    
+    case typeMessagesSentMessageLink: {
+        result["classType"] = "MessagesSentMessage::typeMessagesSentMessageLink";
+        result["id"] = QVariant::fromValue<qint32>(id());
+        result["date"] = QVariant::fromValue<qint32>(date());
+        result["media"] = m_media.toMap();
+        result["pts"] = QVariant::fromValue<qint32>(pts());
+        result["ptsCount"] = QVariant::fromValue<qint32>(ptsCount());
+        QList<QVariant> _links;
+        Q_FOREACH(const ContactsLink &m__type, m_links)
+            _links << m__type.toMap();
+        result["links"] = _links;
+        result["seq"] = QVariant::fromValue<qint32>(seq());
+        return result;
+    }
+        break;
+    
+    default:
+        return result;
+    }
+}
+
+inline MessagesSentMessage MessagesSentMessage::fromMap(const QMap<QString, QVariant> &map) {
+    MessagesSentMessage result;
+    if(map.value("classType").toString() == "MessagesSentMessage::typeMessagesSentMessage") {
+        result.setClassType(typeMessagesSentMessage);
+        result.setId( map.value("id").value<qint32>() );
+        result.setDate( map.value("date").value<qint32>() );
+        result.setMedia( MessageMedia::fromMap(map.value("media").toMap()) );
+        result.setPts( map.value("pts").value<qint32>() );
+        result.setPtsCount( map.value("ptsCount").value<qint32>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "MessagesSentMessage::typeMessagesSentMessageLink") {
+        result.setClassType(typeMessagesSentMessageLink);
+        result.setId( map.value("id").value<qint32>() );
+        result.setDate( map.value("date").value<qint32>() );
+        result.setMedia( MessageMedia::fromMap(map.value("media").toMap()) );
+        result.setPts( map.value("pts").value<qint32>() );
+        result.setPtsCount( map.value("ptsCount").value<qint32>() );
+        QList<QVariant> map_links = map["links"].toList();
+        QList<ContactsLink> _links;
+        Q_FOREACH(const QVariant &var, map_links)
+            _links << ContactsLink::fromMap(var.toMap());
+        result.setLinks(_links);
+        result.setSeq( map.value("seq").value<qint32>() );
+        return result;
+    }
+    return result;
+}
+
+inline QByteArray MessagesSentMessage::getHash(QCryptographicHash::Algorithm alg) const {
+    QByteArray data;
+    QDataStream str(&data, QIODevice::WriteOnly);
+    str << *this;
+    return QCryptographicHash::hash(data, alg);
+}
+
+inline QDataStream &operator<<(QDataStream &stream, const MessagesSentMessage &item) {
+    stream << static_cast<uint>(item.classType());
+    switch(item.classType()) {
+    case MessagesSentMessage::typeMessagesSentMessage:
+        stream << item.id();
+        stream << item.date();
+        stream << item.media();
+        stream << item.pts();
+        stream << item.ptsCount();
+        break;
+    case MessagesSentMessage::typeMessagesSentMessageLink:
+        stream << item.id();
+        stream << item.date();
+        stream << item.media();
+        stream << item.pts();
+        stream << item.ptsCount();
+        stream << item.links();
+        stream << item.seq();
+        break;
+    }
+    return stream;
+}
+
+inline QDataStream &operator>>(QDataStream &stream, MessagesSentMessage &item) {
+    uint type = 0;
+    stream >> type;
+    item.setClassType(static_cast<MessagesSentMessage::MessagesSentMessageClassType>(type));
+    switch(type) {
+    case MessagesSentMessage::typeMessagesSentMessage: {
+        qint32 m_id;
+        stream >> m_id;
+        item.setId(m_id);
+        qint32 m_date;
+        stream >> m_date;
+        item.setDate(m_date);
+        MessageMedia m_media;
+        stream >> m_media;
+        item.setMedia(m_media);
+        qint32 m_pts;
+        stream >> m_pts;
+        item.setPts(m_pts);
+        qint32 m_pts_count;
+        stream >> m_pts_count;
+        item.setPtsCount(m_pts_count);
+    }
+        break;
+    case MessagesSentMessage::typeMessagesSentMessageLink: {
+        qint32 m_id;
+        stream >> m_id;
+        item.setId(m_id);
+        qint32 m_date;
+        stream >> m_date;
+        item.setDate(m_date);
+        MessageMedia m_media;
+        stream >> m_media;
+        item.setMedia(m_media);
+        qint32 m_pts;
+        stream >> m_pts;
+        item.setPts(m_pts);
+        qint32 m_pts_count;
+        stream >> m_pts_count;
+        item.setPtsCount(m_pts_count);
+        QList<ContactsLink> m_links;
+        stream >> m_links;
+        item.setLinks(m_links);
+        qint32 m_seq;
+        stream >> m_seq;
+        item.setSeq(m_seq);
+    }
+        break;
+    }
+    return stream;
+}
+
 
 #endif // LQTG_TYPE_MESSAGESSENTMESSAGE
