@@ -39,20 +39,19 @@
 #include "util/tlvalues.h"
 #include "telegram/types/types.h"
 #include "core/dcprovider.h"
-#include "core/api.h"
+#include "telegram/telegramapi.h"
 #include "secret/secretstate.h"
 #include "secret/encrypter.h"
 #include "secret/decrypter.h"
-#include "secret/secretchatmessage.h"
-#include "secret/decryptedmessagebuilder.h"
 #include "file/filehandler.h"
 #include "core/dcprovider.h"
 #include "telegram/coretypes.h"
+#include "secret/secretchat.h"
 
 Q_LOGGING_CATEGORY(TG_TELEGRAM, "tg.telegram")
 Q_LOGGING_CATEGORY(TG_LIB_SECRET, "tg.lib.secret")
 
-#define CHECK_API if(!prv->mApi) {qDebug() << __FUNCTION__ << "Error: API is not ready."; return 0;}
+#define CHECK_API if(!mApi) {qDebug() << __FUNCTION__ << "Error: API is not ready."; return 0;}
 
 QSettings::Format qtelegram_default_settings_format = QSettings::IniFormat;
 
@@ -79,7 +78,7 @@ public:
     Settings *mSettings;
     CryptoUtils *mCrypto;
 
-    Api *mApi;
+    TelegramApi *mApi;
     DcProvider *mDcProvider;
     FileHandler::Ptr mFileHandler;
 
@@ -95,6 +94,7 @@ public:
     SecretState mSecretState;
     Encrypter *mEncrypter;
     Decrypter *mDecrypter;
+    QHash<qint64, TelegramCore::Callback<EncryptedChat> > secretChatCallbacks;
 
     bool mLoggedIn;
     bool mCreatedSharedKeys;
@@ -112,7 +112,9 @@ public:
     qint16 defaultHostDcId;
 };
 
-Telegram::Telegram(const QString &defaultHostAddress, qint16 defaultHostPort, qint16 defaultHostDcId, qint32 appId, const QString &appHash, const QString &phoneNumber, const QString &configPath, const QString &publicKeyFile) {
+Telegram::Telegram(const QString &defaultHostAddress, qint16 defaultHostPort, qint16 defaultHostDcId, qint32 appId, const QString &appHash, const QString &phoneNumber, const QString &configPath, const QString &publicKeyFile) :
+    TelegramCore()
+{
     // Qt5.2 doesn't support .ini files to control logging, so use this
     // manual workaround instead.
     // http://blog.qt.digia.com/blog/2014/03/11/qt-weekly-1-categorized-logging/
@@ -140,8 +142,8 @@ Telegram::Telegram(const QString &defaultHostAddress, qint16 defaultHostPort, qi
 bool Telegram::sleep() {
     // sleep only if not slept and library already logged in. Returns true if sleep operations completes
     if (!prv->mSlept && prv->mLibraryState >= LoggedIn) {
-        if (prv->mApi && prv->mApi->mainSession()) {
-            prv->mApi->mainSession()->close();
+        if (mApi && mApi->mainSession()) {
+            mApi->mainSession()->close();
         }
         prv->mSlept = true;
         return true;
@@ -153,9 +155,9 @@ bool Telegram::wake() {
     // wake only if slept and library already logged in. Returns true if wake operation completes
     if (prv->mSlept && prv->mDcProvider && prv->mLibraryState >= LoggedIn) {
         CHECK_API;
-        connect(prv->mApi, SIGNAL(mainSessionReady()), this, SIGNAL(woken()), Qt::UniqueConnection);
+        connect(mApi, SIGNAL(mainSessionReady()), this, SIGNAL(woken()), Qt::UniqueConnection);
         DC *dc = prv->mDcProvider->getWorkingDc();
-        prv->mApi->createMainSessionToDc(dc);
+        mApi->createMainSessionToDc(dc);
         prv->mSlept = false;
         return true;
     }
@@ -172,16 +174,17 @@ void Telegram::setPhoneNumber(const QString &phoneNumber) {
         throw std::runtime_error("setPhoneNumber: could not load settings");
     }
     prv->mSecretState.load();
+    prv->phoneNumber = phoneNumber;
 }
 
 void Telegram::init() {
-    init(10000);
+    init(timeOut());
 }
 
 void Telegram::init(qint32 timeout) {
     // check the auth values stored in settings, check the available DCs config data if there is
     // connection to servers, and emit signals depending on user authenticated or not.
-    if(prv->mApi)
+    if(mApi)
         return;
 
     if(prv->mEncrypter) delete prv->mEncrypter;
@@ -284,8 +287,8 @@ QSettings::Format Telegram::defaultSettingsFormat()
 }
 
 bool Telegram::isConnected() {
-    if (prv->mApi && prv->mApi->mainSession()) {
-        return prv->mApi->mainSession()->state() == QAbstractSocket::ConnectedState;
+    if (mApi && mApi->mainSession()) {
+        return mApi->mainSession()->state() == QAbstractSocket::ConnectedState;
     }
     return false;
 }
@@ -311,144 +314,144 @@ qint32 Telegram::ourId() {
 
 void Telegram::onDcProviderReady() {
     prv->mLibraryState = CreatedSharedKeys;
-    prv->mApi = prv->mDcProvider->getApi();
+    mApi = prv->mDcProvider->getApi();
     // api signal-signal and signal-slot connections
     // updates
-    connect(prv->mApi, SIGNAL(updatesTooLong()), this, SIGNAL(updatesTooLong()));
-    connect(prv->mApi, SIGNAL(updateShortMessage(qint32,qint32,const QString&,qint32,qint32,qint32,qint32,qint32,qint32,bool,bool)), this, SIGNAL(updateShortMessage(qint32,qint32,const QString&,qint32,qint32,qint32,qint32,qint32,qint32,bool,bool)));
-    connect(prv->mApi, SIGNAL(updateShortChatMessage(qint32,qint32,qint32,const QString&,qint32,qint32,qint32,qint32,qint32,qint32,bool,bool)), this, SIGNAL(updateShortChatMessage(qint32,qint32,qint32,const QString&,qint32,qint32,qint32,qint32,qint32,qint32,bool,bool)));
-    connect(prv->mApi, SIGNAL(updateShort(const Update&,qint32)), this, SIGNAL(updateShort(const Update&,qint32)));
-    connect(prv->mApi, SIGNAL(updatesCombined(const QList<Update>&,const QList<User>&,const QList<Chat>&,qint32,qint32,qint32)), this, SIGNAL(updatesCombined(const QList<Update>&,const QList<User>&,const QList<Chat>&,qint32,qint32,qint32)));
-    connect(prv->mApi, SIGNAL(updates(const QList<Update>&,const QList<User>&,const QList<Chat>&,qint32,qint32)), this, SIGNAL(updates(const QList<Update>&,const QList<User>&,const QList<Chat>&,qint32,qint32)));
+    connect(mApi, SIGNAL(updatesTooLong()), this, SIGNAL(updatesTooLong()));
+    connect(mApi, SIGNAL(updateShortMessage(qint32,qint32,const QString&,qint32,qint32,qint32,qint32,qint32,qint32,bool,bool)), this, SIGNAL(updateShortMessage(qint32,qint32,const QString&,qint32,qint32,qint32,qint32,qint32,qint32,bool,bool)));
+    connect(mApi, SIGNAL(updateShortChatMessage(qint32,qint32,qint32,const QString&,qint32,qint32,qint32,qint32,qint32,qint32,bool,bool)), this, SIGNAL(updateShortChatMessage(qint32,qint32,qint32,const QString&,qint32,qint32,qint32,qint32,qint32,qint32,bool,bool)));
+    connect(mApi, SIGNAL(updateShort(const Update&,qint32)), this, SIGNAL(updateShort(const Update&,qint32)));
+    connect(mApi, SIGNAL(updatesCombined(const QList<Update>&,const QList<User>&,const QList<Chat>&,qint32,qint32,qint32)), this, SIGNAL(updatesCombined(const QList<Update>&,const QList<User>&,const QList<Chat>&,qint32,qint32,qint32)));
+    connect(mApi, SIGNAL(updates(const QList<Update>&,const QList<User>&,const QList<Chat>&,qint32,qint32)), this, SIGNAL(updates(const QList<Update>&,const QList<User>&,const QList<Chat>&,qint32,qint32)));
     // errors
-    connect(prv->mApi, SIGNAL(fatalError()), this, SIGNAL(fatalError()));
-    connect(prv->mApi, SIGNAL(error(qint64,qint32,const QString&,const QString&)), this, SLOT(onError(qint64,qint32,const QString&,const QString&)));
-    connect(prv->mApi, SIGNAL(errorRetry(qint64,qint32,const QString&)), this, SLOT(onErrorRetry(qint64,qint32,const QString&)));
-    connect(prv->mApi, SIGNAL(authSignInError(qint64,qint32,const QString&)), this, SIGNAL(authSignInError(qint64,qint32,const QString&)));
-    connect(prv->mApi, SIGNAL(authSignUpError(qint64,qint32,const QString&)), this, SIGNAL(authSignUpError(qint64,qint32,const QString&)));
+    connect(mApi, SIGNAL(fatalError()), this, SIGNAL(fatalError()));
+    connect(mApi, SIGNAL(error(qint64,qint32,const QString&,const QString&)), this, SLOT(onError(qint64,qint32,const QString&,const QString&)));
+    connect(mApi, SIGNAL(errorRetry(qint64,qint32,const QString&)), this, SLOT(onErrorRetry(qint64,qint32,const QString&)));
+    connect(mApi, SIGNAL(authSignInError(qint64,qint32,const QString&)), this, SIGNAL(authSignInError(qint64,qint32,const QString&)));
+    connect(mApi, SIGNAL(authSignUpError(qint64,qint32,const QString&)), this, SIGNAL(authSignUpError(qint64,qint32,const QString&)));
     // positive responses
-    connect(prv->mApi, SIGNAL(helpGetInviteTextAnswer(qint64,const QString&)), this, SIGNAL(helpGetInviteTextAnswer(qint64,const QString&)));
-    connect(prv->mApi, SIGNAL(authCheckedPhone(qint64,bool)), this, SIGNAL(authCheckPhoneAnswer(qint64,bool)));
-    connect(prv->mApi, SIGNAL(authCheckedPhoneError(qint64)), this, SIGNAL(authCheckedPhoneError(qint64)));
-    connect(prv->mApi, SIGNAL(authCheckPhoneSent(qint64,const QString&)), this, SIGNAL(authCheckPhoneSent(qint64,const QString&)));
-    connect(prv->mApi, SIGNAL(authSentCode(qint64,bool,const QString&,qint32,bool)), this, SLOT(onAuthSentCode(qint64,bool,const QString&,qint32,bool)));
-    connect(prv->mApi, SIGNAL(authSendCodeError(qint64)), this, SIGNAL(authSendCodeError(qint64)));
-    connect(prv->mApi, SIGNAL(authSentAppCode(qint64,bool,const QString&,qint32,bool)), this, SLOT(onAuthSentCode(qint64,bool,const QString&,qint32,bool)));
-    connect(prv->mApi, SIGNAL(authSendSmsResult(qint64,bool)), this, SIGNAL(authSendSmsAnswer(qint64,bool)));
-    connect(prv->mApi, SIGNAL(authSendCallResult(qint64,bool)), this, SIGNAL(authSendCallAnswer(qint64,bool)));
-    connect(prv->mApi, SIGNAL(authSignInAuthorization(qint64,qint32,const User&)), this, SLOT(onUserAuthorized(qint64,qint32,const User&)));
-    connect(prv->mApi, SIGNAL(authSignUpAuthorization(qint64,qint32,const User&)), this, SLOT(onUserAuthorized(qint64,qint32,const User&)));
-    connect(prv->mApi, SIGNAL(authLogOutResult(qint64,bool)), this, SLOT(onAuthLogOutAnswer(qint64,bool)));
-    connect(prv->mApi, SIGNAL(authSendInvitesResult(qint64,bool)), this, SIGNAL(authSendInvitesAnswer(qint64,bool)));
-    connect(prv->mApi, SIGNAL(authResetAuthorizationsResult(qint64,bool)), this, SIGNAL(authResetAuthorizationsAnswer(qint64,bool)));
-    connect(prv->mApi, SIGNAL(authCheckPasswordResult(qint64,qint32,const User&)), this, SLOT(onUserAuthorized(qint64,qint32,const User&)));
-    connect(prv->mApi, SIGNAL(authRequestPasswordRecoveryResult(qint64,AuthPasswordRecovery)), this, SIGNAL(authRequestPasswordRecoveryAnswer(qint64,AuthPasswordRecovery)));
-    connect(prv->mApi, SIGNAL(authRecoverPasswordResult(qint64,AuthAuthorization)), this, SIGNAL(authRecoverPasswordAnswer(qint64,AuthAuthorization)));
-    connect(prv->mApi, SIGNAL(accountRegisterDeviceResult(qint64,bool)), this, SIGNAL(accountRegisterDeviceAnswer(qint64,bool)));
-    connect(prv->mApi, SIGNAL(accountUnregisterDeviceResult(qint64,bool)), this, SIGNAL(accountUnregisterDeviceAnswer(qint64,bool)));
-    connect(prv->mApi, SIGNAL(accountUpdateNotifySettingsResult(qint64,bool)), this, SIGNAL(accountUpdateNotifySettingsAnswer(qint64,bool)));
-    connect(prv->mApi, SIGNAL(accountPeerNotifySettings(qint64,const PeerNotifySettings&)), this, SIGNAL(accountGetNotifySettingsAnswer(qint64,const PeerNotifySettings&)));
-    connect(prv->mApi, SIGNAL(accountResetNotifySettingsResult(qint64,bool)), this, SIGNAL(accountResetNotifySettingsAnswer(qint64,bool)));
-    connect(prv->mApi, SIGNAL(accountUser(qint64,const User&)), this, SIGNAL(accountUpdateProfileAnswer(qint64,const User&)));
-    connect(prv->mApi, SIGNAL(accountUpdateStatusResult(qint64,bool)), this, SIGNAL(accountUpdateStatusAnswer(qint64,bool)));
-    connect(prv->mApi, SIGNAL(accountGetWallPapersResult(qint64,const QList<WallPaper>&)), this, SIGNAL(accountGetWallPapersAnswer(qint64,const QList<WallPaper>&)));
-    connect(prv->mApi, SIGNAL(accountCheckUsernameResult(qint64,bool)), this, SIGNAL(accountCheckUsernameAnswer(qint64,bool)));
-    connect(prv->mApi, SIGNAL(accountUpdateUsernameResult(qint64,const User&)), this, SIGNAL(accountUpdateUsernameAnswer(qint64,const User&)));
-    connect(prv->mApi, SIGNAL(accountDeleteAccountResult(qint64,bool)), this, SIGNAL(accountDeleteAccountAnswer(qint64,bool)));
-    connect(prv->mApi, SIGNAL(accountGetAccountTTLResult(qint64,const AccountDaysTTL&)), this, SIGNAL(accountGetAccountTTLAnswer(qint64,const AccountDaysTTL&)));
-    connect(prv->mApi, SIGNAL(accountSetAccountTTLResult(qint64,bool)), this, SIGNAL(accountSetAccountTTLAnswer(qint64,bool)));
-    connect(prv->mApi, SIGNAL(accountUpdateDeviceLockedResult(qint64,bool)), this, SIGNAL(accountUpdateDeviceLockedAnswer(qint64,bool)));
-    connect(prv->mApi, SIGNAL(accountSentChangePhoneCode(qint64,const QString&,qint32)), this, SIGNAL(accountSentChangePhoneCode(qint64,const QString&,qint32)));
-    connect(prv->mApi, SIGNAL(accountGetPasswordResult(qint64,const AccountPassword&)), this, SIGNAL(accountGetPasswordAnswer(qint64,const AccountPassword&)));
-    connect(prv->mApi, SIGNAL(accountGetAuthorizationsResult(qint64,AccountAuthorizations)), this, SIGNAL(accountGetAuthorizationsAnswer(qint64,AccountAuthorizations)));
-    connect(prv->mApi, SIGNAL(accountResetAuthorizationResult(qint64,bool)), this, SIGNAL(accountResetAuthorizationAnswer(qint64,bool)));
-    connect(prv->mApi, SIGNAL(accountGetPasswordSettingsResult(qint64,AccountPasswordSettings)), this, SIGNAL(accountGetPasswordSettingsAnswer(qint64,AccountPasswordSettings)));
-    connect(prv->mApi, SIGNAL(accountUpdatePasswordSettingsResult(qint64,bool)), this, SIGNAL(accountUpdatePasswordSettingsAnswer(qint64,bool)));
-    connect(prv->mApi, SIGNAL(accountChangePhoneResult(qint64,const User&)), this, SIGNAL(accountChangePhoneAnswer(qint64,const User&)));
-    connect(prv->mApi, SIGNAL(photosPhoto(qint64,const Photo&,const QList<User>&)), this, SIGNAL(photosUploadProfilePhotoAnswer(qint64,const Photo&,const QList<User>&)));
-    connect(prv->mApi, SIGNAL(photosUserProfilePhoto(qint64,const UserProfilePhoto&)), this, SIGNAL(photosUpdateProfilePhotoAnswer(qint64,const UserProfilePhoto&)));
-    connect(prv->mApi, SIGNAL(usersGetUsersResult(qint64,const QList<User>&)), this, SIGNAL(usersGetUsersAnswer(qint64,const QList<User>&)));
-    connect(prv->mApi, SIGNAL(userFull(qint64,const User&,const ContactsLink&,const Photo&,const PeerNotifySettings&,bool,const QString&,const QString&)), this, SIGNAL(usersGetFullUserAnswer(qint64,const User&,const ContactsLink&,const Photo&,const PeerNotifySettings&,bool,const QString&,const QString&)));
-    connect(prv->mApi, SIGNAL(photosPhotos(qint64,const QList<Photo>&,const QList<User>&)), this, SLOT(onPhotosPhotos(qint64, const QList<Photo>&, const QList<User>&)));
-    connect(prv->mApi, SIGNAL(photosPhotosSlice(qint64,qint32,const QList<Photo>&,const QList<User>&)), this, SIGNAL(photosGetUserPhotosAnswer(qint64,qint32,const QList<Photo>&,const QList<User>&)));
-    connect(prv->mApi, SIGNAL(contactsGetStatusesResult(qint64,const QList<ContactStatus>&)), this, SIGNAL(contactsGetStatusesAnswer(qint64,const QList<ContactStatus>&)));
-    connect(prv->mApi, SIGNAL(contactsContacts(qint64,const QList<Contact>&,const QList<User>&)), this, SLOT(onContactsContacts(qint64,const QList<Contact>&,const QList<User>&)));
-    connect(prv->mApi, SIGNAL(contactsContactsNotModified(qint64)), this, SLOT(onContactsContactsNotModified(qint64)));
-    connect(prv->mApi, SIGNAL(contactsImportedContacts(qint64,const QList<ImportedContact>&,const QList<qint64>&,const QList<User>&)), this, SIGNAL(contactsImportContactsAnswer(qint64,const QList<ImportedContact>&,const QList<qint64>&,const QList<User>&)));
-    connect(prv->mApi, SIGNAL(contactsImportedContacts(qint64,const QList<ImportedContact>&,const QList<qint64>&,const QList<User>&)), this, SLOT(onContactsImportContactsAnswer()));
-    connect(prv->mApi, SIGNAL(contactsFound(qint64,const QList<ContactFound>&,const QList<User>&)), this, SIGNAL(contactsFound(qint64,const QList<ContactFound>&,const QList<User>&)));
-    connect(prv->mApi, SIGNAL(contactsResolveUsernameResult(qint64,const User&)), this, SIGNAL(contactsResolveUsernameAnswer(qint64,const User&)));
-    connect(prv->mApi, SIGNAL(contactsDeleteContactLink(qint64,const ContactLink&,const ContactLink&,const User&)), this, SIGNAL(contactsDeleteContactAnswer(qint64,const ContactLink&,const ContactLink&,const User&)));
-    connect(prv->mApi, SIGNAL(contactsDeleteContactsResult(qint64,bool)), this, SIGNAL(contactsDeleteContactsAnswer(qint64,bool)));
-    connect(prv->mApi, SIGNAL(contactsBlockResult(qint64,bool)), this, SIGNAL(contactsBlockAnswer(qint64,bool)));
-    connect(prv->mApi, SIGNAL(contactsUnblockResult(qint64,bool)), this, SIGNAL(contactsUnblockAnswer(qint64,bool)));
-    connect(prv->mApi, SIGNAL(contactsBlocked(qint64,const QList<ContactBlocked>&,const QList<User>&)), this, SLOT(onContactsBlocked(qint64,const QList<ContactBlocked>&,const QList<User>&)));
-    connect(prv->mApi, SIGNAL(contactsBlockedSlice(qint64,qint32,const QList<ContactBlocked>&,const QList<User>&)), this, SIGNAL(contactsGetBlockedAnswer(qint64,qint32,QList<ContactBlocked>,QList<User>)));
-    connect(prv->mApi, SIGNAL(messagesSentMessage(qint64,qint32,qint32,const MessageMedia&,qint32,qint32,qint32)), this, SLOT(onMessagesSentMessage(qint64,qint32,qint32,const MessageMedia&,qint32,qint32,qint32)));
-    connect(prv->mApi, SIGNAL(messagesSentMessageLink(qint64,qint32,qint32,const MessageMedia&,qint32,qint32,qint32,const QList<ContactsLink>&)), this, SIGNAL(messagesSendMessageAnswer(qint64,qint32,qint32,const MessageMedia&,qint32,qint32,qint32,const QList<ContactsLink>&)));
-    connect(prv->mApi, SIGNAL(messagesSetTypingResult(qint64,bool)), this, SIGNAL(messagesSetTypingAnswer(qint64,bool)));
-    connect(prv->mApi, SIGNAL(messagesGetMessagesMessages(qint64,const QList<Message>&,const QList<Chat>&,const QList<User>&)), this, SLOT(onMessagesGetMessagesMessages(qint64,const QList<Message>&,const QList<Chat>&,const QList<User>&)));
-    connect(prv->mApi, SIGNAL(messagesGetMessagesMessagesSlice(qint64,qint32,const QList<Message>&,const QList<Chat>&,const QList<User>&)), this, SIGNAL(messagesGetMessagesAnswer(qint64,qint32,const QList<Message>&,const QList<Chat>&,const QList<User>&)));
-    connect(prv->mApi, SIGNAL(messagesDialogs(qint64, const QList<Dialog>&,const QList<Message>&,const QList<Chat>&,const QList<User>&)), this, SLOT(onMessagesDialogs(qint64,const QList<Dialog>&,const QList<Message>&,const QList<Chat>&,const QList<User>&)));
-    connect(prv->mApi, SIGNAL(messagesDialogsSlice(qint64,qint32,const QList<Dialog>&,const QList<Message>&,const QList<Chat>&,const QList<User>&)), this, SIGNAL(messagesGetDialogsAnswer(qint64,qint32,const QList<Dialog>&,const QList<Message>&,const QList<Chat>&,const QList<User>&)));
-    connect(prv->mApi, SIGNAL(messagesGetHistoryMessages(qint64,const QList<Message>&,const QList<Chat>&,const QList<User>&)), this, SLOT(onMessagesGetHistoryMessages(qint64,const QList<Message>&,const QList<Chat>&,const QList<User>&)));
-    connect(prv->mApi, SIGNAL(messagesGetHistoryMessagesSlice(qint64,qint32,const QList<Message>&,const QList<Chat>&,const QList<User>&)), this, SIGNAL(messagesGetHistoryAnswer(qint64,qint32,const QList<Message>&,const QList<Chat>&,const QList<User>&)));
-    connect(prv->mApi, SIGNAL(messagesSearchMessages(qint64,const QList<Message>&,const QList<Chat>&,const QList<User>&)), this, SLOT(onMessagesSearchMessages(qint64,const QList<Message>&,const QList<Chat>&,const QList<User>&)));
-    connect(prv->mApi, SIGNAL(messagesSearchMessagesSlice(qint64,qint32,const QList<Message>&,const QList<Chat>&,const QList<User>&)), this, SIGNAL(messagesSearchAnswer(qint64,qint32,const QList<Message>&,const QList<Chat>&,const QList<User>&)));
-    connect(prv->mApi, SIGNAL(messagesReadAffectedHistory(qint64,qint32,qint32,qint32)), this, SIGNAL(messagesReadHistoryAnswer(qint64,qint32,qint32,qint32)));
-    connect(prv->mApi, SIGNAL(messagesReadMessageContentsResult(qint64,const MessagesAffectedMessages&)), this, SIGNAL(messagesReadMessageContentsAnswer(qint64,const MessagesAffectedMessages&)));
-    connect(prv->mApi, SIGNAL(messagesDeleteAffectedHistory(qint64,qint32,qint32,qint32)), this, SIGNAL(messagesDeleteHistoryAnswer(qint64,qint32,qint32,qint32)));
-    connect(prv->mApi, SIGNAL(messagesDeleteMessagesResult(qint64,const MessagesAffectedMessages&)), this, SIGNAL(messagesDeleteMessagesAnswer(qint64,const MessagesAffectedMessages&)));
-    connect(prv->mApi, SIGNAL(messagesReceivedMessagesResult(qint64,const QList<ReceivedNotifyMessage>&)), this, SIGNAL(messagesReceivedMessagesAnswer(qint64,const QList<ReceivedNotifyMessage>&)));
-    connect(prv->mApi, SIGNAL(messagesForwardedMessage(qint64,const UpdatesType&)), this, SIGNAL(messagesForwardMessageAnswer(qint64,const UpdatesType&)));
-    connect(prv->mApi, SIGNAL(messagesForwardedMessages(qint64,const UpdatesType&)), this, SIGNAL(messagesForwardMessagesAnswer(qint64,const UpdatesType&)));
-    connect(prv->mApi, SIGNAL(messagesSentBroadcast(qint64,const UpdatesType&)), this, SIGNAL(messagesSendBroadcastAnswer(qint64,const UpdatesType&)));
-    connect(prv->mApi, SIGNAL(messagesGetWebPagePreviewResult(qint64,MessageMedia)), this, SIGNAL(messagesGetWebPagePreviewAnswer(qint64,MessageMedia)));
-    connect(prv->mApi, SIGNAL(messagesForwardedMedia(qint64,UpdatesType)), SLOT(onMessagesForwardMediaAnswer(qint64,UpdatesType)));
-    connect(prv->mApi, SIGNAL(messagesChats(qint64,const QList<Chat>&)), this, SIGNAL(messagesGetChatsAnswer(qint64,const QList<Chat>&)));
-    connect(prv->mApi, SIGNAL(messagesChatFull(qint64,const ChatFull&,const QList<Chat>&,const QList<User>&)), this, SIGNAL(messagesGetFullChatAnswer(qint64,const ChatFull&,const QList<Chat>&,const QList<User>&)));
+    connect(mApi, SIGNAL(helpGetInviteTextAnswer(qint64,const QString&)), this, SIGNAL(helpGetInviteTextAnswer(qint64,const QString&)));
+    connect(mApi, SIGNAL(authCheckedPhone(qint64,bool)), this, SIGNAL(authCheckPhoneAnswer(qint64,bool)));
+    connect(mApi, SIGNAL(authCheckedPhoneError(qint64)), this, SIGNAL(authCheckedPhoneError(qint64)));
+    connect(mApi, SIGNAL(authCheckPhoneSent(qint64,const QString&)), this, SIGNAL(authCheckPhoneSent(qint64,const QString&)));
+    connect(mApi, SIGNAL(authSentCode(qint64,bool,const QString&,qint32,bool)), this, SLOT(onAuthSentCode(qint64,bool,const QString&,qint32,bool)));
+    connect(mApi, SIGNAL(authSendCodeError(qint64)), this, SIGNAL(authSendCodeError(qint64)));
+    connect(mApi, SIGNAL(authSentAppCode(qint64,bool,const QString&,qint32,bool)), this, SLOT(onAuthSentCode(qint64,bool,const QString&,qint32,bool)));
+    connect(mApi, SIGNAL(authSendSmsResult(qint64,bool)), this, SIGNAL(authSendSmsAnswer(qint64,bool)));
+    connect(mApi, SIGNAL(authSendCallResult(qint64,bool)), this, SIGNAL(authSendCallAnswer(qint64,bool)));
+    connect(mApi, SIGNAL(authSignInAuthorization(qint64,qint32,const User&)), this, SLOT(onUserAuthorized(qint64,qint32,const User&)));
+    connect(mApi, SIGNAL(authSignUpAuthorization(qint64,qint32,const User&)), this, SLOT(onUserAuthorized(qint64,qint32,const User&)));
+    connect(mApi, SIGNAL(authLogOutResult(qint64,bool)), this, SLOT(onAuthLogOutAnswer(qint64,bool)));
+    connect(mApi, SIGNAL(authSendInvitesResult(qint64,bool)), this, SIGNAL(authSendInvitesAnswer(qint64,bool)));
+    connect(mApi, SIGNAL(authResetAuthorizationsResult(qint64,bool)), this, SIGNAL(authResetAuthorizationsAnswer(qint64,bool)));
+    connect(mApi, SIGNAL(authCheckPasswordResult(qint64,qint32,const User&)), this, SLOT(onUserAuthorized(qint64,qint32,const User&)));
+    connect(mApi, SIGNAL(authRequestPasswordRecoveryResult(qint64,AuthPasswordRecovery)), this, SIGNAL(authRequestPasswordRecoveryAnswer(qint64,AuthPasswordRecovery)));
+    connect(mApi, SIGNAL(authRecoverPasswordResult(qint64,AuthAuthorization)), this, SIGNAL(authRecoverPasswordAnswer(qint64,AuthAuthorization)));
+    connect(mApi, SIGNAL(accountRegisterDeviceResult(qint64,bool)), this, SIGNAL(accountRegisterDeviceAnswer(qint64,bool)));
+    connect(mApi, SIGNAL(accountUnregisterDeviceResult(qint64,bool)), this, SIGNAL(accountUnregisterDeviceAnswer(qint64,bool)));
+    connect(mApi, SIGNAL(accountUpdateNotifySettingsResult(qint64,bool)), this, SIGNAL(accountUpdateNotifySettingsAnswer(qint64,bool)));
+    connect(mApi, SIGNAL(accountPeerNotifySettings(qint64,const PeerNotifySettings&)), this, SIGNAL(accountGetNotifySettingsAnswer(qint64,const PeerNotifySettings&)));
+    connect(mApi, SIGNAL(accountResetNotifySettingsResult(qint64,bool)), this, SIGNAL(accountResetNotifySettingsAnswer(qint64,bool)));
+    connect(mApi, SIGNAL(accountUser(qint64,const User&)), this, SIGNAL(accountUpdateProfileAnswer(qint64,const User&)));
+    connect(mApi, SIGNAL(accountUpdateStatusResult(qint64,bool)), this, SIGNAL(accountUpdateStatusAnswer(qint64,bool)));
+    connect(mApi, SIGNAL(accountGetWallPapersResult(qint64,const QList<WallPaper>&)), this, SIGNAL(accountGetWallPapersAnswer(qint64,const QList<WallPaper>&)));
+    connect(mApi, SIGNAL(accountCheckUsernameResult(qint64,bool)), this, SIGNAL(accountCheckUsernameAnswer(qint64,bool)));
+    connect(mApi, SIGNAL(accountUpdateUsernameResult(qint64,const User&)), this, SIGNAL(accountUpdateUsernameAnswer(qint64,const User&)));
+    connect(mApi, SIGNAL(accountDeleteAccountResult(qint64,bool)), this, SIGNAL(accountDeleteAccountAnswer(qint64,bool)));
+    connect(mApi, SIGNAL(accountGetAccountTTLResult(qint64,const AccountDaysTTL&)), this, SIGNAL(accountGetAccountTTLAnswer(qint64,const AccountDaysTTL&)));
+    connect(mApi, SIGNAL(accountSetAccountTTLResult(qint64,bool)), this, SIGNAL(accountSetAccountTTLAnswer(qint64,bool)));
+    connect(mApi, SIGNAL(accountUpdateDeviceLockedResult(qint64,bool)), this, SIGNAL(accountUpdateDeviceLockedAnswer(qint64,bool)));
+    connect(mApi, SIGNAL(accountSentChangePhoneCode(qint64,const QString&,qint32)), this, SIGNAL(accountSentChangePhoneCode(qint64,const QString&,qint32)));
+    connect(mApi, SIGNAL(accountGetPasswordResult(qint64,const AccountPassword&)), this, SIGNAL(accountGetPasswordAnswer(qint64,const AccountPassword&)));
+    connect(mApi, SIGNAL(accountGetAuthorizationsResult(qint64,AccountAuthorizations)), this, SIGNAL(accountGetAuthorizationsAnswer(qint64,AccountAuthorizations)));
+    connect(mApi, SIGNAL(accountResetAuthorizationResult(qint64,bool)), this, SIGNAL(accountResetAuthorizationAnswer(qint64,bool)));
+    connect(mApi, SIGNAL(accountGetPasswordSettingsResult(qint64,AccountPasswordSettings)), this, SIGNAL(accountGetPasswordSettingsAnswer(qint64,AccountPasswordSettings)));
+    connect(mApi, SIGNAL(accountUpdatePasswordSettingsResult(qint64,bool)), this, SIGNAL(accountUpdatePasswordSettingsAnswer(qint64,bool)));
+    connect(mApi, SIGNAL(accountChangePhoneResult(qint64,const User&)), this, SIGNAL(accountChangePhoneAnswer(qint64,const User&)));
+    connect(mApi, SIGNAL(photosPhoto(qint64,const Photo&,const QList<User>&)), this, SIGNAL(photosUploadProfilePhotoAnswer(qint64,const Photo&,const QList<User>&)));
+    connect(mApi, SIGNAL(photosUserProfilePhoto(qint64,const UserProfilePhoto&)), this, SIGNAL(photosUpdateProfilePhotoAnswer(qint64,const UserProfilePhoto&)));
+    connect(mApi, SIGNAL(usersGetUsersResult(qint64,const QList<User>&)), this, SIGNAL(usersGetUsersAnswer(qint64,const QList<User>&)));
+    connect(mApi, SIGNAL(userFull(qint64,const User&,const ContactsLink&,const Photo&,const PeerNotifySettings&,bool,const QString&,const QString&)), this, SIGNAL(usersGetFullUserAnswer(qint64,const User&,const ContactsLink&,const Photo&,const PeerNotifySettings&,bool,const QString&,const QString&)));
+    connect(mApi, SIGNAL(photosPhotos(qint64,const QList<Photo>&,const QList<User>&)), this, SLOT(onPhotosPhotos(qint64, const QList<Photo>&, const QList<User>&)));
+    connect(mApi, SIGNAL(photosPhotosSlice(qint64,qint32,const QList<Photo>&,const QList<User>&)), this, SIGNAL(photosGetUserPhotosAnswer(qint64,qint32,const QList<Photo>&,const QList<User>&)));
+    connect(mApi, SIGNAL(contactsGetStatusesResult(qint64,const QList<ContactStatus>&)), this, SIGNAL(contactsGetStatusesAnswer(qint64,const QList<ContactStatus>&)));
+    connect(mApi, SIGNAL(contactsContacts(qint64,const QList<Contact>&,const QList<User>&)), this, SLOT(onContactsContacts(qint64,const QList<Contact>&,const QList<User>&)));
+    connect(mApi, SIGNAL(contactsContactsNotModified(qint64)), this, SLOT(onContactsContactsNotModified(qint64)));
+    connect(mApi, SIGNAL(contactsImportedContacts(qint64,const QList<ImportedContact>&,const QList<qint64>&,const QList<User>&)), this, SIGNAL(contactsImportContactsAnswer(qint64,const QList<ImportedContact>&,const QList<qint64>&,const QList<User>&)));
+    connect(mApi, SIGNAL(contactsImportedContacts(qint64,const QList<ImportedContact>&,const QList<qint64>&,const QList<User>&)), this, SLOT(onContactsImportContactsAnswer()));
+    connect(mApi, SIGNAL(contactsFound(qint64,const QList<ContactFound>&,const QList<User>&)), this, SIGNAL(contactsFound(qint64,const QList<ContactFound>&,const QList<User>&)));
+    connect(mApi, SIGNAL(contactsResolveUsernameResult(qint64,const User&)), this, SIGNAL(contactsResolveUsernameAnswer(qint64,const User&)));
+    connect(mApi, SIGNAL(contactsDeleteContactLink(qint64,const ContactLink&,const ContactLink&,const User&)), this, SIGNAL(contactsDeleteContactAnswer(qint64,const ContactLink&,const ContactLink&,const User&)));
+    connect(mApi, SIGNAL(contactsDeleteContactsResult(qint64,bool)), this, SIGNAL(contactsDeleteContactsAnswer(qint64,bool)));
+    connect(mApi, SIGNAL(contactsBlockResult(qint64,bool)), this, SIGNAL(contactsBlockAnswer(qint64,bool)));
+    connect(mApi, SIGNAL(contactsUnblockResult(qint64,bool)), this, SIGNAL(contactsUnblockAnswer(qint64,bool)));
+    connect(mApi, SIGNAL(contactsBlocked(qint64,const QList<ContactBlocked>&,const QList<User>&)), this, SLOT(onContactsBlocked(qint64,const QList<ContactBlocked>&,const QList<User>&)));
+    connect(mApi, SIGNAL(contactsBlockedSlice(qint64,qint32,const QList<ContactBlocked>&,const QList<User>&)), this, SIGNAL(contactsGetBlockedAnswer(qint64,qint32,QList<ContactBlocked>,QList<User>)));
+    connect(mApi, SIGNAL(messagesSentMessage(qint64,qint32,qint32,const MessageMedia&,qint32,qint32,qint32)), this, SLOT(onMessagesSentMessage(qint64,qint32,qint32,const MessageMedia&,qint32,qint32,qint32)));
+    connect(mApi, SIGNAL(messagesSentMessageLink(qint64,qint32,qint32,const MessageMedia&,qint32,qint32,qint32,const QList<ContactsLink>&)), this, SIGNAL(messagesSendMessageAnswer(qint64,qint32,qint32,const MessageMedia&,qint32,qint32,qint32,const QList<ContactsLink>&)));
+    connect(mApi, SIGNAL(messagesSetTypingResult(qint64,bool)), this, SIGNAL(messagesSetTypingAnswer(qint64,bool)));
+    connect(mApi, SIGNAL(messagesGetMessagesMessages(qint64,const QList<Message>&,const QList<Chat>&,const QList<User>&)), this, SLOT(onMessagesGetMessagesMessages(qint64,const QList<Message>&,const QList<Chat>&,const QList<User>&)));
+    connect(mApi, SIGNAL(messagesGetMessagesMessagesSlice(qint64,qint32,const QList<Message>&,const QList<Chat>&,const QList<User>&)), this, SIGNAL(messagesGetMessagesAnswer(qint64,qint32,const QList<Message>&,const QList<Chat>&,const QList<User>&)));
+    connect(mApi, SIGNAL(messagesDialogs(qint64, const QList<Dialog>&,const QList<Message>&,const QList<Chat>&,const QList<User>&)), this, SLOT(onMessagesDialogs(qint64,const QList<Dialog>&,const QList<Message>&,const QList<Chat>&,const QList<User>&)));
+    connect(mApi, SIGNAL(messagesDialogsSlice(qint64,qint32,const QList<Dialog>&,const QList<Message>&,const QList<Chat>&,const QList<User>&)), this, SIGNAL(messagesGetDialogsAnswer(qint64,qint32,const QList<Dialog>&,const QList<Message>&,const QList<Chat>&,const QList<User>&)));
+    connect(mApi, SIGNAL(messagesGetHistoryMessages(qint64,const QList<Message>&,const QList<Chat>&,const QList<User>&)), this, SLOT(onMessagesGetHistoryMessages(qint64,const QList<Message>&,const QList<Chat>&,const QList<User>&)));
+    connect(mApi, SIGNAL(messagesGetHistoryMessagesSlice(qint64,qint32,const QList<Message>&,const QList<Chat>&,const QList<User>&)), this, SIGNAL(messagesGetHistoryAnswer(qint64,qint32,const QList<Message>&,const QList<Chat>&,const QList<User>&)));
+    connect(mApi, SIGNAL(messagesSearchMessages(qint64,const QList<Message>&,const QList<Chat>&,const QList<User>&)), this, SLOT(onMessagesSearchMessages(qint64,const QList<Message>&,const QList<Chat>&,const QList<User>&)));
+    connect(mApi, SIGNAL(messagesSearchMessagesSlice(qint64,qint32,const QList<Message>&,const QList<Chat>&,const QList<User>&)), this, SIGNAL(messagesSearchAnswer(qint64,qint32,const QList<Message>&,const QList<Chat>&,const QList<User>&)));
+    connect(mApi, SIGNAL(messagesReadAffectedHistory(qint64,qint32,qint32,qint32)), this, SIGNAL(messagesReadHistoryAnswer(qint64,qint32,qint32,qint32)));
+    connect(mApi, SIGNAL(messagesReadMessageContentsResult(qint64,const MessagesAffectedMessages&)), this, SIGNAL(messagesReadMessageContentsAnswer(qint64,const MessagesAffectedMessages&)));
+    connect(mApi, SIGNAL(messagesDeleteAffectedHistory(qint64,qint32,qint32,qint32)), this, SIGNAL(messagesDeleteHistoryAnswer(qint64,qint32,qint32,qint32)));
+    connect(mApi, SIGNAL(messagesDeleteMessagesResult(qint64,const MessagesAffectedMessages&)), this, SIGNAL(messagesDeleteMessagesAnswer(qint64,const MessagesAffectedMessages&)));
+    connect(mApi, SIGNAL(messagesReceivedMessagesResult(qint64,const QList<ReceivedNotifyMessage>&)), this, SIGNAL(messagesReceivedMessagesAnswer(qint64,const QList<ReceivedNotifyMessage>&)));
+    connect(mApi, SIGNAL(messagesForwardedMessage(qint64,const UpdatesType&)), this, SIGNAL(messagesForwardMessageAnswer(qint64,const UpdatesType&)));
+    connect(mApi, SIGNAL(messagesForwardedMessages(qint64,const UpdatesType&)), this, SIGNAL(messagesForwardMessagesAnswer(qint64,const UpdatesType&)));
+    connect(mApi, SIGNAL(messagesSentBroadcast(qint64,const UpdatesType&)), this, SIGNAL(messagesSendBroadcastAnswer(qint64,const UpdatesType&)));
+    connect(mApi, SIGNAL(messagesGetWebPagePreviewResult(qint64,MessageMedia)), this, SIGNAL(messagesGetWebPagePreviewAnswer(qint64,MessageMedia)));
+    connect(mApi, SIGNAL(messagesForwardedMedia(qint64,UpdatesType)), SLOT(onMessagesForwardMediaAnswer(qint64,UpdatesType)));
+    connect(mApi, SIGNAL(messagesChats(qint64,const QList<Chat>&)), this, SIGNAL(messagesGetChatsAnswer(qint64,const QList<Chat>&)));
+    connect(mApi, SIGNAL(messagesChatFull(qint64,const ChatFull&,const QList<Chat>&,const QList<User>&)), this, SIGNAL(messagesGetFullChatAnswer(qint64,const ChatFull&,const QList<Chat>&,const QList<User>&)));
 
-    connect(prv->mApi, SIGNAL(messagesEditedChatTitle(qint64,const UpdatesType&)), this, SIGNAL(messagesEditChatTitleAnswer(qint64,const UpdatesType&)));
-    connect(prv->mApi, SIGNAL(messagesEditedChatPhoto(qint64,const UpdatesType&)), this, SIGNAL(messagesEditChatPhotoStatedMessageAnswer(qint64,const UpdatesType&)));
-    connect(prv->mApi, SIGNAL(messagesAddedChatUser(qint64,const UpdatesType&)), this, SIGNAL(messagesAddChatUserAnswer(qint64,const UpdatesType&)));
-    connect(prv->mApi, SIGNAL(messagesDeletedChat(qint64,const UpdatesType&)), this, SIGNAL(messagesDeleteChatUserAnswer(qint64,const UpdatesType&)));
-    connect(prv->mApi, SIGNAL(messagesCreatedChat(qint64,const UpdatesType&)), this, SIGNAL(messagesCreateChatAnswer(qint64,const UpdatesType&)));
+    connect(mApi, SIGNAL(messagesEditedChatTitle(qint64,const UpdatesType&)), this, SIGNAL(messagesEditChatTitleAnswer(qint64,const UpdatesType&)));
+    connect(mApi, SIGNAL(messagesEditedChatPhoto(qint64,const UpdatesType&)), this, SIGNAL(messagesEditChatPhotoStatedMessageAnswer(qint64,const UpdatesType&)));
+    connect(mApi, SIGNAL(messagesAddedChatUser(qint64,const UpdatesType&)), this, SIGNAL(messagesAddChatUserAnswer(qint64,const UpdatesType&)));
+    connect(mApi, SIGNAL(messagesDeletedChat(qint64,const UpdatesType&)), this, SIGNAL(messagesDeleteChatUserAnswer(qint64,const UpdatesType&)));
+    connect(mApi, SIGNAL(messagesCreatedChat(qint64,const UpdatesType&)), this, SIGNAL(messagesCreateChatAnswer(qint64,const UpdatesType&)));
 
     // secret chats
-    connect(prv->mApi, SIGNAL(messagesDhConfig(qint64,qint32,const QByteArray&,qint32,const QByteArray&)), this, SLOT(onMessagesDhConfig(qint64,qint32,const QByteArray&,qint32,const QByteArray&)));
-    connect(prv->mApi, SIGNAL(messagesDhConfigNotModified(qint64,const QByteArray&)), this, SLOT(onMessagesDhConfigNotModified(qint64,const QByteArray&)));
-    connect(prv->mApi, SIGNAL(messagesRequestEncryptionEncryptedChat(qint64,const EncryptedChat&)), this, SLOT(onMessagesRequestEncryptionEncryptedChat(qint64,const EncryptedChat&)));
-    connect(prv->mApi, SIGNAL(messagesAcceptEncryptionEncryptedChat(qint64,const EncryptedChat&)), this, SLOT(onMessagesAcceptEncryptionEncryptedChat(qint64,const EncryptedChat&)));
-    connect(prv->mApi, SIGNAL(messagesDiscardEncryptionResult(qint64,bool)), this, SLOT(onMessagesDiscardEncryptionResult(qint64,bool)));
-    connect(prv->mApi, SIGNAL(messagesReadEncryptedHistoryResult(qint64,bool)), this, SIGNAL(messagesReadEncryptedHistoryAnswer(qint64,bool)));
-    connect(prv->mApi, SIGNAL(messagesSendEncryptedSentEncryptedMessage(qint64,qint32)), this, SIGNAL(messagesSendEncryptedAnswer(qint64,qint32)));
-    connect(prv->mApi, SIGNAL(messagesSendEncryptedSentEncryptedFile(qint64,qint32,const EncryptedFile&)), this, SIGNAL(messagesSendEncryptedAnswer(qint64,qint32,const EncryptedFile&)));
-    connect(prv->mApi, SIGNAL(messagesSendEncryptedServiceSentEncryptedMessage(qint64,qint32)), this, SIGNAL(messagesSendEncryptedServiceAnswer(qint64,qint32)));
-    connect(prv->mApi, SIGNAL(messagesSendEncryptedServiceSentEncryptedFile(qint64,qint32,const EncryptedFile&)), this, SIGNAL(messagesSendEncryptedServiceAnswer(qint64,qint32,const EncryptedFile&)));
-    connect(prv->mApi, SIGNAL(messagesGetStickersResult(qint64,const MessagesStickers&)), this, SIGNAL(messagesGetStickersAnwer(qint64,const MessagesStickers&)));
-    connect(prv->mApi, SIGNAL(messagesGetAllStickersResult(qint64,const MessagesAllStickers&)), this, SIGNAL(messagesGetAllStickersAnwer(qint64,const MessagesAllStickers&)));
-    connect(prv->mApi, SIGNAL(messagesGetStickerSetResult(qint64,MessagesStickerSet)), this, SIGNAL(messagesGetStickerSetAnwer(qint64,MessagesStickerSet)));
-    connect(prv->mApi, SIGNAL(messagesInstallStickerSetResult(qint64,bool)), this, SIGNAL(messagesInstallStickerSetAnwer(qint64,bool)));
-    connect(prv->mApi, SIGNAL(messagesUninstallStickerSetResult(qint64,bool)), this, SIGNAL(messagesUninstallStickerSetAnwer(qint64,bool)));
-    connect(prv->mApi, SIGNAL(messagesExportChatInviteResult(qint64,ExportedChatInvite)), this, SIGNAL(messagesExportChatInviteAnwer(qint64,ExportedChatInvite)));
-    connect(prv->mApi, SIGNAL(messagesCheckChatInviteResult(qint64,ChatInvite)), this, SIGNAL(messagesCheckChatInviteAnwer(qint64,ChatInvite)));
-    connect(prv->mApi, SIGNAL(messagesImportChatInviteResult(qint64,UpdatesType)), this, SIGNAL(messagesImportChatInviteAnwer(qint64,UpdatesType)));
-    connect(prv->mApi, SIGNAL(updateShort(const Update&,qint32)), SLOT(onUpdateShort(const Update&)));
-    connect(prv->mApi, SIGNAL(updatesCombined(const QList<Update>&,const QList<User>&,const QList<Chat>&,qint32,qint32,qint32)), SLOT(onUpdatesCombined(const QList<Update>&)));
-    connect(prv->mApi, SIGNAL(updates(const QList<Update>&,const QList<User>&,const QList<Chat>&,qint32,qint32)), SLOT(onUpdates(const QList<Update>&)));
+    connect(mApi, SIGNAL(messagesDhConfig(qint64,qint32,const QByteArray&,qint32,const QByteArray&)), this, SLOT(onMessagesDhConfig(qint64,qint32,const QByteArray&,qint32,const QByteArray&)));
+    connect(mApi, SIGNAL(messagesDhConfigNotModified(qint64,const QByteArray&)), this, SLOT(onMessagesDhConfigNotModified(qint64,const QByteArray&)));
+    connect(mApi, SIGNAL(messagesRequestEncryptionEncryptedChat(qint64,const EncryptedChat&)), this, SLOT(onMessagesRequestEncryptionEncryptedChat(qint64,const EncryptedChat&)));
+    connect(mApi, SIGNAL(messagesAcceptEncryptionEncryptedChat(qint64,const EncryptedChat&)), this, SLOT(onMessagesAcceptEncryptionEncryptedChat(qint64,const EncryptedChat&)));
+    connect(mApi, SIGNAL(messagesDiscardEncryptionResult(qint64,bool)), this, SLOT(onMessagesDiscardEncryptionResult(qint64,bool)));
+    connect(mApi, SIGNAL(messagesReadEncryptedHistoryResult(qint64,bool)), this, SIGNAL(messagesReadEncryptedHistoryAnswer(qint64,bool)));
+    connect(mApi, SIGNAL(messagesSendEncryptedSentEncryptedMessage(qint64,qint32)), this, SIGNAL(messagesSendEncryptedAnswer(qint64,qint32)));
+    connect(mApi, SIGNAL(messagesSendEncryptedSentEncryptedFile(qint64,qint32,const EncryptedFile&)), this, SIGNAL(messagesSendEncryptedAnswer(qint64,qint32,const EncryptedFile&)));
+    connect(mApi, SIGNAL(messagesSendEncryptedServiceSentEncryptedMessage(qint64,qint32)), this, SIGNAL(messagesSendEncryptedServiceAnswer(qint64,qint32)));
+    connect(mApi, SIGNAL(messagesSendEncryptedServiceSentEncryptedFile(qint64,qint32,const EncryptedFile&)), this, SIGNAL(messagesSendEncryptedServiceAnswer(qint64,qint32,const EncryptedFile&)));
+    connect(mApi, SIGNAL(messagesGetStickersResult(qint64,const MessagesStickers&)), this, SIGNAL(messagesGetStickersAnwer(qint64,const MessagesStickers&)));
+    connect(mApi, SIGNAL(messagesGetAllStickersResult(qint64,const MessagesAllStickers&)), this, SIGNAL(messagesGetAllStickersAnwer(qint64,const MessagesAllStickers&)));
+    connect(mApi, SIGNAL(messagesGetStickerSetResult(qint64,MessagesStickerSet)), this, SIGNAL(messagesGetStickerSetAnwer(qint64,MessagesStickerSet)));
+    connect(mApi, SIGNAL(messagesInstallStickerSetResult(qint64,bool)), this, SIGNAL(messagesInstallStickerSetAnwer(qint64,bool)));
+    connect(mApi, SIGNAL(messagesUninstallStickerSetResult(qint64,bool)), this, SIGNAL(messagesUninstallStickerSetAnwer(qint64,bool)));
+    connect(mApi, SIGNAL(messagesExportChatInviteResult(qint64,ExportedChatInvite)), this, SIGNAL(messagesExportChatInviteAnwer(qint64,ExportedChatInvite)));
+    connect(mApi, SIGNAL(messagesCheckChatInviteResult(qint64,ChatInvite)), this, SIGNAL(messagesCheckChatInviteAnwer(qint64,ChatInvite)));
+    connect(mApi, SIGNAL(messagesImportChatInviteResult(qint64,UpdatesType)), this, SIGNAL(messagesImportChatInviteAnwer(qint64,UpdatesType)));
+    connect(mApi, SIGNAL(updateShort(const Update&,qint32)), SLOT(onUpdateShort(const Update&)));
+    connect(mApi, SIGNAL(updatesCombined(const QList<Update>&,const QList<User>&,const QList<Chat>&,qint32,qint32,qint32)), SLOT(onUpdatesCombined(const QList<Update>&)));
+    connect(mApi, SIGNAL(updates(const QList<Update>&,const QList<User>&,const QList<Chat>&,qint32,qint32)), SLOT(onUpdates(const QList<Update>&)));
     // updates
-    connect(prv->mApi, SIGNAL(updatesState(qint64,qint32,qint32,qint32,qint32,qint32)), this, SIGNAL(updatesGetStateAnswer(qint64,qint32,qint32,qint32,qint32,qint32)));
-    connect(prv->mApi, SIGNAL(updatesDifferenceEmpty(qint64,qint32,qint32)), this, SIGNAL(updatesGetDifferenceAnswer(qint64,qint32,qint32)));
-    connect(prv->mApi, SIGNAL(updatesDifference(qint64,const QList<Message>&,const QList<EncryptedMessage>&,const QList<Update>&,const QList<Chat>&,const QList<User>&,const UpdatesState&)), this, SLOT(onUpdatesDifference(qint64,const QList<Message>&,const QList<EncryptedMessage>&,const QList<Update>&,const QList<Chat>&,const QList<User>&,const UpdatesState&)));
-    connect(prv->mApi, SIGNAL(updatesDifferenceSlice(qint64,const QList<Message>,const QList<EncryptedMessage>,const QList<Update>&,const QList<Chat>&,const QList<User>&,const UpdatesState&)), this, SLOT(onUpdatesDifferenceSlice(qint64,const QList<Message>&,const QList<EncryptedMessage>&,const QList<Update>&,const QList<Chat>&,const QList<User>&,const UpdatesState&)));
+    connect(mApi, SIGNAL(updatesState(qint64,qint32,qint32,qint32,qint32,qint32)), this, SIGNAL(updatesGetStateAnswer(qint64,qint32,qint32,qint32,qint32,qint32)));
+    connect(mApi, SIGNAL(updatesDifferenceEmpty(qint64,qint32,qint32)), this, SIGNAL(updatesGetDifferenceAnswer(qint64,qint32,qint32)));
+    connect(mApi, SIGNAL(updatesDifference(qint64,const QList<Message>&,const QList<EncryptedMessage>&,const QList<Update>&,const QList<Chat>&,const QList<User>&,const UpdatesState&)), this, SLOT(onUpdatesDifference(qint64,const QList<Message>&,const QList<EncryptedMessage>&,const QList<Update>&,const QList<Chat>&,const QList<User>&,const UpdatesState&)));
+    connect(mApi, SIGNAL(updatesDifferenceSlice(qint64,const QList<Message>,const QList<EncryptedMessage>,const QList<Update>&,const QList<Chat>&,const QList<User>&,const UpdatesState&)), this, SLOT(onUpdatesDifferenceSlice(qint64,const QList<Message>&,const QList<EncryptedMessage>&,const QList<Update>&,const QList<Chat>&,const QList<User>&,const UpdatesState&)));
     // logic additional signal slots
-    connect(prv->mApi, SIGNAL(mainSessionDcChanged(DC*)), this, SLOT(onAuthCheckPhoneDcChanged()));
-    connect(prv->mApi, SIGNAL(mainSessionDcChanged(DC*)), this, SLOT(onHelpGetInviteTextDcChanged()));
-    connect(prv->mApi, SIGNAL(mainSessionDcChanged(DC*)), this, SLOT(onImportContactsDcChanged()));
-    connect(prv->mApi, SIGNAL(mainSessionReady()), this, SIGNAL(connected()));
-    connect(prv->mApi, SIGNAL(mainSessionClosed()), this, SIGNAL(disconnected()));
+    connect(mApi, SIGNAL(mainSessionDcChanged(DC*)), this, SLOT(onAuthCheckPhoneDcChanged()));
+    connect(mApi, SIGNAL(mainSessionDcChanged(DC*)), this, SLOT(onHelpGetInviteTextDcChanged()));
+    connect(mApi, SIGNAL(mainSessionDcChanged(DC*)), this, SLOT(onImportContactsDcChanged()));
+    connect(mApi, SIGNAL(mainSessionReady()), this, SIGNAL(connected()));
+    connect(mApi, SIGNAL(mainSessionClosed()), this, SIGNAL(disconnected()));
 
-    prv->mFileHandler = FileHandler::Ptr(new FileHandler(prv->mApi, prv->mCrypto, prv->mSettings, *prv->mDcProvider, prv->mSecretState));
+    prv->mFileHandler = FileHandler::Ptr(new FileHandler(mApi, prv->mCrypto, prv->mSettings, *prv->mDcProvider, prv->mSecretState));
     connect(prv->mFileHandler.data(), SIGNAL(uploadSendFileAnswer(qint64,qint32,qint32,qint32)), SIGNAL(uploadSendFileAnswer(qint64,qint32,qint32,qint32)));
     connect(prv->mFileHandler.data(), SIGNAL(uploadGetFileAnswer(qint64,const StorageFileType&,qint32,const QByteArray&,qint32,qint32,qint32)), SIGNAL(uploadGetFileAnswer(qint64,const StorageFileType&,qint32,const QByteArray&,qint32,qint32,qint32)));
     connect(prv->mFileHandler.data(), SIGNAL(uploadCancelFileAnswer(qint64,bool)), SIGNAL(uploadCancelFileAnswer(qint64,bool)));
@@ -459,7 +462,7 @@ void Telegram::onDcProviderReady() {
     // At this point we should test the main session state and emit by hand signals of connected/disconnected
     // depending on the connection state of the session. This is so because first main session connection, if done,
     // is performed before we could connect the signal-slots to advise about it;
-    if (prv->mApi->mainSession()->state() == QAbstractSocket::ConnectedState) {
+    if (mApi->mainSession()->state() == QAbstractSocket::ConnectedState) {
         Q_EMIT connected();
     } else {
         Q_EMIT disconnected();
@@ -497,7 +500,7 @@ qint64 Telegram::messagesDiscardEncryptedChat(qint32 chatId) {
         return -1;
     }
 
-    qint64 requestId = prv->mApi->messagesDiscardEncryption(chatId);
+    qint64 requestId = mApi->messagesDiscardEncryption(chatId);
     // insert another entry related to this request for deleting chat only when response is ok
     prv->mSecretState.chats().insert(requestId, secretChat);
     return requestId;
@@ -511,17 +514,19 @@ qint64 Telegram::messagesSetEncryptedTTL(qint64 randomId, qint32 chatId, qint32 
         return -1;
     }
 
-    InputEncryptedChat inputEncryptedChat;
-    inputEncryptedChat.setChatId(secretChat->chatId());
-    inputEncryptedChat.setAccessHash(secretChat->accessHash());
+    DecryptedMessageAction action(DecryptedMessageAction::typeDecryptedMessageActionSetMessageTTLSecret8);
+    action.setTtlSeconds(ttl);
 
-    DecryptedMessageBuilder builder(secretChat->layer());
-    DecryptedMessage decryptedMessage = builder.buildDecryptedMessageForTtl(randomId, ttl);
+    DecryptedMessage decryptedMessage(DecryptedMessage::typeDecryptedMessageServiceSecret17);
+    decryptedMessage.setRandomId(randomId);
+    decryptedMessage.setAction(action);
 
     prv->mEncrypter->setSecretChat(secretChat);
     QByteArray data = prv->mEncrypter->generateEncryptedData(decryptedMessage);
-    QList<qint64> previousMsgs = secretChat->sequence();
-    qint64 requestId = prv->mApi->messagesSendEncrypted(previousMsgs, inputEncryptedChat, randomId, data);
+    InputEncryptedChat inputEncryptedChat;
+    inputEncryptedChat.setChatId(chatId);
+    inputEncryptedChat.setAccessHash(secretChat->accessHash());
+    qint64 requestId = mApi->messagesSendEncrypted(inputEncryptedChat, randomId, data);
 
     secretChat->increaseOutSeqNo();
     secretChat->appendToSequence(randomId);
@@ -541,7 +546,7 @@ qint64 Telegram::messagesReadEncryptedHistory(qint32 chatId, qint32 maxDate) {
     InputEncryptedChat inputEncryptedChat;
     inputEncryptedChat.setChatId(chatId);
     inputEncryptedChat.setAccessHash(secretChat->accessHash());
-    return prv->mApi->messagesReadEncryptedHistory(inputEncryptedChat, maxDate);
+    return mApi->messagesReadEncryptedHistory(inputEncryptedChat, maxDate);
 }
 
 qint64 Telegram::messagesSendEncrypted(qint32 chatId, qint64 randomId, qint32 ttl, const QString &text) {
@@ -557,13 +562,13 @@ qint64 Telegram::messagesSendEncrypted(qint32 chatId, qint64 randomId, qint32 tt
     inputEncryptedChat.setChatId(secretChat->chatId());
     inputEncryptedChat.setAccessHash(secretChat->accessHash());
 
-    DecryptedMessageBuilder builder(secretChat->layer());
-    DecryptedMessage decryptedMessage = builder.buildDecryptedMessageForSendMessage(randomId, ttl, text);
-
+    DecryptedMessage decryptedMessage(DecryptedMessage::typeDecryptedMessageSecret17);
+    decryptedMessage.setRandomId(randomId);
+    decryptedMessage.setTtl(ttl);
+    decryptedMessage.setMessage(text);
     prv->mEncrypter->setSecretChat(secretChat);
     QByteArray data = prv->mEncrypter->generateEncryptedData(decryptedMessage);
-    QList<qint64> previousMsgs = secretChat->sequence();
-    qint64 request = prv->mApi->messagesSendEncrypted(previousMsgs, inputEncryptedChat, randomId, data);
+    qint64 request = mApi->messagesSendEncrypted(inputEncryptedChat, randomId, data);
 
     secretChat->increaseOutSeqNo();
     secretChat->appendToSequence(randomId);
@@ -583,13 +588,16 @@ void Telegram::onSequenceNumberGap(qint32 chatId, qint32 startSeqNo, qint32 endS
     qint64 randomId;
     Utils::randomBytes(&randomId, 8);
 
-    DecryptedMessageBuilder builder(secretChat->layer());
-    DecryptedMessage decryptedMessage = builder.buildDecryptedMessageForResend(randomId, startSeqNo, endSeqNo);
 
+    DecryptedMessage decryptedMessage(DecryptedMessage::typeDecryptedMessageServiceSecret17);
+    decryptedMessage.setRandomId(randomId);
+    DecryptedMessageAction action(DecryptedMessageAction::typeDecryptedMessageActionResendSecret17);
+    action.setStartSeqNo(startSeqNo);
+    action.setEndSeqNo(endSeqNo);
+    decryptedMessage.setAction(action);
     prv->mEncrypter->setSecretChat(secretChat);
     QByteArray data = prv->mEncrypter->generateEncryptedData(decryptedMessage);
-    QList<qint64> previousMsgs = secretChat->sequence();
-    prv->mApi->messagesSendEncrypted(previousMsgs, inputEncryptedChat, randomId, data);
+    mApi->messagesSendEncrypted(inputEncryptedChat, randomId, data);
 
     secretChat->increaseOutSeqNo();
     secretChat->appendToSequence(randomId);
@@ -623,8 +631,19 @@ qint64 Telegram::messagesSendEncryptedPhoto(qint32 chatId, qint64 randomId, qint
     qint32 width = image.width();
     qint32 height = image.height();
 
-    DecryptedMessageBuilder builder(secretChat->layer());
-    DecryptedMessage decryptedMessage = builder.buildDecryptedMessageForSendPhoto(randomId, ttl, key, iv, size, width, height);
+    DecryptedMessage decryptedMessage(DecryptedMessage::typeDecryptedMessageSecret17);
+    decryptedMessage.setRandomId(randomId);
+    decryptedMessage.setTtl(ttl);
+
+    DecryptedMessageMedia media(DecryptedMessageMedia::typeDecryptedMessageMediaPhotoSecret8);
+    media.setThumbBytes(QByteArray());
+    media.setW(width);
+    media.setH(height);
+    media.setSize(size);
+    media.setKey(key);
+    media.setIv(iv);
+    decryptedMessage.setMedia(media);
+
     op->setDecryptedMessage(decryptedMessage);
 
     return prv->mFileHandler->uploadSendFile(*op, filePath);
@@ -652,9 +671,21 @@ qint64 Telegram::messagesSendEncryptedVideo(qint32 chatId, qint64 randomId, qint
     qint32 size = fileInfo.size();
     QString mimeType = QMimeDatabase().mimeTypeForFile(QFileInfo(filePath)).name();
 
-    DecryptedMessageBuilder builder(secretChat->layer());
-    DecryptedMessage decryptedMessage =
-            builder.buildDecryptedMessageForSendVideo(randomId, ttl, key, iv, size, mimeType, duration, width, height, thumbnailBytes);
+    DecryptedMessage decryptedMessage(DecryptedMessage::typeDecryptedMessageSecret17);
+    decryptedMessage.setRandomId(randomId);
+    decryptedMessage.setTtl(ttl);
+
+    DecryptedMessageMedia media(DecryptedMessageMedia::typeDecryptedMessageMediaVideoSecret17);
+    media.setDuration(duration);
+    media.setMimeType(mimeType);
+    media.setW(width);
+    media.setH(height);
+    media.setSize(size);
+    media.setKey(key);
+    media.setIv(iv);
+    media.setThumbBytes(thumbnailBytes);
+    decryptedMessage.setMedia(media);
+
     op->setDecryptedMessage(decryptedMessage);
 
     return prv->mFileHandler->uploadSendFile(*op, filePath);
@@ -684,8 +715,19 @@ qint64 Telegram::messagesSendEncryptedDocument(qint32 chatId, qint64 randomId, q
     QString fileName = fileInfo.fileName();
     QString mimeType = QMimeDatabase().mimeTypeForFile(filePath).name();
 
-    DecryptedMessageBuilder builder(secretChat->layer());
-    DecryptedMessage decryptedMessage = builder.buildDecryptedMessageForSendDocument(randomId, ttl, key, iv, size, fileName, mimeType);
+    DecryptedMessage decryptedMessage(DecryptedMessage::typeDecryptedMessageSecret17);
+    decryptedMessage.setRandomId(randomId);
+    decryptedMessage.setTtl(ttl);
+
+    DecryptedMessageMedia media(DecryptedMessageMedia::typeDecryptedMessageMediaDocumentSecret8);
+    media.setThumbBytes(QByteArray());
+    media.setFileName(fileName);
+    media.setMimeType(mimeType);
+    media.setSize(size);
+    media.setKey(key);
+    media.setIv(iv);
+    decryptedMessage.setMedia(media);
+
     op->setDecryptedMessage(decryptedMessage);
 
     return prv->mFileHandler->uploadSendFile(*op, filePath);
@@ -693,54 +735,54 @@ qint64 Telegram::messagesSendEncryptedDocument(qint32 chatId, qint64 randomId, q
 
 qint64 Telegram::messagesReceivedQueue(qint32 maxQts) {
     CHECK_API;
-    return prv->mApi->messagesReceivedQueue(maxQts);
+    return mApi->messagesReceivedQueue(maxQts);
 }
 
 qint64 Telegram::messagesGetStickers(const QString &emoticon, const QString &hash) {
     CHECK_API;
-    return prv->mApi->messagesGetStickers(emoticon, hash);
+    return mApi->messagesGetStickers(emoticon, hash);
 }
 
 qint64 Telegram::messagesGetAllStickers(const QString &hash) {
     CHECK_API;
-    return prv->mApi->messagesGetAllStickers(hash);
+    return mApi->messagesGetAllStickers(hash);
 }
 
 qint64 Telegram::messagesGetStickerSet(const InputStickerSet &stickerset) {
     CHECK_API;
-    return prv->mApi->messagesGetStickerSet(stickerset);
+    return mApi->messagesGetStickerSet(stickerset);
 }
 
 qint64 Telegram::messagesInstallStickerSet(const InputStickerSet &stickerset) {
     CHECK_API;
-    return prv->mApi->messagesInstallStickerSet(stickerset);
+    return mApi->messagesInstallStickerSet(stickerset);
 }
 
 qint64 Telegram::messagesUninstallStickerSet(const InputStickerSet &stickerset) {
     CHECK_API;
-    return prv->mApi->messagesUninstallStickerSet(stickerset);
+    return mApi->messagesUninstallStickerSet(stickerset);
 }
 
 qint64 Telegram::messagesExportChatInvite(qint32 chatId) {
     CHECK_API;
-    return prv->mApi->messagesExportChatInvite(chatId);
+    return mApi->messagesExportChatInvite(chatId);
 }
 
 qint64 Telegram::messagesCheckChatInvite(const QString &hash) {
     CHECK_API;
-    return prv->mApi->messagesCheckChatInvite(hash);
+    return mApi->messagesCheckChatInvite(hash);
 }
 
 qint64 Telegram::messagesImportChatInvite(const QString &hash) {
     CHECK_API;
-    return prv->mApi->messagesImportChatInvite(hash);
+    return mApi->messagesImportChatInvite(hash);
 }
 
 qint64 Telegram::generateGAorB(SecretChat *secretChat) {
     CHECK_API;
     qCDebug(TG_LIB_SECRET) << "requesting for DH config parameters";
     // call messages.getDhConfig to get p and g for start creating shared key
-    qint64 reqId = prv->mApi->messagesGetDhConfig(prv->mSecretState.version(), DH_CONFIG_SERVER_RANDOM_LENGTH);
+    qint64 reqId = mApi->messagesGetDhConfig(prv->mSecretState.version(), DH_CONFIG_SERVER_RANDOM_LENGTH);
     // store in secret chats map related to this request id, temporally
     prv->mSecretState.chats().insert(reqId, secretChat);
     return reqId;
@@ -791,7 +833,7 @@ void Telegram::onMessagesDhConfigNotModified(qint64 msgId, const QByteArray &ran
         secretChat->setChatId(randomId);
         prv->mSecretState.chats().insert(randomId, secretChat);
         qCDebug(TG_LIB_SECRET) << "Requesting encryption for chatId" << secretChat->chatId();
-        prv->mApi->messagesRequestEncryption(secretChat->requestedUser(), randomId, gAOrB);
+        mApi->messagesRequestEncryption(secretChat->requestedUser(), randomId, gAOrB);
         break;
     }
     case SecretChat::Requested: {
@@ -804,7 +846,7 @@ void Telegram::onMessagesDhConfigNotModified(qint64 msgId, const QByteArray &ran
         inputEncryptedChat.setChatId(secretChat->chatId());
         inputEncryptedChat.setAccessHash(secretChat->accessHash());
         qCDebug(TG_LIB_SECRET) << "Accepting encryption for chatId" << secretChat->chatId();
-        prv->mApi->messagesAcceptEncryption(inputEncryptedChat, gAOrB, keyFingerprint);
+        mApi->messagesAcceptEncryption(inputEncryptedChat, gAOrB, keyFingerprint);
         break;
     }
     default:
@@ -835,11 +877,16 @@ void Telegram::onMessagesAcceptEncryptionEncryptedChat(qint64, const EncryptedCh
     prv->mEncrypter->setSecretChat(secretChat);
     qint64 randomId;
     Utils::randomBytes(&randomId, 8);
-    QList<qint64> previousMsgs = secretChat->sequence();
-    DecryptedMessageBuilder builder(secretChat->layer());
-    DecryptedMessage decryptedMessage = builder.buildDecryptedMessageForNotifyLayer(randomId, CoreTypes::typeLayerVersion);
+
+    DecryptedMessage decryptedMessage(DecryptedMessage::typeDecryptedMessageServiceSecret17);
+    decryptedMessage.setRandomId(randomId);
+
+    DecryptedMessageAction action(DecryptedMessageAction::typeDecryptedMessageActionNotifyLayerSecret17);
+    action.setLayer(CoreTypes::typeLayerVersion);
+    decryptedMessage.setAction(action);
+
     QByteArray data = prv->mEncrypter->generateEncryptedData(decryptedMessage);
-    prv->mApi->messagesSendEncryptedService(previousMsgs, inputEncryptedChat, randomId, data);
+    mApi->messagesSendEncryptedService(inputEncryptedChat, randomId, data);
 
     secretChat->increaseOutSeqNo();
     secretChat->appendToSequence(randomId);
@@ -886,7 +933,7 @@ void Telegram::timerEvent(QTimerEvent *e)
     {
         killTimer(prv->initTimerId);
         prv->initTimerId = 0;
-        if(!prv->mApi)
+        if(!mApi)
 	{
             qWarning() << "Timeout error initializing. Retrying...";
             init(prv->initTimeout);
@@ -1050,11 +1097,17 @@ void Telegram::processSecretChatUpdate(const Update &update) {
                 prv->mEncrypter->setSecretChat(secretChat);
                 qint64 randomId;
                 Utils::randomBytes(&randomId, 8);
-                QList<qint64> previousMsgs = secretChat->sequence();
-                DecryptedMessageBuilder builder(secretChat->layer());
-                DecryptedMessage decryptedMessage = builder.buildDecryptedMessageForNotifyLayer(randomId, CoreTypes::typeLayerVersion);
+
+                DecryptedMessage decryptedMessage(DecryptedMessage::typeDecryptedMessageServiceSecret17);
+                decryptedMessage.setRandomId(randomId);
+
+                DecryptedMessageAction action(DecryptedMessageAction::typeDecryptedMessageActionNotifyLayerSecret17);
+                action.setLayer(CoreTypes::typeLayerVersion);
+                decryptedMessage.setAction(action);
+
+
                 QByteArray data = prv->mEncrypter->generateEncryptedData(decryptedMessage);
-                prv->mApi->messagesSendEncryptedService(previousMsgs, inputEncryptedChat, randomId, data);
+                mApi->messagesSendEncryptedService(inputEncryptedChat, randomId, data);
 
                 secretChat->increaseOutSeqNo();
                 secretChat->appendToSequence(randomId);
@@ -1155,7 +1208,7 @@ void Telegram::onErrorRetry(qint64 id, qint32 errorCode, const QString &errorTex
         qDebug() << "migrated to dc" << newDc;
         prv->mSettings->setWorkingDcNum(newDc);
         DC *dc = prv->mDcProvider->getDc(newDc);
-        prv->mApi->changeMainSessionToDc(dc);
+        mApi->changeMainSessionToDc(dc);
     } else {
         Q_EMIT error(id, errorCode, errorText, QString());
     }
@@ -1251,27 +1304,6 @@ void Telegram::onMessagesSendMediaAnswer(qint64 fileId, const UpdatesType &updat
     }
 }
 
-void Telegram::onMessagesForwardMediaAnswer(qint64 msgId, const UpdatesType &updates)
-{
-    const int mediaType = prv->pendingForwards.take(msgId);
-    switch (mediaType) {
-    case MessageMedia::typeMessageMediaPhoto:
-        Q_EMIT messagesForwardPhotoAnswer(msgId, updates);
-        break;
-    case MessageMedia::typeMessageMediaVideo:
-        Q_EMIT messagesForwardVideoAnswer(msgId, updates);
-        break;
-    case MessageMedia::typeMessageMediaDocument:
-        Q_EMIT messagesForwardDocumentAnswer(msgId, updates);
-        break;
-    case MessageMedia::typeMessageMediaAudio:
-        Q_EMIT messagesForwardAudioAnswer(msgId, updates);
-        break;
-    default:
-        Q_EMIT messagesForwardMediaAnswer(msgId, updates);
-    }
-}
-
 void Telegram::onMessagesGetMessagesMessages(qint64 id, const QList<Message> &messages, const QList<Chat> &chats, const QList<User> &users) {
     Q_EMIT messagesGetMessagesAnswer(id, messages.size(), messages, chats, users);
 }
@@ -1320,7 +1352,7 @@ qint64 Telegram::helpGetInviteText(const QString &langCode) {
     CHECK_API;
     prv->mLastLangCode = langCode;
     prv->mLastRetryType = GetInviteText;
-    return prv->mApi->helpGetInviteText(langCode);
+    return mApi->helpGetInviteText(langCode);
 }
 
 qint64 Telegram::authCheckPhone() {
@@ -1330,51 +1362,51 @@ qint64 Telegram::authCheckPhone(const QString &phoneNumber) {
     CHECK_API;
     prv->mLastRetryType = PhoneCheck;
     prv->mLastPhoneChecked = phoneNumber;
-    return prv->mApi->authCheckPhone(phoneNumber);
+    return mApi->authCheckPhone(phoneNumber);
 }
 qint64 Telegram::authSendCode() {
     CHECK_API;
-    return prv->mApi->authSendCode(prv->mSettings->phoneNumber(), 0, prv->mSettings->appId(), prv->mSettings->appHash(), LANG_CODE);
+    return mApi->authSendCode(prv->mSettings->phoneNumber(), 0, prv->mSettings->appId(), prv->mSettings->appHash(), LANG_CODE);
 }
 
 qint64 Telegram::authSendSms() {
     CHECK_API;
-    return prv->mApi->authSendSms(prv->mSettings->phoneNumber(), prv->m_phoneCodeHash);
+    return mApi->authSendSms(prv->mSettings->phoneNumber(), prv->m_phoneCodeHash);
 }
 
 qint64 Telegram::authSendCall() {
     CHECK_API;
-    return prv->mApi->authSendCall(prv->mSettings->phoneNumber(), prv->m_phoneCodeHash);
+    return mApi->authSendCall(prv->mSettings->phoneNumber(), prv->m_phoneCodeHash);
 }
 
 qint64 Telegram::authSignIn(const QString &code) {
     CHECK_API;
-    return prv->mApi->authSignIn(prv->mSettings->phoneNumber(), prv->m_phoneCodeHash, code);
+    return mApi->authSignIn(prv->mSettings->phoneNumber(), prv->m_phoneCodeHash, code);
 }
 
 qint64 Telegram::authSignUp(const QString &code, const QString &firstName, const QString &lastName) {
     CHECK_API;
-    return prv->mApi->authSignUp(prv->mSettings->phoneNumber(), prv->m_phoneCodeHash, code, firstName, lastName);
+    return mApi->authSignUp(prv->mSettings->phoneNumber(), prv->m_phoneCodeHash, code, firstName, lastName);
 }
 
 qint64 Telegram::authLogOut() {
     CHECK_API;
-    return prv->mApi->authLogOut();
+    return mApi->authLogOut();
 }
 
 qint64 Telegram::authSendInvites(const QStringList &phoneNumbers, const QString &inviteText) {
     CHECK_API;
-    return prv->mApi->authSendInvites(phoneNumbers, inviteText);
+    return mApi->authSendInvites(phoneNumbers, inviteText);
 }
 
 qint64 Telegram::authResetAuthorizations() {
     CHECK_API;
-    return prv->mApi->authResetAuthorizations();
+    return mApi->authResetAuthorizations();
 }
 
 qint64 Telegram::authCheckPassword(const QByteArray &password) {
     CHECK_API;
-    return prv->mApi->authCheckPassword(password);
+    return mApi->authCheckPassword(password);
 }
 
 qint64 Telegram::accountRegisterDevice(const QString &token, const QString &appVersion, bool appSandbox) {
@@ -1388,117 +1420,117 @@ qint64 Telegram::accountRegisterDevice(const QString &token, const QString &appV
         version = Utils::getAppVersion();
     }
     qCDebug(TG_TELEGRAM) << "registering device for push - app version" << version;
-    return prv->mApi->accountRegisterDevice(UBUNTU_PHONE_TOKEN_TYPE, token, Utils::getDeviceModel(), Utils::getSystemVersion(), version, appSandbox, prv->mSettings->langCode());
+    return mApi->accountRegisterDevice(UBUNTU_PHONE_TOKEN_TYPE, token, Utils::getDeviceModel(), Utils::getSystemVersion(), version, appSandbox, prv->mSettings->langCode());
 }
 
 qint64 Telegram::accountUnregisterDevice(const QString &token) {
     CHECK_API;
-    return prv->mApi->accountUnregisterDevice(UBUNTU_PHONE_TOKEN_TYPE, token);
+    return mApi->accountUnregisterDevice(UBUNTU_PHONE_TOKEN_TYPE, token);
 }
 
 qint64 Telegram::accountUpdateNotifySettings(const InputNotifyPeer &peer, const InputPeerNotifySettings &settings) {
     CHECK_API;
-    return prv->mApi->accountUpdateNotifySettings(peer, settings);
+    return mApi->accountUpdateNotifySettings(peer, settings);
 }
 
 qint64 Telegram::accountGetNotifySettings(const InputNotifyPeer &peer) {
     CHECK_API;
-    return prv->mApi->accountGetNotifySettings(peer);
+    return mApi->accountGetNotifySettings(peer);
 }
 
 qint64 Telegram::accountResetNotifySettings() {
     CHECK_API;
-    return prv->mApi->accountResetNotifySettings();
+    return mApi->accountResetNotifySettings();
 }
 
 qint64 Telegram::accountUpdateProfile(const QString &firstName, const QString &lastName) {
     CHECK_API;
-    return prv->mApi->accountUpdateProfile(firstName, lastName);
+    return mApi->accountUpdateProfile(firstName, lastName);
 }
 
 qint64 Telegram::accountUpdateStatus(bool offline) {
     CHECK_API;
-    return prv->mApi->accountUpdateStatus(offline);
+    return mApi->accountUpdateStatus(offline);
 }
 
 qint64 Telegram::accountGetWallPapers() {
     CHECK_API;
-    return prv->mApi->accountGetWallPapers();
+    return mApi->accountGetWallPapers();
 }
 
 qint64 Telegram::accountCheckUsername(const QString &username) {
     CHECK_API;
-    return prv->mApi->accountCheckUsername(username);
+    return mApi->accountCheckUsername(username);
 }
 
 qint64 Telegram::accountUpdateUsername(const QString &username) {
     CHECK_API;
-    return prv->mApi->accountUpdateUsername(username);
+    return mApi->accountUpdateUsername(username);
 }
 
 qint64 Telegram::accountGetPrivacy(const InputPrivacyKey &key) {
     CHECK_API;
-    return prv->mApi->accountGetPrivacy(key);
+    return mApi->accountGetPrivacy(key);
 }
 
 qint64 Telegram::accountSetPrivacy(const InputPrivacyKey &key, const QList<InputPrivacyRule> &rules) {
     CHECK_API;
-    return prv->mApi->accountSetPrivacy(key, rules);
+    return mApi->accountSetPrivacy(key, rules);
 }
 
 qint64 Telegram::accountDeleteAccount(const QString &reason) {
     CHECK_API;
-    return prv->mApi->accountDeleteAccount(reason);
+    return mApi->accountDeleteAccount(reason);
 }
 
 qint64 Telegram::accountGetAccountTTL() {
     CHECK_API;
-    return prv->mApi->accountGetAccountTTL();
+    return mApi->accountGetAccountTTL();
 }
 
 qint64 Telegram::accountSetAccountTTL(const AccountDaysTTL &ttl) {
     CHECK_API;
-    return prv->mApi->accountSetAccountTTL(ttl);
+    return mApi->accountSetAccountTTL(ttl);
 }
 
 qint64 Telegram::accountUpdateDeviceLocked(int period) {
     CHECK_API;
-    return prv->mApi->accountUpdateDeviceLocked(period);
+    return mApi->accountUpdateDeviceLocked(period);
 }
 
 qint64 Telegram::accountSendChangePhoneCode(const QString &phone_number) {
     CHECK_API;
-    return prv->mApi->accountSendChangePhoneCode(phone_number);
+    return mApi->accountSendChangePhoneCode(phone_number);
 }
 
 qint64 Telegram::accountChangePhone(const QString &phone_number, const QString &phone_code_hash, const QString &phone_code) {
     CHECK_API;
-    return prv->mApi->accountChangePhone(phone_number, phone_code_hash, phone_code);
+    return mApi->accountChangePhone(phone_number, phone_code_hash, phone_code);
 }
 
 qint64 Telegram::accountGetPassword() {
     CHECK_API;
-    return prv->mApi->accountGetPassword();
+    return mApi->accountGetPassword();
 }
 
 qint64 Telegram::accountGetAuthorizations() {
     CHECK_API;
-    return prv->mApi->accountGetAuthorizations();
+    return mApi->accountGetAuthorizations();
 }
 
 qint64 Telegram::accountResetAuthorization(qint64 hash) {
     CHECK_API;
-    return prv->mApi->accountResetAuthorization(hash);
+    return mApi->accountResetAuthorization(hash);
 }
 
 qint64 Telegram::accountGetPasswordSettings(const QByteArray &currentPasswordHash) {
     CHECK_API;
-    return prv->mApi->accountGetPasswordSettings(currentPasswordHash);
+    return mApi->accountGetPasswordSettings(currentPasswordHash);
 }
 
 qint64 Telegram::accountUpdatePasswordSettings(const QByteArray &currentPasswordHash, const AccountPasswordInputSettings &newSettings) {
     CHECK_API;
-    return prv->mApi->accountUpdatePasswordSettings(currentPasswordHash, newSettings);
+    return mApi->accountUpdatePasswordSettings(currentPasswordHash, newSettings);
 }
 
 qint64 Telegram::photosUploadProfilePhoto(const QByteArray &bytes, const QString &fileName, const QString &caption, const InputGeoPoint &geoPoint, const InputPhotoCrop &crop) {
@@ -1522,27 +1554,27 @@ qint64 Telegram::photosUpdateProfilePhoto(qint64 photoId, qint64 accessHash, con
     InputPhoto inputPhoto(InputPhoto::typeInputPhoto);
     inputPhoto.setId(photoId);
     inputPhoto.setAccessHash(accessHash);
-    return prv->mApi->photosUpdateProfilePhoto(inputPhoto, crop);
+    return mApi->photosUpdateProfilePhoto(inputPhoto, crop);
 }
 
 qint64 Telegram::usersGetUsers(const QList<InputUser> &users) {
     CHECK_API;
-    return prv->mApi->usersGetUsers(users);
+    return mApi->usersGetUsers(users);
 }
 
 qint64 Telegram::usersGetFullUser(const InputUser &user) {
     CHECK_API;
-    return prv->mApi->usersGetFullUser(user);
+    return mApi->usersGetFullUser(user);
 }
 
 qint64 Telegram::photosGetUserPhotos(const InputUser &user, qint32 offset, qint32 maxId, qint32 limit) {
     CHECK_API;
-    return prv->mApi->photosGetUserPhotos(user, offset, maxId, limit);
+    return mApi->photosGetUserPhotos(user, offset, maxId, limit);
 }
 
 qint64 Telegram::contactsGetStatuses() {
     CHECK_API;
-    return prv->mApi->contactsGetStatuses();
+    return mApi->contactsGetStatuses();
 }
 
 bool lessThan(const Contact &c1, const Contact &c2) {
@@ -1570,54 +1602,54 @@ qint64 Telegram::contactsGetContacts() {
         md5Generator.addData(hashBase.toStdString().c_str());
         hash = md5Generator.result().toHex();
     }
-    return prv->mApi->contactsGetContacts(hash);
+    return mApi->contactsGetContacts(hash);
 }
 
 qint64 Telegram::contactsImportContacts(const QList<InputContact> &contacts, bool replace) {
     CHECK_API;
     prv->mLastContacts = contacts;
     prv->mLastRetryType = ImportContacts;
-    return prv->mApi->contactsImportContacts(contacts, replace);
+    return mApi->contactsImportContacts(contacts, replace);
 }
 
 qint64 Telegram::contactsDeleteContact(const InputUser &user) {
     CHECK_API;
-    return prv->mApi->contactsDeleteContact(user);
+    return mApi->contactsDeleteContact(user);
 }
 
 qint64 Telegram::contactsDeleteContacts(const QList<InputUser> &users) {
     CHECK_API;
-    return prv->mApi->contactsDeleteContacts(users);
+    return mApi->contactsDeleteContacts(users);
 }
 
 qint64 Telegram::contactsSearch(const QString &q, qint32 limit) {
     CHECK_API;
-    return prv->mApi->contactsSearch(q, limit);
+    return mApi->contactsSearch(q, limit);
 }
 
 qint64 Telegram::contactsResolveUsername(const QString &username) {
     CHECK_API;
-    return prv->mApi->contactsResolveUsername(username);
+    return mApi->contactsResolveUsername(username);
 }
 
 qint64 Telegram::contactsBlock(const InputUser &user) {
     CHECK_API;
-    return prv->mApi->contactsBlock(user);
+    return mApi->contactsBlock(user);
 }
 
 qint64 Telegram::contactsUnblock(const InputUser &user) {
     CHECK_API;
-    return prv->mApi->contactsUnblock(user);
+    return mApi->contactsUnblock(user);
 }
 
 qint64 Telegram::contactsGetBlocked(qint32 offset, qint32 limit) {
     CHECK_API;
-    return prv->mApi->contactsGetBlocked(offset, limit);
+    return mApi->contactsGetBlocked(offset, limit);
 }
 
 qint64 Telegram::messagesSendMessage(const InputPeer &peer, qint64 randomId, const QString &message, int replyToMsgId) {
     CHECK_API;
-    return prv->mApi->messagesSendMessage(peer, message, randomId, replyToMsgId);
+    return mApi->messagesSendMessage(peer, replyToMsgId, message, randomId);
 }
 
 qint64 Telegram::messagesSendPhoto(const InputPeer &peer, qint64 randomId, const QByteArray &bytes, const QString &fileName, qint32 replyToMsgId) {
@@ -1644,7 +1676,7 @@ qint64 Telegram::messagesSendGeoPoint(const InputPeer &peer, qint64 randomId, co
     CHECK_API;
     InputMedia inputMedia(InputMedia::typeInputMediaGeoPoint);
     inputMedia.setGeoPoint(inputGeoPoint);
-    qint64 msgId = prv->mApi->messagesSendMedia(peer, inputMedia, randomId, replyToMsgId);
+    qint64 msgId = mApi->messagesSendMedia(peer, replyToMsgId, inputMedia, randomId);
     prv->pendingMediaSends[msgId] = inputMedia.classType();
     return msgId;
 }
@@ -1655,7 +1687,7 @@ qint64 Telegram::messagesSendContact(const InputPeer &peer, qint64 randomId, con
     inputMedia.setPhoneNumber(phoneNumber);
     inputMedia.setFirstName(firstName);
     inputMedia.setLastName(lastName);
-    qint64 msgId = prv->mApi->messagesSendMedia(peer, inputMedia, randomId, replyToMsgId);
+    qint64 msgId = mApi->messagesSendMedia(peer, replyToMsgId, inputMedia, randomId);
     prv->pendingMediaSends[msgId] = inputMedia.classType();
     return msgId;
 }
@@ -1782,7 +1814,7 @@ qint64 Telegram::messagesForwardPhoto(const InputPeer &peer, qint64 randomId, qi
     inputPhoto.setAccessHash(accessHash);
     InputMedia inputMedia(InputMedia::typeInputMediaPhoto);
     inputMedia.setIdInputPhoto(inputPhoto);
-    return messagesForwardMedia(peer, inputMedia, randomId, replyToMsgId);
+    return messagesSendMedia(peer, replyToMsgId, inputMedia, randomId);
 }
 
 qint64 Telegram::messagesForwardVideo(const InputPeer &peer, qint64 randomId, qint64 videoId, qint64 accessHash, qint32 replyToMsgId) {
@@ -1792,7 +1824,7 @@ qint64 Telegram::messagesForwardVideo(const InputPeer &peer, qint64 randomId, qi
     inputVideo.setAccessHash(accessHash);
     InputMedia inputMedia(InputMedia::typeInputMediaVideo);
     inputMedia.setIdInputVideo(inputVideo);
-    return messagesForwardMedia(peer, inputMedia, randomId, replyToMsgId);
+    return messagesSendMedia(peer, replyToMsgId, inputMedia, randomId);
 }
 
 qint64 Telegram::messagesForwardAudio(const InputPeer &peer, qint64 randomId, qint64 audioId, qint64 accessHash, qint32 replyToMsgId) {
@@ -1802,7 +1834,7 @@ qint64 Telegram::messagesForwardAudio(const InputPeer &peer, qint64 randomId, qi
     inputAudio.setAccessHash(accessHash);
     InputMedia inputMedia(InputMedia::typeInputMediaAudio);
     inputMedia.setIdInputAudio(inputAudio);
-    return messagesForwardMedia(peer, inputMedia, randomId, replyToMsgId);
+    return messagesSendMedia(peer, replyToMsgId, inputMedia, randomId);
 }
 
 qint64 Telegram::messagesForwardDocument(const InputPeer &peer, qint64 randomId, qint64 documentId, qint64 accessHash, qint32 replyToMsgId) {
@@ -1812,13 +1844,7 @@ qint64 Telegram::messagesForwardDocument(const InputPeer &peer, qint64 randomId,
     inputDocument.setAccessHash(accessHash);
     InputMedia inputMedia(InputMedia::typeInputMediaDocument);
     inputMedia.setIdInputDocument(inputDocument);
-    return messagesForwardMedia(peer, inputMedia, randomId, replyToMsgId);
-}
-
-qint64 Telegram::messagesForwardMedia(const InputPeer &peer, const InputMedia &media, qint64 randomId, qint32 replyToMsgId) {
-    const qint64 msgId =  prv->mApi->messagesForwardMedia(peer, media, randomId, replyToMsgId);
-    prv->pendingForwards[msgId] = media.classType();
-    return msgId;
+    return messagesSendMedia(peer, replyToMsgId, inputMedia, randomId);
 }
 
 qint64 Telegram::uploadSendFile(FileOperation &op, int mediaType, const QString &fileName, const QByteArray &bytes, const QByteArray &thumbnailBytes, const QString &thumbnailName)
@@ -1845,89 +1871,89 @@ qint64 Telegram::messagesSetEncryptedTyping(qint32 chatId, bool typing) {
     InputEncryptedChat mChat;
     mChat.setChatId(chatId);
     mChat.setAccessHash(secretChat->accessHash());
-    return prv->mApi->messagesSetEncryptedTyping(mChat,typing);
+    return mApi->messagesSetEncryptedTyping(mChat,typing);
 }
 
 qint64 Telegram::messagesSetTyping(const InputPeer &peer, const SendMessageAction &action) {
     CHECK_API;
-    return prv->mApi->messagesSetTyping(peer, action);
+    return mApi->messagesSetTyping(peer, action);
 }
 
 qint64 Telegram::messagesGetMessages(const QList<qint32> &msgIds) {
     CHECK_API;
-    return prv->mApi->messagesGetMessages(msgIds);
+    return mApi->messagesGetMessages(msgIds);
 }
 
 qint64 Telegram::messagesGetDialogs(qint32 offset, qint32 maxId, qint32 limit) {
     CHECK_API;
-    return prv->mApi->messagesGetDialogs(offset, maxId, limit);
+    return mApi->messagesGetDialogs(offset, maxId, limit);
 }
 
 qint64 Telegram::messagesGetHistory(const InputPeer &peer, qint32 offset, qint32 maxId, qint32 limit) {
     CHECK_API;
-    return prv->mApi->messagesGetHistory(peer, offset, maxId, limit);
+    return mApi->messagesGetHistory(peer, offset, maxId, limit);
 }
 
 qint64 Telegram::messagesSearch(const InputPeer &peer, const QString &query, const MessagesFilter &filter, qint32 minDate, qint32 maxDate, qint32 offset, qint32 maxId, qint32 limit) {
     CHECK_API;
-    return prv->mApi->messagesSearch(peer, query, filter, minDate, maxDate, offset, maxId, limit);
+    return mApi->messagesSearch(peer, query, filter, minDate, maxDate, offset, maxId, limit);
 }
 
 qint64 Telegram::messagesReadHistory(const InputPeer &peer, qint32 maxId, qint32 offset) {
     CHECK_API;
-    return prv->mApi->messagesReadHistory(peer, maxId, offset);
+    return mApi->messagesReadHistory(peer, maxId, offset);
 }
 
 qint64 Telegram::messagesReadMessageContents(const QList<qint32> &ids) {
     CHECK_API;
-    return prv->mApi->messagesReadMessageContents(ids);
+    return mApi->messagesReadMessageContents(ids);
 }
 
 qint64 Telegram::messagesDeleteHistory(const InputPeer &peer, qint32 offset) {
     CHECK_API;
-    return prv->mApi->messagesDeleteHistory(peer, offset);
+    return mApi->messagesDeleteHistory(peer, offset);
 }
 
 qint64 Telegram::messagesDeleteMessages(const QList<qint32> &msgIds) {
     CHECK_API;
-    return prv->mApi->messagesDeleteMessages(msgIds);
+    return mApi->messagesDeleteMessages(msgIds);
 }
 
 qint64 Telegram::messagesReceivedMessages(qint32 maxId) {
     CHECK_API;
-    return prv->mApi->messagesReceivedMessages(maxId);
+    return mApi->messagesReceivedMessages(maxId);
 }
 
 qint64 Telegram::messagesForwardMessage(const InputPeer &peer, qint32 msgId) {
     CHECK_API;
     qint64 randomId;
     Utils::randomBytes(&randomId, 8);
-    return prv->mApi->messagesForwardMessage(peer, msgId, randomId);
+    return mApi->messagesForwardMessage(peer, msgId, randomId);
 }
 
 qint64 Telegram::messagesForwardMessages(const InputPeer &peer, const QList<qint32> &msgIds, const QList<qint64> &randomIds) {
     CHECK_API;
-    return prv->mApi->messagesForwardMessages(peer, msgIds, randomIds);
+    return mApi->messagesForwardMessages(peer, msgIds, randomIds);
 }
 
 qint64 Telegram::messagesSendBroadcast(const QList<InputUser> &users, const QList<qint64> &randomIds, const QString &message, const InputMedia &media) {
     CHECK_API;
-    return prv->mApi->messagesSendBroadcast(users, randomIds, message, media);
+    return mApi->messagesSendBroadcast(users, randomIds, message, media);
 }
 
 qint64 Telegram::messagesGetChats(const QList<qint32> &chatIds) {
     CHECK_API;
-    return prv->mApi->messagesGetChats(chatIds);
+    return mApi->messagesGetChats(chatIds);
 }
 
 qint64 Telegram::messagesGetFullChat(qint32 chatId) {
     CHECK_API;
-    return prv->mApi->messagesGetFullChat(chatId);
+    return mApi->messagesGetFullChat(chatId);
 }
 
 qint64 Telegram::messagesEditChatTitle(qint32 chatId, const QString &title) {
     CHECK_API;
-    return prv->mApi->messagesEditChatTitle(chatId, title);
+    return mApi->messagesEditChatTitle(chatId, title);
 }
 
 qint64 Telegram::messagesEditChatPhoto(qint32 chatId, const QString &filePath, const InputPhotoCrop &crop) {
@@ -1947,32 +1973,32 @@ qint64 Telegram::messagesEditChatPhoto(qint32 chatId, qint64 photoId, qint64 acc
     inputPhoto.setAccessHash(accessHash);
     inputChatPhoto.setId(inputPhoto);
     inputChatPhoto.setCrop(crop);
-    return prv->mApi->messagesEditChatPhoto(chatId, inputChatPhoto);
+    return mApi->messagesEditChatPhoto(chatId, inputChatPhoto);
 }
 
 qint64 Telegram::messagesAddChatUser(qint32 chatId, const InputUser &user, qint32 fwdLimit) {
     CHECK_API;
-    return prv->mApi->messagesAddChatUser(chatId, user, fwdLimit);
+    return mApi->messagesAddChatUser(chatId, user, fwdLimit);
 }
 
 qint64 Telegram::messagesDeleteChatUser(qint32 chatId, const InputUser &user) {
     CHECK_API;
-    return prv->mApi->messagesDeleteChatUser(chatId, user);
+    return mApi->messagesDeleteChatUser(chatId, user);
 }
 
 qint64 Telegram::messagesCreateChat(const QList<InputUser> &users, const QString &chatTopic) {
     CHECK_API;
-    return prv->mApi->messagesCreateChat(users, chatTopic);
+    return mApi->messagesCreateChat(users, chatTopic);
 }
 
 qint64 Telegram::updatesGetState() {
     CHECK_API;
-    return prv->mApi->updatesGetState();
+    return mApi->updatesGetState();
 }
 
 qint64 Telegram::updatesGetDifference(qint32 pts, qint32 date, qint32 qts) {
     CHECK_API;
-    return prv->mApi->updatesGetDifference(pts, date, qts);
+    return mApi->updatesGetDifference(pts, date, qts);
 }
 
 qint64 Telegram::uploadGetFile(const InputFileLocation &location, qint32 fileSize, qint32 dcNum, const QByteArray &key, const QByteArray &iv) {

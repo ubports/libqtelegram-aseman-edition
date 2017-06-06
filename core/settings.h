@@ -46,6 +46,8 @@
 #define ST_DCS_ARRAY "dcs"
 #define ST_HOST "host"
 #define ST_PORT "port"
+#define ST_IPV6 "ipv6"
+#define ST_MEDIA "mediaOnly"
 #define ST_AUTH_KEY_ID "authKeyId"
 #define ST_AUTH_KEY "authKey"
 #define ST_SERVER_SALT "serverSalt"
@@ -82,7 +84,7 @@
 Q_DECLARE_LOGGING_CATEGORY(TG_CORE_SETTINGS)
 
 class DC;
-
+class Telegram;
 class LIBQTELEGRAMSHARED_EXPORT Settings : public QObject
 {
     Q_OBJECT
@@ -181,6 +183,8 @@ private:
     qint32 mG;
     QByteArray mP;
     QList<SecretChat *> mSecretChats;
+
+    Telegram *mTelegram;
 
 };
 

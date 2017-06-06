@@ -172,7 +172,7 @@ void DcProvider::processDcReady(DC *dc) {
     // create api object if dc is workingDc, and get configuration
     if ((!mApi) && (dc->id() == mSettings->workingDcNum())) {
         Session *session = new Session(dc, mSettings, mCrypto, this);
-        mApi = new Api(session, mSettings, mCrypto, this);
+        mApi = new TelegramApi(session, mSettings, mCrypto, this);
         connect(session, SIGNAL(sessionReady(DC*)), this, SLOT(onApiReady(DC*)));
         connect(session, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onApiError()));
         session->connectToServer();
@@ -269,22 +269,35 @@ void DcProvider::onConfigReceived(qint64 msgId, const Config &config) {
 
     const QList<DcOption> &dcOptions = config.dcOptions();
 
-    mPendingDcs = dcOptions.length() -1; //all the received options but the default one, yet used
+//    mPendingDcs = dcOptions.length() -1; //all the received options but the default one, yet used
+
+    mPendingDcs = 0;
+    Q_FOREACH (DcOption dcOption, dcOptions) {
+        if(dcOption.ipv6() || dcOption.mediaOnly())
+            continue;
+
+        mPendingDcs++;
+    }
+    mPendingDcs--; //all the received options but the default one, yet used
 
     Q_FOREACH (DcOption dcOption, dcOptions) {
         qCDebug(TG_CORE_DCPROVIDER) << "dcOption | id =" << dcOption.id() << ", ipAddress =" << dcOption.ipAddress() <<
-                    ", port =" << dcOption.port() << ", hostname =" << dcOption.hostname();
+                    ", port =" << dcOption.port() << ", hostname =" << dcOption.ipAddress() <<
+                    ", ipv6 =" << dcOption.ipv6() << ", mediaOnly =" << dcOption.mediaOnly();
+        if(dcOption.ipv6() || dcOption.mediaOnly())
+            continue;
 
         // for every new DC or not authenticated DC, insert into m_dcs and authenticate
         DC *dc = mDcs.value(dcOption.id());
 
         // check if dc is not null or if received host and port are not equals than settings ones
-//        if ((!dc) || ((dc->host() != dcOption.ipAddress()) || (dc->port() != dcOption.port()))) {
         if ((!dc) || (dc->state() < DC::authKeyCreated && ((dc->host() != dcOption.ipAddress()) || (dc->port() != dcOption.port()))) ) {
             // if not exists dc or host and port different, create a new dc object for this dcId and add it to m_dcs map
             dc = new DC(dcOption.id());
+            dc->setIpv6(dcOption.ipv6());
             dc->setHost(dcOption.ipAddress());
             dc->setPort(dcOption.port());
+            dc->setMediaOnly(dcOption.mediaOnly());
             mDcs.insert(dcOption.id(), dc);
         }
 
@@ -308,7 +321,7 @@ void DcProvider::onConfigReceived(qint64 msgId, const Config &config) {
     qCDebug(TG_CORE_DCPROVIDER) << "broadcastMaxSize =" << config.broadcastSizeMax();
 }
 
-Api *DcProvider::getApi() const {
+TelegramApi *DcProvider::getApi() const {
     return mApi;
 }
 

@@ -54,9 +54,10 @@ void AbstractApi::connectResponsesSignals(Session *session) {
  */
 void AbstractApi::onErrorReceived(Query *q, qint32 errorCode, QString errorText) {
     if (q->methods() && q->methods()->onError) {
-        (((Api *)this)->*(q->methods()->onError))(q, errorCode, errorText);
+        (((TelegramApi *)this)->*(q->methods()->onError))(q, errorCode, errorText);
     } else {
-        onError(q, errorCode, errorText);
+        bool accepted = false;
+        onError(q, errorCode, errorText, q->extra(), accepted);
     }
     delete q;
 }
@@ -69,7 +70,7 @@ void AbstractApi::onErrorReceived(Query *q, qint32 errorCode, QString errorText)
  */
 void AbstractApi::onResultReceived(Query *q, InboundPkt &inboundPkt) {
     if (q->methods() && q->methods()->onAnswer) {
-        (((Api *)this)->*(q->methods()->onAnswer))(q, inboundPkt);
+        (((TelegramApi *)this)->*(q->methods()->onAnswer))(q, inboundPkt);
         if(inboundPkt.inPtr() != inboundPkt.inEnd())
         {
             Q_EMIT fatalError();
