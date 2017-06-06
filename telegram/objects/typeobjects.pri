@@ -25,6 +25,10 @@ HEADERS += \
     $$PWD/contactstatusobject.h \
     $$PWD/contactsuggestedobject.h \
     $$PWD/dcoptionobject.h \
+    $$PWD/decryptedmessageobject.h \
+    $$PWD/decryptedmessageactionobject.h \
+    $$PWD/decryptedmessagelayerobject.h \
+    $$PWD/decryptedmessagemediaobject.h \
     $$PWD/dialogobject.h \
     $$PWD/disabledfeatureobject.h \
     $$PWD/documentobject.h \
@@ -124,6 +128,7 @@ HEADERS += \
     $$PWD/messagesstickersobject.h \
     $$PWD/photosphotoobject.h \
     $$PWD/photosphotosobject.h \
+    $$PWD/secretchatmessageobject.h \
     $$PWD/storagefiletypeobject.h \
     $$PWD/updatesdifferenceobject.h \
     $$PWD/updatesstateobject.h \
@@ -149,6 +154,10 @@ SOURCES += \
     $$PWD/contactstatusobject.cpp \
     $$PWD/contactsuggestedobject.cpp \
     $$PWD/dcoptionobject.cpp \
+    $$PWD/decryptedmessageobject.cpp \
+    $$PWD/decryptedmessageactionobject.cpp \
+    $$PWD/decryptedmessagelayerobject.cpp \
+    $$PWD/decryptedmessagemediaobject.cpp \
     $$PWD/dialogobject.cpp \
     $$PWD/disabledfeatureobject.cpp \
     $$PWD/documentobject.cpp \
@@ -248,6 +257,7 @@ SOURCES += \
     $$PWD/messagesstickersobject.cpp \
     $$PWD/photosphotoobject.cpp \
     $$PWD/photosphotosobject.cpp \
+    $$PWD/secretchatmessageobject.cpp \
     $$PWD/storagefiletypeobject.cpp \
     $$PWD/updatesdifferenceobject.cpp \
     $$PWD/updatesstateobject.cpp \

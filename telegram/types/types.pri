@@ -24,6 +24,10 @@ HEADERS += \
     $$PWD/contactstatus.h \
     $$PWD/contactsuggested.h \
     $$PWD/dcoption.h \
+    $$PWD/decryptedmessage.h \
+    $$PWD/decryptedmessageaction.h \
+    $$PWD/decryptedmessagelayer.h \
+    $$PWD/decryptedmessagemedia.h \
     $$PWD/dialog.h \
     $$PWD/disabledfeature.h \
     $$PWD/document.h \
@@ -123,6 +127,7 @@ HEADERS += \
     $$PWD/messagesstickers.h \
     $$PWD/photosphoto.h \
     $$PWD/photosphotos.h \
+    $$PWD/secretchatmessage.h \
     $$PWD/storagefiletype.h \
     $$PWD/updatesdifference.h \
     $$PWD/updatesstate.h \
