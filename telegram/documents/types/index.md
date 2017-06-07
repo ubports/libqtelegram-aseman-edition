@@ -36,6 +36,14 @@
 
 * [DcOption](dcoption.md)
 
+* [DecryptedMessage](decryptedmessage.md)
+
+* [DecryptedMessageAction](decryptedmessageaction.md)
+
+* [DecryptedMessageLayer](decryptedmessagelayer.md)
+
+* [DecryptedMessageMedia](decryptedmessagemedia.md)
+
 * [Dialog](dialog.md)
 
 * [DisabledFeature](disabledfeature.md)
@@ -133,6 +141,8 @@
 * [PrivacyRule](privacyrule.md)
 
 * [ReceivedNotifyMessage](receivednotifymessage.md)
+
+* [SecretChatMessage](secretchatmessage.md)
 
 * [SendMessageAction](sendmessageaction.md)
 

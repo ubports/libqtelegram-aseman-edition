@@ -73,4 +73,150 @@ private:
     DecryptedMessageLayer m_core;
 };
 
+inline DecryptedMessageLayerObject::DecryptedMessageLayerObject(const DecryptedMessageLayer &core, QObject *parent) :
+    TelegramTypeQObject(parent),
+    m_message(0),
+    m_core(core)
+{
+    m_message = new DecryptedMessageObject(m_core.message(), this);
+    connect(m_message.data(), &DecryptedMessageObject::coreChanged, this, &DecryptedMessageLayerObject::coreMessageChanged);
+}
+
+inline DecryptedMessageLayerObject::DecryptedMessageLayerObject(QObject *parent) :
+    TelegramTypeQObject(parent),
+    m_message(0),
+    m_core()
+{
+    m_message = new DecryptedMessageObject(m_core.message(), this);
+    connect(m_message.data(), &DecryptedMessageObject::coreChanged, this, &DecryptedMessageLayerObject::coreMessageChanged);
+}
+
+inline DecryptedMessageLayerObject::~DecryptedMessageLayerObject() {
+}
+
+inline void DecryptedMessageLayerObject::setInSeqNo(qint32 inSeqNo) {
+    if(m_core.inSeqNo() == inSeqNo) return;
+    m_core.setInSeqNo(inSeqNo);
+    Q_EMIT inSeqNoChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 DecryptedMessageLayerObject::inSeqNo() const {
+    return m_core.inSeqNo();
+}
+
+inline void DecryptedMessageLayerObject::setLayer(qint32 layer) {
+    if(m_core.layer() == layer) return;
+    m_core.setLayer(layer);
+    Q_EMIT layerChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 DecryptedMessageLayerObject::layer() const {
+    return m_core.layer();
+}
+
+inline void DecryptedMessageLayerObject::setMessage(DecryptedMessageObject* message) {
+    if(m_message == message) return;
+    if(m_message) delete m_message;
+    m_message = message;
+    if(m_message) {
+        m_message->setParent(this);
+        m_core.setMessage(m_message->core());
+        connect(m_message.data(), &DecryptedMessageObject::coreChanged, this, &DecryptedMessageLayerObject::coreMessageChanged);
+    }
+    Q_EMIT messageChanged();
+    Q_EMIT coreChanged();
+}
+
+inline DecryptedMessageObject*  DecryptedMessageLayerObject::message() const {
+    return m_message;
+}
+
+inline void DecryptedMessageLayerObject::setOutSeqNo(qint32 outSeqNo) {
+    if(m_core.outSeqNo() == outSeqNo) return;
+    m_core.setOutSeqNo(outSeqNo);
+    Q_EMIT outSeqNoChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 DecryptedMessageLayerObject::outSeqNo() const {
+    return m_core.outSeqNo();
+}
+
+inline void DecryptedMessageLayerObject::setRandomBytes(const QByteArray &randomBytes) {
+    if(m_core.randomBytes() == randomBytes) return;
+    m_core.setRandomBytes(randomBytes);
+    Q_EMIT randomBytesChanged();
+    Q_EMIT coreChanged();
+}
+
+inline QByteArray DecryptedMessageLayerObject::randomBytes() const {
+    return m_core.randomBytes();
+}
+
+inline DecryptedMessageLayerObject &DecryptedMessageLayerObject::operator =(const DecryptedMessageLayer &b) {
+    if(m_core == b) return *this;
+    m_core = b;
+    m_message->setCore(b.message());
+
+    Q_EMIT inSeqNoChanged();
+    Q_EMIT layerChanged();
+    Q_EMIT messageChanged();
+    Q_EMIT outSeqNoChanged();
+    Q_EMIT randomBytesChanged();
+    Q_EMIT coreChanged();
+    return *this;
+}
+
+inline bool DecryptedMessageLayerObject::operator ==(const DecryptedMessageLayer &b) const {
+    return m_core == b;
+}
+
+inline void DecryptedMessageLayerObject::setClassType(quint32 classType) {
+    DecryptedMessageLayer::DecryptedMessageLayerClassType result;
+    switch(classType) {
+    case TypeDecryptedMessageLayerSecret17:
+        result = DecryptedMessageLayer::typeDecryptedMessageLayerSecret17;
+        break;
+    default:
+        result = DecryptedMessageLayer::typeDecryptedMessageLayerSecret17;
+        break;
+    }
+
+    if(m_core.classType() == result) return;
+    m_core.setClassType(result);
+    Q_EMIT classTypeChanged();
+    Q_EMIT coreChanged();
+}
+
+inline quint32 DecryptedMessageLayerObject::classType() const {
+    int result;
+    switch(static_cast<qint64>(m_core.classType())) {
+    case DecryptedMessageLayer::typeDecryptedMessageLayerSecret17:
+        result = TypeDecryptedMessageLayerSecret17;
+        break;
+    default:
+        result = TypeDecryptedMessageLayerSecret17;
+        break;
+    }
+
+    return result;
+}
+
+inline void DecryptedMessageLayerObject::setCore(const DecryptedMessageLayer &core) {
+    operator =(core);
+}
+
+inline DecryptedMessageLayer DecryptedMessageLayerObject::core() const {
+    return m_core;
+}
+
+inline void DecryptedMessageLayerObject::coreMessageChanged() {
+    if(m_core.message() == m_message->core()) return;
+    m_core.setMessage(m_message->core());
+    Q_EMIT messageChanged();
+    Q_EMIT coreChanged();
+}
+
 #endif // LQTG_TYPE_DECRYPTEDMESSAGELAYER_OBJECT

@@ -39,17 +39,8 @@ public:
     void setIpAddress(const QString &ipAddress);
     QString ipAddress() const;
 
-    void setIpv6(bool ipv6);
-    bool ipv6() const;
-
-    void setMediaOnly(bool mediaOnly);
-    bool mediaOnly() const;
-
     void setPort(qint32 port);
     qint32 port() const;
-
-    void setTcpoOnly(bool tcpoOnly);
-    bool tcpoOnly() const;
 
     void setClassType(DcOptionClassType classType);
     DcOptionClassType classType() const;

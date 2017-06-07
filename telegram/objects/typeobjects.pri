@@ -78,6 +78,7 @@ HEADERS += \
     $$PWD/privacykeyobject.h \
     $$PWD/privacyruleobject.h \
     $$PWD/receivednotifymessageobject.h \
+    $$PWD/secretchatmessageobject.h \
     $$PWD/sendmessageactionobject.h \
     $$PWD/stickerpackobject.h \
     $$PWD/stickersetobject.h \
@@ -128,7 +129,6 @@ HEADERS += \
     $$PWD/messagesstickersobject.h \
     $$PWD/photosphotoobject.h \
     $$PWD/photosphotosobject.h \
-    $$PWD/secretchatmessageobject.h \
     $$PWD/storagefiletypeobject.h \
     $$PWD/updatesdifferenceobject.h \
     $$PWD/updatesstateobject.h \
@@ -207,6 +207,7 @@ SOURCES += \
     $$PWD/privacykeyobject.cpp \
     $$PWD/privacyruleobject.cpp \
     $$PWD/receivednotifymessageobject.cpp \
+    $$PWD/secretchatmessageobject.cpp \
     $$PWD/sendmessageactionobject.cpp \
     $$PWD/stickerpackobject.cpp \
     $$PWD/stickersetobject.cpp \
@@ -257,7 +258,6 @@ SOURCES += \
     $$PWD/messagesstickersobject.cpp \
     $$PWD/photosphotoobject.cpp \
     $$PWD/photosphotosobject.cpp \
-    $$PWD/secretchatmessageobject.cpp \
     $$PWD/storagefiletypeobject.cpp \
     $$PWD/updatesdifferenceobject.cpp \
     $$PWD/updatesstateobject.cpp \

@@ -84,4 +84,200 @@ private:
     DecryptedMessage m_core;
 };
 
+inline DecryptedMessageObject::DecryptedMessageObject(const DecryptedMessage &core, QObject *parent) :
+    TelegramTypeQObject(parent),
+    m_action(0),
+    m_media(0),
+    m_core(core)
+{
+    m_action = new DecryptedMessageActionObject(m_core.action(), this);
+    connect(m_action.data(), &DecryptedMessageActionObject::coreChanged, this, &DecryptedMessageObject::coreActionChanged);
+    m_media = new DecryptedMessageMediaObject(m_core.media(), this);
+    connect(m_media.data(), &DecryptedMessageMediaObject::coreChanged, this, &DecryptedMessageObject::coreMediaChanged);
+}
+
+inline DecryptedMessageObject::DecryptedMessageObject(QObject *parent) :
+    TelegramTypeQObject(parent),
+    m_action(0),
+    m_media(0),
+    m_core()
+{
+    m_action = new DecryptedMessageActionObject(m_core.action(), this);
+    connect(m_action.data(), &DecryptedMessageActionObject::coreChanged, this, &DecryptedMessageObject::coreActionChanged);
+    m_media = new DecryptedMessageMediaObject(m_core.media(), this);
+    connect(m_media.data(), &DecryptedMessageMediaObject::coreChanged, this, &DecryptedMessageObject::coreMediaChanged);
+}
+
+inline DecryptedMessageObject::~DecryptedMessageObject() {
+}
+
+inline void DecryptedMessageObject::setAction(DecryptedMessageActionObject* action) {
+    if(m_action == action) return;
+    if(m_action) delete m_action;
+    m_action = action;
+    if(m_action) {
+        m_action->setParent(this);
+        m_core.setAction(m_action->core());
+        connect(m_action.data(), &DecryptedMessageActionObject::coreChanged, this, &DecryptedMessageObject::coreActionChanged);
+    }
+    Q_EMIT actionChanged();
+    Q_EMIT coreChanged();
+}
+
+inline DecryptedMessageActionObject*  DecryptedMessageObject::action() const {
+    return m_action;
+}
+
+inline void DecryptedMessageObject::setMedia(DecryptedMessageMediaObject* media) {
+    if(m_media == media) return;
+    if(m_media) delete m_media;
+    m_media = media;
+    if(m_media) {
+        m_media->setParent(this);
+        m_core.setMedia(m_media->core());
+        connect(m_media.data(), &DecryptedMessageMediaObject::coreChanged, this, &DecryptedMessageObject::coreMediaChanged);
+    }
+    Q_EMIT mediaChanged();
+    Q_EMIT coreChanged();
+}
+
+inline DecryptedMessageMediaObject*  DecryptedMessageObject::media() const {
+    return m_media;
+}
+
+inline void DecryptedMessageObject::setMessage(const QString &message) {
+    if(m_core.message() == message) return;
+    m_core.setMessage(message);
+    Q_EMIT messageChanged();
+    Q_EMIT coreChanged();
+}
+
+inline QString DecryptedMessageObject::message() const {
+    return m_core.message();
+}
+
+inline void DecryptedMessageObject::setRandomBytes(const QByteArray &randomBytes) {
+    if(m_core.randomBytes() == randomBytes) return;
+    m_core.setRandomBytes(randomBytes);
+    Q_EMIT randomBytesChanged();
+    Q_EMIT coreChanged();
+}
+
+inline QByteArray DecryptedMessageObject::randomBytes() const {
+    return m_core.randomBytes();
+}
+
+inline void DecryptedMessageObject::setRandomId(qint64 randomId) {
+    if(m_core.randomId() == randomId) return;
+    m_core.setRandomId(randomId);
+    Q_EMIT randomIdChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint64 DecryptedMessageObject::randomId() const {
+    return m_core.randomId();
+}
+
+inline void DecryptedMessageObject::setTtl(qint32 ttl) {
+    if(m_core.ttl() == ttl) return;
+    m_core.setTtl(ttl);
+    Q_EMIT ttlChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 DecryptedMessageObject::ttl() const {
+    return m_core.ttl();
+}
+
+inline DecryptedMessageObject &DecryptedMessageObject::operator =(const DecryptedMessage &b) {
+    if(m_core == b) return *this;
+    m_core = b;
+    m_action->setCore(b.action());
+    m_media->setCore(b.media());
+
+    Q_EMIT actionChanged();
+    Q_EMIT mediaChanged();
+    Q_EMIT messageChanged();
+    Q_EMIT randomBytesChanged();
+    Q_EMIT randomIdChanged();
+    Q_EMIT ttlChanged();
+    Q_EMIT coreChanged();
+    return *this;
+}
+
+inline bool DecryptedMessageObject::operator ==(const DecryptedMessage &b) const {
+    return m_core == b;
+}
+
+inline void DecryptedMessageObject::setClassType(quint32 classType) {
+    DecryptedMessage::DecryptedMessageClassType result;
+    switch(classType) {
+    case TypeDecryptedMessageSecret8:
+        result = DecryptedMessage::typeDecryptedMessageSecret8;
+        break;
+    case TypeDecryptedMessageServiceSecret8:
+        result = DecryptedMessage::typeDecryptedMessageServiceSecret8;
+        break;
+    case TypeDecryptedMessageSecret17:
+        result = DecryptedMessage::typeDecryptedMessageSecret17;
+        break;
+    case TypeDecryptedMessageServiceSecret17:
+        result = DecryptedMessage::typeDecryptedMessageServiceSecret17;
+        break;
+    default:
+        result = DecryptedMessage::typeDecryptedMessageSecret8;
+        break;
+    }
+
+    if(m_core.classType() == result) return;
+    m_core.setClassType(result);
+    Q_EMIT classTypeChanged();
+    Q_EMIT coreChanged();
+}
+
+inline quint32 DecryptedMessageObject::classType() const {
+    int result;
+    switch(static_cast<qint64>(m_core.classType())) {
+    case DecryptedMessage::typeDecryptedMessageSecret8:
+        result = TypeDecryptedMessageSecret8;
+        break;
+    case DecryptedMessage::typeDecryptedMessageServiceSecret8:
+        result = TypeDecryptedMessageServiceSecret8;
+        break;
+    case DecryptedMessage::typeDecryptedMessageSecret17:
+        result = TypeDecryptedMessageSecret17;
+        break;
+    case DecryptedMessage::typeDecryptedMessageServiceSecret17:
+        result = TypeDecryptedMessageServiceSecret17;
+        break;
+    default:
+        result = TypeDecryptedMessageSecret8;
+        break;
+    }
+
+    return result;
+}
+
+inline void DecryptedMessageObject::setCore(const DecryptedMessage &core) {
+    operator =(core);
+}
+
+inline DecryptedMessage DecryptedMessageObject::core() const {
+    return m_core;
+}
+
+inline void DecryptedMessageObject::coreActionChanged() {
+    if(m_core.action() == m_action->core()) return;
+    m_core.setAction(m_action->core());
+    Q_EMIT actionChanged();
+    Q_EMIT coreChanged();
+}
+
+inline void DecryptedMessageObject::coreMediaChanged() {
+    if(m_core.media() == m_media->core()) return;
+    m_core.setMedia(m_media->core());
+    Q_EMIT mediaChanged();
+    Q_EMIT coreChanged();
+}
+
 #endif // LQTG_TYPE_DECRYPTEDMESSAGE_OBJECT

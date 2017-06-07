@@ -26,6 +26,10 @@ void qtelegramRegisterQmlTypes(const char *uri, int major, int minor) {
     qmlRegisterType<ContactStatusObject>(uri, major, minor, "ContactStatus");
     qmlRegisterType<ContactSuggestedObject>(uri, major, minor, "ContactSuggested");
     qmlRegisterType<DcOptionObject>(uri, major, minor, "DcOption");
+    qmlRegisterType<DecryptedMessageObject>(uri, major, minor, "DecryptedMessage");
+    qmlRegisterType<DecryptedMessageActionObject>(uri, major, minor, "DecryptedMessageAction");
+    qmlRegisterType<DecryptedMessageLayerObject>(uri, major, minor, "DecryptedMessageLayer");
+    qmlRegisterType<DecryptedMessageMediaObject>(uri, major, minor, "DecryptedMessageMedia");
     qmlRegisterType<DialogObject>(uri, major, minor, "Dialog");
     qmlRegisterType<DisabledFeatureObject>(uri, major, minor, "DisabledFeature");
     qmlRegisterType<DocumentObject>(uri, major, minor, "Document");
@@ -75,6 +79,7 @@ void qtelegramRegisterQmlTypes(const char *uri, int major, int minor) {
     qmlRegisterType<PrivacyKeyObject>(uri, major, minor, "PrivacyKey");
     qmlRegisterType<PrivacyRuleObject>(uri, major, minor, "PrivacyRule");
     qmlRegisterType<ReceivedNotifyMessageObject>(uri, major, minor, "ReceivedNotifyMessage");
+    qmlRegisterType<SecretChatMessageObject>(uri, major, minor, "SecretChatMessage");
     qmlRegisterType<SendMessageActionObject>(uri, major, minor, "SendMessageAction");
     qmlRegisterType<StickerPackObject>(uri, major, minor, "StickerPack");
     qmlRegisterType<StickerSetObject>(uri, major, minor, "StickerSet");

@@ -77,6 +77,7 @@ HEADERS += \
     $$PWD/privacykey.h \
     $$PWD/privacyrule.h \
     $$PWD/receivednotifymessage.h \
+    $$PWD/secretchatmessage.h \
     $$PWD/sendmessageaction.h \
     $$PWD/stickerpack.h \
     $$PWD/stickerset.h \
@@ -127,7 +128,6 @@ HEADERS += \
     $$PWD/messagesstickers.h \
     $$PWD/photosphoto.h \
     $$PWD/photosphotos.h \
-    $$PWD/secretchatmessage.h \
     $$PWD/storagefiletype.h \
     $$PWD/updatesdifference.h \
     $$PWD/updatesstate.h \

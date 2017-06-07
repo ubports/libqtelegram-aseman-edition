@@ -5861,10 +5861,17 @@ qint64 TelegramCore::retry(qint64 mid)
     return result;
 }
 
+bool TelegramCore::isConnected() const {
+    if (mApi && mApi->mainSession()) {
+        return mApi->mainSession()->state() == QAbstractSocket::ConnectedState;
+    }
+    return false;
+}
+
 void TelegramCore::timerEvent(QTimerEvent *e)
 {
     const qint64 msgId = mTimer.key(e->timerId());
-    if(msgId)
+    if(msgId && isConnected())
     {
         mTimer.remove(msgId);
         killTimer(e->timerId());
@@ -5877,13 +5884,6 @@ void TelegramCore::timerEvent(QTimerEvent *e)
 
 TelegramCore::~TelegramCore()
 {
-    QHashIterator<qint64, void*> i(mCallbacks);
-    while(i.hasNext())
-    {
-        i.next();
-        Callback<int> *ptr = reinterpret_cast<Callback<int>*>(i.value());
-        delete ptr;
-    }
     mCallbacks.clear();
 }
 

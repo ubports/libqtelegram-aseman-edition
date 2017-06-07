@@ -269,23 +269,11 @@ void DcProvider::onConfigReceived(qint64 msgId, const Config &config) {
 
     const QList<DcOption> &dcOptions = config.dcOptions();
 
-//    mPendingDcs = dcOptions.length() -1; //all the received options but the default one, yet used
-
-    mPendingDcs = 0;
-    Q_FOREACH (DcOption dcOption, dcOptions) {
-        if(dcOption.ipv6() || dcOption.mediaOnly())
-            continue;
-
-        mPendingDcs++;
-    }
-    mPendingDcs--; //all the received options but the default one, yet used
+    mPendingDcs = dcOptions.length() -1; //all the received options but the default one, yet used
 
     Q_FOREACH (DcOption dcOption, dcOptions) {
         qCDebug(TG_CORE_DCPROVIDER) << "dcOption | id =" << dcOption.id() << ", ipAddress =" << dcOption.ipAddress() <<
-                    ", port =" << dcOption.port() << ", hostname =" << dcOption.ipAddress() <<
-                    ", ipv6 =" << dcOption.ipv6() << ", mediaOnly =" << dcOption.mediaOnly();
-        if(dcOption.ipv6() || dcOption.mediaOnly())
-            continue;
+                    ", port =" << dcOption.port() << ", hostname =" << dcOption.ipAddress();
 
         // for every new DC or not authenticated DC, insert into m_dcs and authenticate
         DC *dc = mDcs.value(dcOption.id());
@@ -294,10 +282,8 @@ void DcProvider::onConfigReceived(qint64 msgId, const Config &config) {
         if ((!dc) || (dc->state() < DC::authKeyCreated && ((dc->host() != dcOption.ipAddress()) || (dc->port() != dcOption.port()))) ) {
             // if not exists dc or host and port different, create a new dc object for this dcId and add it to m_dcs map
             dc = new DC(dcOption.id());
-            dc->setIpv6(dcOption.ipv6());
             dc->setHost(dcOption.ipAddress());
             dc->setPort(dcOption.port());
-            dc->setMediaOnly(dcOption.mediaOnly());
             mDcs.insert(dcOption.id(), dc);
         }
 

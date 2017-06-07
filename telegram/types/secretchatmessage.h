@@ -9,6 +9,8 @@
 
 #include <QMetaType>
 #include <QVariant>
+#include "core/inboundpkt.h"
+#include "core/outboundpkt.h"
 #include "../coretypes.h"
 
 #include <QDataStream>
@@ -27,7 +29,6 @@ public:
     SecretChatMessage(SecretChatMessageClassType classType = typeSecretChatMessage, InboundPkt *in = 0);
     SecretChatMessage(InboundPkt *in);
     SecretChatMessage(const Null&);
-    SecretChatMessage(const SecretChatMessage &another);
     virtual ~SecretChatMessage();
 
     void setAttachment(const EncryptedFile &attachment);
@@ -55,7 +56,6 @@ public:
     static SecretChatMessage fromMap(const QMap<QString, QVariant> &map);
 
     bool operator ==(const SecretChatMessage &b) const;
-    SecretChatMessage &operator =(const SecretChatMessage &b);
 
     bool operator==(bool stt) const { return isNull() != stt; }
     bool operator!=(bool stt) const { return !operator ==(stt); }
@@ -76,6 +76,212 @@ Q_DECLARE_METATYPE(SecretChatMessage)
 QDataStream LIBQTELEGRAMSHARED_EXPORT &operator<<(QDataStream &stream, const SecretChatMessage &item);
 QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, SecretChatMessage &item);
 
-QDebug LIBQTELEGRAMSHARED_EXPORT operator<<(QDebug debug,  const SecretChatMessage &item);
+inline SecretChatMessage::SecretChatMessage(SecretChatMessageClassType classType, InboundPkt *in) :
+    m_chatId(0),
+    m_date(0),
+    m_ttl(0),
+    m_classType(classType)
+{
+    if(in) fetch(in);
+}
+
+inline SecretChatMessage::SecretChatMessage(InboundPkt *in) :
+    m_chatId(0),
+    m_date(0),
+    m_ttl(0),
+    m_classType(typeSecretChatMessage)
+{
+    fetch(in);
+}
+
+inline SecretChatMessage::SecretChatMessage(const Null &null) :
+    TelegramTypeObject(null),
+    m_chatId(0),
+    m_date(0),
+    m_ttl(0),
+    m_classType(typeSecretChatMessage)
+{
+}
+
+inline SecretChatMessage::~SecretChatMessage() {
+}
+
+inline void SecretChatMessage::setAttachment(const EncryptedFile &attachment) {
+    m_attachment = attachment;
+}
+
+inline EncryptedFile SecretChatMessage::attachment() const {
+    return m_attachment;
+}
+
+inline void SecretChatMessage::setChatId(qint32 chatId) {
+    m_chatId = chatId;
+}
+
+inline qint32 SecretChatMessage::chatId() const {
+    return m_chatId;
+}
+
+inline void SecretChatMessage::setDate(qint32 date) {
+    m_date = date;
+}
+
+inline qint32 SecretChatMessage::date() const {
+    return m_date;
+}
+
+inline void SecretChatMessage::setDecryptedMessage(const DecryptedMessage &decryptedMessage) {
+    m_decryptedMessage = decryptedMessage;
+}
+
+inline DecryptedMessage SecretChatMessage::decryptedMessage() const {
+    return m_decryptedMessage;
+}
+
+inline void SecretChatMessage::setTtl(qint32 ttl) {
+    m_ttl = ttl;
+}
+
+inline qint32 SecretChatMessage::ttl() const {
+    return m_ttl;
+}
+
+inline bool SecretChatMessage::operator ==(const SecretChatMessage &b) const {
+    return m_classType == b.m_classType &&
+           m_attachment == b.m_attachment &&
+           m_chatId == b.m_chatId &&
+           m_date == b.m_date &&
+           m_decryptedMessage == b.m_decryptedMessage &&
+           m_ttl == b.m_ttl;
+}
+
+inline void SecretChatMessage::setClassType(SecretChatMessage::SecretChatMessageClassType classType) {
+    m_classType = classType;
+}
+
+inline SecretChatMessage::SecretChatMessageClassType SecretChatMessage::classType() const {
+    return m_classType;
+}
+
+inline bool SecretChatMessage::fetch(InboundPkt *in) {
+    LQTG_FETCH_LOG;
+    int x = in->fetchInt();
+    switch(x) {
+    case typeSecretChatMessage: {
+        m_chatId = in->fetchInt();
+        m_ttl = in->fetchInt();
+        m_date = in->fetchInt();
+        m_decryptedMessage.fetch(in);
+        m_attachment.fetch(in);
+        m_classType = static_cast<SecretChatMessageClassType>(x);
+        return true;
+    }
+        break;
+    
+    default:
+        LQTG_FETCH_ASSERT;
+        return false;
+    }
+}
+
+inline bool SecretChatMessage::push(OutboundPkt *out) const {
+    out->appendInt(m_classType);
+    switch(m_classType) {
+    case typeSecretChatMessage: {
+        out->appendInt(m_chatId);
+        out->appendInt(m_ttl);
+        out->appendInt(m_date);
+        m_decryptedMessage.push(out);
+        m_attachment.push(out);
+        return true;
+    }
+        break;
+    
+    default:
+        return false;
+    }
+}
+
+inline QMap<QString, QVariant> SecretChatMessage::toMap() const {
+    QMap<QString, QVariant> result;
+    switch(static_cast<int>(m_classType)) {
+    case typeSecretChatMessage: {
+        result["classType"] = "SecretChatMessage::typeSecretChatMessage";
+        result["chatId"] = QVariant::fromValue<qint32>(chatId());
+        result["ttl"] = QVariant::fromValue<qint32>(ttl());
+        result["date"] = QVariant::fromValue<qint32>(date());
+        result["decryptedMessage"] = m_decryptedMessage.toMap();
+        result["attachment"] = m_attachment.toMap();
+        return result;
+    }
+        break;
+    
+    default:
+        return result;
+    }
+}
+
+inline SecretChatMessage SecretChatMessage::fromMap(const QMap<QString, QVariant> &map) {
+    SecretChatMessage result;
+    if(map.value("classType").toString() == "SecretChatMessage::typeSecretChatMessage") {
+        result.setClassType(typeSecretChatMessage);
+        result.setChatId( map.value("chatId").value<qint32>() );
+        result.setTtl( map.value("ttl").value<qint32>() );
+        result.setDate( map.value("date").value<qint32>() );
+        result.setDecryptedMessage( DecryptedMessage::fromMap(map.value("decryptedMessage").toMap()) );
+        result.setAttachment( EncryptedFile::fromMap(map.value("attachment").toMap()) );
+        return result;
+    }
+    return result;
+}
+
+inline QByteArray SecretChatMessage::getHash(QCryptographicHash::Algorithm alg) const {
+    QByteArray data;
+    QDataStream str(&data, QIODevice::WriteOnly);
+    str << *this;
+    return QCryptographicHash::hash(data, alg);
+}
+
+inline QDataStream &operator<<(QDataStream &stream, const SecretChatMessage &item) {
+    stream << static_cast<uint>(item.classType());
+    switch(item.classType()) {
+    case SecretChatMessage::typeSecretChatMessage:
+        stream << item.chatId();
+        stream << item.ttl();
+        stream << item.date();
+        stream << item.decryptedMessage();
+        stream << item.attachment();
+        break;
+    }
+    return stream;
+}
+
+inline QDataStream &operator>>(QDataStream &stream, SecretChatMessage &item) {
+    uint type = 0;
+    stream >> type;
+    item.setClassType(static_cast<SecretChatMessage::SecretChatMessageClassType>(type));
+    switch(type) {
+    case SecretChatMessage::typeSecretChatMessage: {
+        qint32 m_chat_id;
+        stream >> m_chat_id;
+        item.setChatId(m_chat_id);
+        qint32 m_ttl;
+        stream >> m_ttl;
+        item.setTtl(m_ttl);
+        qint32 m_date;
+        stream >> m_date;
+        item.setDate(m_date);
+        DecryptedMessage m_decryptedMessage;
+        stream >> m_decryptedMessage;
+        item.setDecryptedMessage(m_decryptedMessage);
+        EncryptedFile m_attachment;
+        stream >> m_attachment;
+        item.setAttachment(m_attachment);
+    }
+        break;
+    }
+    return stream;
+}
+
 
 #endif // LQTG_TYPE_SECRETCHATMESSAGE

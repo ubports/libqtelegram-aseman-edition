@@ -5,11 +5,9 @@
 #ifndef CORETYPES_H
 #define CORETYPES_H
 
-#define TG_API_VERSION 29
-#define TG_API_29
-
-namespace CoreTypes 
+class CoreTypes 
 {
+public:
     enum Types {
         typeBoolFalse = 0xbc799737,
         typeBoolTrue = 0x997275b5,
@@ -21,8 +19,8 @@ namespace CoreTypes
         typeInvokeWithoutUpdates = 0xbf9459b7,
         typeNull = 0x56730bcc,
         typeVector = 0x1cb5c415,
-        typeLayerVersion = TG_API_VERSION
+        typeLayerVersion = 29
     };
-}
+};
 
 #endif //CORETYPES_H
