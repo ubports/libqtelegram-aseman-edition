@@ -245,14 +245,14 @@ void DcProvider::onApiReady(DC*) {
     disconnect(session, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onApiError()));
 
     // get the config
-    connect(mApi, SIGNAL(config(qint64,const Config&)), this, SLOT(onConfigReceived(qint64,const Config&)), Qt::UniqueConnection );
+    connect(mApi, SIGNAL(helpGetConfigAnswer(qint64,const Config&, const QVariant &attachedData)), this, SLOT(onConfigReceived(qint64,const Config&, const QVariant &attachedData)), Qt::UniqueConnection );
 
     qint64 rid = mApi->helpGetConfig();
     mGetConfigRequests[rid] = session;
 }
 
-void DcProvider::onConfigReceived(qint64 msgId, const Config &config) {
-
+void DcProvider::onConfigReceived(qint64 msgId, const Config &config, const QVariant &attachedData) {
+    Q_UNUSED(attachedData)
     qCDebug(TG_CORE_DCPROVIDER) << "onConfigReceived(), msgId =" << QString::number(msgId, 16);
     qCDebug(TG_CORE_DCPROVIDER) << "date =" << config.date();
     qCDebug(TG_CORE_DCPROVIDER) << "testMode =" << config.testMode();
