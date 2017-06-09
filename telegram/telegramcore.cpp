@@ -17,6 +17,7 @@ void TelegramCore::setApi(TelegramApi *api)
 {
     mApi = api;
 
+    qInfo() << "Begin connecting all API signals...";
     connect(api, &TelegramApi::accountRegisterDeviceAnswer, this, &TelegramCore::onAccountRegisterDeviceAnswer);
     connect(api, &TelegramApi::accountRegisterDeviceError, this, &TelegramCore::onAccountRegisterDeviceError);
     
@@ -390,6 +391,8 @@ void TelegramCore::setApi(TelegramApi *api)
     connect(api, &TelegramApi::usersGetFullUserError, this, &TelegramCore::onUsersGetFullUserError);
 
     connect(api, &TelegramApi::error, this, &TelegramCore::onError);
+
+    qInfo() << "End connecting all API signals...";
 }
 
 qint64 TelegramCore::accountRegisterDevice(qint32 token_type, const QString &token, const QString &device_model, const QString &system_version, const QString &app_version, bool app_sandbox, const QString &lang_code, Callback<bool > callBack, qint32 timeout) {

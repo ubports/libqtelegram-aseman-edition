@@ -252,10 +252,10 @@ Q_SIGNALS:
     // Registration / authorization
     void authNeeded();
     void authLoggedIn();
-    void authCheckPhoneAnswer(qint64 id, bool phoneRegistered);
-    void authCheckedPhoneError(qint64 msgId);
+    void authCheckPhoneAnswer(qint64 msgId, const AuthCheckedPhone &result);
+    void authCheckPhoneError(qint64 msgId, qint32 errorCode, const QString &errorText);
     void authCheckPhoneSent(qint64 msgId, const QString &phoneNumber);
-    void authSendCodeAnswer(qint64 id, bool phoneRegistered, qint32 sendCallTimeout);
+    void authSendCodeAnswer(qint64 msgId, const AuthSentCode &result, const QVariant &attachedData);
     void authSendCodeError(qint64 id);
     void authSendSmsAnswer(qint64 id, bool ok);
     void authSendCallAnswer(qint64 id, bool ok);
@@ -387,7 +387,7 @@ Q_SIGNALS:
     void geochatsCreateGeoChatAnswer(qint64 id, const GeoChatMessage &message, const QList<Chat> &chats, const QList<User> &users, qint32 seq);
 
     // Working with updates
-    void updatesGetStateAnswer(qint64 id, qint32 pts, qint32 qts, qint32 date, qint32 seq, qint32 unreadCount);
+    void updatesGetStateAnswer(qint64, const UpdatesState&);
     void updatesGetDifferenceAnswer(qint64 id, qint32 date, qint32 seq);
     void updatesGetDifferenceAnswer(qint64 id, const QList<Message> &messages, const QList<SecretChatMessage> &secretChatMessages, const QList<Update> &otherUpdates, const QList<Chat> &chats, const QList<User> &users, const UpdatesState &state, bool isIntermediateState);
 
@@ -398,7 +398,7 @@ Q_SIGNALS:
 
     // Miscellaneous
     void helpGetSuppportAnswer(qint64 id, const QString &phoneNumber, const User &user);
-    void helpGetInviteTextAnswer(qint64 id, const QString &message);
+    void helpGetInviteTextAnswer(qint64 id, const HelpInviteText &message);
     void helpGetAppUpdateAnswer(qint64 id, qint32 updateId, bool critical, QString url, QString text); // if updateId <=0 there isn't any update
 
     // Updates
@@ -444,12 +444,11 @@ private:
 private Q_SLOTS:
     void onDcProviderReady();
     void onAuthLoggedIn();
-    void onError(qint64 id, qint32 errorCode, const QString &errorText, const QString &functionName = QString());
+    void onError(qint64 id, qint32 errorCode, const QString &errorText, const QString &functionName);
     void onErrorRetry(qint64 id, qint32 errorCode, const QString &errorText);
     void onAuthCheckPhoneDcChanged();
     void onHelpGetInviteTextDcChanged();
     void onImportContactsDcChanged();
-    void onAuthSentCode(qint64 id, bool phoneRegistered, const QString &phoneCodeHash, qint32 sendCallTimeout, bool isPassword);
     void onUserAuthorized(qint64 id, qint32 expires, const User &user);
     void onAuthLogOutAnswer(qint64 id, bool ok);
     void onPhotosPhotos(qint64 msgId, const QList<Photo> &photos, const QList<User> &users);
@@ -466,8 +465,7 @@ private Q_SLOTS:
     void onMessagesDhConfig(qint64 msgId, qint32 g, const QByteArray &p, qint32 version, const QByteArray &random);
     void onMessagesDhConfigNotModified(qint64 msgId, const QByteArray &random);
     void onMessagesRequestEncryptionEncryptedChat(qint64 msgId, const EncryptedChat &chat);
-    void onUpdatesDifference(qint64 msgId, const QList<Message> &messsages, const QList<EncryptedMessage> &newEncryptedMessages, const QList<Update> &otherUpdates, const QList<Chat> &chats, const QList<User> &users, const UpdatesState &state);
-    void onUpdatesDifferenceSlice(qint64 msgId, const QList<Message> &messsages, const QList<EncryptedMessage> &newEncryptedMessages, const QList<Update> &otherUpdates, const QList<Chat> &chats, const QList<User> &users, const UpdatesState &state);
+    void onUpdatesDifference(qint64 msgId, const UpdatesDifference &result, const QVariant &attachedData);
 
     // secret chats slots
     void onUpdateShort(const Update &update);
