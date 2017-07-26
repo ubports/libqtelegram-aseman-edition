@@ -10,8 +10,8 @@
 #define LQTG_PUSH_ASSERT setError(true)
 #else
 #include <QtGlobal>
-#define LQTG_FETCH_ASSERT qt_assert("x",__FILE__,__LINE__)
-#define LQTG_PUSH_ASSERT qt_assert("x",__FILE__,__LINE__)
+#define LQTG_FETCH_ASSERT(x) qt_assert(x,__FILE__,__LINE__)
+#define LQTG_PUSH_ASSERT(x) qt_assert(x,__FILE__,__LINE__)
 #endif
 
 #ifndef LQTG_ENABLE_LOG
