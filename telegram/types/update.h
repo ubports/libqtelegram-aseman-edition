@@ -59,7 +59,9 @@ public:
         typeUpdateReadHistoryInbox = 0x9961fd5c,
         typeUpdateReadHistoryOutbox = 0x2f2f21bf,
         typeUpdateWebPage = 0x2cc36971,
-        typeUpdateReadMessagesContents = 0x68c13933
+        typeUpdateReadMessagesContents = 0x68c13933,
+	//Workaround for server-side bug: Telegram server sends msgs from API level 45?
+	typeUpdateDeleteChannelMessages = 0xc37521c9
     };
 
     Update(UpdateType classType = typeUpdateNewMessage, InboundPkt *in = 0);
