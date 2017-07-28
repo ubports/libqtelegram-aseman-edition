@@ -982,6 +982,7 @@ bool Update::push(OutboundPkt *out) const {
     case typeUpdateDeleteChannelMessages: {
 	return false;
     }
+	break;
 
     default:
         return false;
