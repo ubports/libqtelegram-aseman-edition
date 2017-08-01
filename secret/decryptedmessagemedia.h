@@ -33,12 +33,15 @@ public:
     enum DecryptedMessageMediaType {
         typeDecryptedMessageMediaEmpty = 0x89f5c4a,
         typeDecryptedMessageMediaPhoto = 0x32798a8c,
+        typeDecryptedMessageMediaPhoto45 = 0xf1fa8d78,
         typeDecryptedMessageMediaVideo_layer8 = 0x4cee6ef3,
+        typeDecryptedMessageMediaVideo = 0x524a415d,
+        typeDecryptedMessageMediaVideo45 = 0x970c8c0e,
         typeDecryptedMessageMediaGeoPoint = 0x35480a59,
         typeDecryptedMessageMediaContact = 0x588a0a97,
         typeDecryptedMessageMediaDocument = 0xb095434b,
+        typeDecryptedMessageMediaDocument45 = 0x7afe8ae2,
         typeDecryptedMessageMediaAudio_layer8 = 0x6080758f,
-        typeDecryptedMessageMediaVideo = 0x524a415d,
         typeDecryptedMessageMediaAudio = 0x57e0a9cb,
         typeDecryptedMessageMediaExternalDocument = 0xfa95b0dd
     };

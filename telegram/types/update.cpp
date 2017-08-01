@@ -734,7 +734,10 @@ bool Update::fetch(InboundPkt *in) {
         return true;
     }
         break;
-    
+        
+    case typeUpdateDeleteChannelMessages:
+	return false;
+
     default:
         std::stringstream error; error << "FATAL: Unknown message received. API ID: " << x; LQTG_FETCH_ASSERT(error.str().c_str());
         return false;
@@ -978,11 +981,6 @@ bool Update::push(OutboundPkt *out) const {
         return true;
     }
         break;
-    
-    case typeUpdateDeleteChannelMessages: {
-	return false;
-    }
-	break;
 
     default:
         return false;

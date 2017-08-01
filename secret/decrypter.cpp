@@ -23,6 +23,7 @@
 #include "telegram/coretypes.h"
 #include <openssl/sha.h>
 #include <openssl/aes.h>
+#include <sstream>
 
 Q_LOGGING_CATEGORY(TG_SECRET_DECRYPTER, "tg.secret.decrypter")
 
@@ -265,11 +266,17 @@ QByteArray Decrypter::decryptEncryptedMessage() {
 
 DecryptedMessage Decrypter::fetchDecryptedMessage() {
     qint32 x = fetchInt();
-    ASSERT(x == (qint32)DecryptedMessage::typeDecryptedMessage_level8 ||
+    bool ok = (x == (qint32)DecryptedMessage::typeDecryptedMessage_level8 ||
            x == (qint32)DecryptedMessage::typeDecryptedMessageService_level8 ||
            x == (qint32)DecryptedMessage::typeDecryptedMessage ||
            x == (qint32)DecryptedMessage::typeDecryptedMessageService ||
            x == (qint32)DecryptedMessage::typeDecryptedMessage_level45);
+    if (!ok)
+    {
+        std::stringstream error;
+        error << "FATAL: Unknown message received. API ID: " << x;
+        qt_assert(error.str().c_str(),__FILE__,__LINE__);
+    }
     DecryptedMessage message((DecryptedMessage::DecryptedMessageType)x);
 
     switch (x) {
@@ -313,7 +320,7 @@ DecryptedMessage Decrypter::fetchDecryptedMessage() {
 
 DecryptedMessageMedia Decrypter::fetchDecryptedMessageMedia() {
     qint32 x = fetchInt();
-    ASSERT(x == (qint32)DecryptedMessageMedia::typeDecryptedMessageMediaEmpty ||
+    bool ok = (x == (qint32)DecryptedMessageMedia::typeDecryptedMessageMediaEmpty ||
            x == (qint32)DecryptedMessageMedia::typeDecryptedMessageMediaPhoto ||
            x == (qint32)DecryptedMessageMedia::typeDecryptedMessageMediaVideo_layer8 ||
            x == (qint32)DecryptedMessageMedia::typeDecryptedMessageMediaGeoPoint ||
@@ -322,7 +329,16 @@ DecryptedMessageMedia Decrypter::fetchDecryptedMessageMedia() {
            x == (qint32)DecryptedMessageMedia::typeDecryptedMessageMediaAudio_layer8 ||
            x == (qint32)DecryptedMessageMedia::typeDecryptedMessageMediaVideo ||
            x == (qint32)DecryptedMessageMedia::typeDecryptedMessageMediaAudio ||
-           x == (qint32)DecryptedMessageMedia::typeDecryptedMessageMediaExternalDocument);
+           x == (qint32)DecryptedMessageMedia::typeDecryptedMessageMediaExternalDocument ||
+           x == (qint32)DecryptedMessageMedia::typeDecryptedMessageMediaDocument45 ||
+           x == (qint32)DecryptedMessageMedia::typeDecryptedMessageMediaPhoto45 ||
+           x == (qint32)DecryptedMessageMedia::typeDecryptedMessageMediaVideo45);
+    if (!ok)
+    {
+        std::stringstream error;
+        error << "FATAL: Unknown message received. API ID: " << x;
+        qt_assert(error.str().c_str(),__FILE__,__LINE__);
+    }
     DecryptedMessageMedia media((DecryptedMessageMedia::DecryptedMessageMediaType)x);
 
     switch(x) {
@@ -347,7 +363,8 @@ DecryptedMessageMedia Decrypter::fetchDecryptedMessageMedia() {
         break;
     }
 
-    case DecryptedMessageMedia::typeDecryptedMessageMediaPhoto: {
+    case DecryptedMessageMedia::typeDecryptedMessageMediaPhoto:
+    case DecryptedMessageMedia::typeDecryptedMessageMediaPhoto45: {
         media.setThumb(fetchBytes());
         media.setThumbW(fetchInt());
         media.setThumbH(fetchInt());
@@ -356,6 +373,9 @@ DecryptedMessageMedia Decrypter::fetchDecryptedMessageMedia() {
         media.setSize(fetchInt());
         media.setKey(fetchBytes());
         media.setIv(fetchBytes());
+        //Workaround for not having implemented secret API45
+        if (x == DecryptedMessageMedia::typeDecryptedMessageMediaPhoto45)
+            fetchQString();
         break;
     }
     case DecryptedMessageMedia::typeDecryptedMessageMediaVideo_layer8: {
@@ -382,7 +402,8 @@ DecryptedMessageMedia Decrypter::fetchDecryptedMessageMedia() {
         media.setUserId(fetchInt());
         break;
     }
-    case DecryptedMessageMedia::typeDecryptedMessageMediaDocument: {
+    case DecryptedMessageMedia::typeDecryptedMessageMediaDocument:
+    case DecryptedMessageMedia::typeDecryptedMessageMediaDocument45: {
         media.setThumb(fetchBytes());
         media.setThumbW(fetchInt());
         media.setThumbH(fetchInt());
@@ -391,6 +412,9 @@ DecryptedMessageMedia Decrypter::fetchDecryptedMessageMedia() {
         media.setSize(fetchInt());
         media.setKey(fetchBytes());
         media.setIv(fetchBytes());
+        //Workaround for not having implemented secret API45
+        if (x == DecryptedMessageMedia::typeDecryptedMessageMediaVideo45)
+            fetchQString();
         break;
     }
     case DecryptedMessageMedia::typeDecryptedMessageMediaAudio_layer8: {
@@ -400,7 +424,8 @@ DecryptedMessageMedia Decrypter::fetchDecryptedMessageMedia() {
         media.setIv(fetchBytes());
         break;
     }
-    case DecryptedMessageMedia::typeDecryptedMessageMediaVideo: {
+    case DecryptedMessageMedia::typeDecryptedMessageMediaVideo:
+    case DecryptedMessageMedia::typeDecryptedMessageMediaVideo45: {
         media.setThumb(fetchBytes());
         media.setThumbW(fetchInt());
         media.setThumbH(fetchInt());
@@ -411,6 +436,9 @@ DecryptedMessageMedia Decrypter::fetchDecryptedMessageMedia() {
         media.setSize(fetchInt());
         media.setKey(fetchBytes());
         media.setIv(fetchBytes());
+        //Workaround for not having implemented secret API45
+        if(x == DecryptedMessageMedia::typeDecryptedMessageMediaVideo45)
+            fetchQString();
         break;
     }
     case DecryptedMessageMedia::typeDecryptedMessageMediaAudio: {
@@ -427,7 +455,7 @@ DecryptedMessageMedia Decrypter::fetchDecryptedMessageMedia() {
 
 DecryptedMessageAction Decrypter::fetchDecryptedMessageAction() {
     qint32 x = fetchInt();
-    ASSERT(x == (qint32)DecryptedMessageAction::typeDecryptedMessageActionSetMessageTTL ||
+    bool ok = (x == (qint32)DecryptedMessageAction::typeDecryptedMessageActionSetMessageTTL ||
            x == (qint32)DecryptedMessageAction::typeDecryptedMessageActionReadMessages ||
            x == (qint32)DecryptedMessageAction::typeDecryptedMessageActionDeleteMessages ||
            x == (qint32)DecryptedMessageAction::typeDecryptedMessageActionScreenshotMessages ||
@@ -435,6 +463,12 @@ DecryptedMessageAction Decrypter::fetchDecryptedMessageAction() {
            x == (qint32)DecryptedMessageAction::typeDecryptedMessageActionResend ||
            x == (qint32)DecryptedMessageAction::typeDecryptedMessageActionNotifyLayer ||
            x == (qint32)DecryptedMessageAction::typeDecryptedMessageActionTyping);
+    if (!ok)
+    {
+        std::stringstream error;
+        error << "FATAL: Unknown message received. API ID: " << x;
+        qt_assert(error.str().c_str(),__FILE__,__LINE__);
+    }
     DecryptedMessageAction action((DecryptedMessageAction::DecryptedMessageActionType)x);
 
     switch (x) {
@@ -472,7 +506,7 @@ DecryptedMessageAction Decrypter::fetchDecryptedMessageAction() {
 
 SendMessageAction Decrypter::fetchSendMessageAction() {
     qint32 x = fetchInt();
-    ASSERT(x == (qint32)SendMessageAction::typeSendMessageTypingAction ||
+    bool ok = (x == (qint32)SendMessageAction::typeSendMessageTypingAction ||
            x == (qint32)SendMessageAction::typeSendMessageCancelAction ||
            x == (qint32)SendMessageAction::typeSendMessageRecordVideoAction ||
            x == (qint32)SendMessageAction::typeSendMessageUploadVideoAction ||
@@ -482,6 +516,12 @@ SendMessageAction Decrypter::fetchSendMessageAction() {
            x == (qint32)SendMessageAction::typeSendMessageUploadDocumentAction ||
            x == (qint32)SendMessageAction::typeSendMessageGeoLocationAction ||
            x == (qint32)SendMessageAction::typeSendMessageChooseContactAction);
+    if (!ok)
+    {
+        std::stringstream error; 
+        error << "FATAL: Unknown message received. API ID: " << x; 
+        qt_assert(error.str().c_str(),__FILE__,__LINE__);
+    }
     SendMessageAction sendMessageAction((SendMessageAction::SendMessageActionType)x);
     return sendMessageAction;
 }
