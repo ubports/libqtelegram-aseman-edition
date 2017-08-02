@@ -43,7 +43,7 @@ SecretChat::~SecretChat() {
 }
 
 void SecretChat::createMyKey(const QByteArray &serverRandomBA) {
-    // a more entrophy random number is generated here by using also a
+    // a more entropy random number is generated here by using also a
     // client random number and operating so:
     // m_random := server_random XOR client_random
     uchar serverRandom[DH_CONFIG_SERVER_RANDOM_LENGTH];

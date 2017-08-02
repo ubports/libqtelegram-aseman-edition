@@ -36,7 +36,13 @@ public:
         typeDecryptedMessageActionFlushHistory = 0x6719e45c,
         typeDecryptedMessageActionResend = 0x511110b0,
         typeDecryptedMessageActionNotifyLayer = 0xf3048883,
-        typeDecryptedMessageActionTyping = 0xccb27641
+        typeDecryptedMessageActionTyping = 0xccb27641,
+        typeDecryptedMessageActionRequestKey = 0xf3c9611b,
+        typeDecryptedMessageActionAcceptKey = 0x6fe1735b,
+        typeDecryptedMessageActionAbortKey = 0xdd05ec6b,
+        typeDecryptedMessageActionCommitKey = 0xec2e0b9b,
+        typeDecryptedMessageActionNoop = 0xa82fdd63,
+
     };
 
     DecryptedMessageAction(DecryptedMessageActionType classType = typeDecryptedMessageActionNotifyLayer) :
@@ -89,12 +95,50 @@ public:
         return mClassType;
     }
 
+    void setExchangeId(qint64 exchangeId) {
+        mExchangeId = exchangeId;
+    }
+
+    qint64 exchangeId() const {
+        return mExchangeId;
+    }
+
+    void setG_A(QString g_a) {
+        mG_A = g_a;
+    }
+
+    QString G_A() const {
+        return mG_A;
+    }
+
+    void setG_B(QString g_b) {
+        mG_B = g_b;
+    }
+
+    QString G_B() const {
+        return mG_B;
+    }
+
+    void setKeyFingerprint(qint64 keyFingerprint) {
+        mKeyFingerprint = keyFingerprint;
+    }
+
+    qint64 keyFingerprint() const {
+        return mKeyFingerprint;
+    }
+
 private:
     qint32 mLayer;
     QList<qint64> mRandomIds;
     qint32 mTtlSeconds;
     qint32 mStartSeqNo;
     qint32 mEndSeqNo;
+
+    //PFS exchange parameters
+    qint64 mExchangeId;
+    QString mG_A, mG_B;
+    qint64 mKeyFingerprint;
+
     SendMessageAction mAction;
     DecryptedMessageActionType mClassType;
 };

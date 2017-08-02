@@ -32,8 +32,7 @@ public:
         typeDecryptedMessageService_level8 = 0xaa48327d,
         typeDecryptedMessage = 0x204d3878,
         typeDecryptedMessageService = 0x73164160,
-	//Workaround for server-side bug: Telegram server sends msgs from API level 45?
-	typeDecryptedMessage_level45 = 0x36b091de
+        typeDecryptedMessage45 = 0x36b091de
     };
 
     DecryptedMessage(DecryptedMessageType classType = typeDecryptedMessage) :

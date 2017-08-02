@@ -148,19 +148,83 @@ DecryptedMessage Decrypter::decryptEncryptedData(qint64 randomId, const QByteArr
 
         if (processMessage) {
             // process internal message
-            // TODO Roberto: move this to another method
             if (decryptedMessage.classType() == DecryptedMessage::typeDecryptedMessageService ||
                     decryptedMessage.classType() == DecryptedMessage::typeDecryptedMessageService_level8) {
                 DecryptedMessageAction action = decryptedMessage.action();
                 switch (action.classType()) {
-                case DecryptedMessageAction::typeDecryptedMessageActionNotifyLayer: {
-                    mSecretChat->setLayer(action.layer());
-                    qCDebug(TG_SECRET_DECRYPTER) << "Received layer" << action.layer() << "from peer";
+                    case DecryptedMessageAction::typeDecryptedMessageActionNotifyLayer: {
+                        mSecretChat->setLayer(action.layer());
+                        qCDebug(TG_SECRET_DECRYPTER) << "Received layer" << action.layer() << "from peer";
+                        break;
+                    }
+
+                    //PFS re-keying methods
+                    case DecryptedMessageAction::typeDecryptedMessageActionRequestKey: {
+                        if (mSecretChat->NewKeyExchangeId() == 0)
+                        {
+                            qCInfo(TG_SECRET_DECRYPTER) << "Received valid PFS re-key request, ID: " << action.exchangeId();
+                            mSecretChat->setNewKeyExchangeId(action.exchangeId());
+                            mSecretChat->setNewG_A(action.G_A());
+                        }
+                        else
+                        {
+                            qCWarning(TG_SECRET_DECRYPTER) << "Received invalid PFS re-key request, ID: " << action.exchangeId() << ", our ID: " << mSecretChat->NewKeyExchangeId();
+                            //TODO: Send Cancel to other party
+                        }
+                    }
                     break;
-                }
-                default:
-                    ;
-                    //TODO Roberto: implement rest of cases
+
+                    case DecryptedMessageAction::typeDecryptedMessageActionAcceptKey: {
+                    if (mSecretChat->NewKeyExchangeId() == action.exchangeId())
+                    {
+                        qCInfo(TG_SECRET_DECRYPTER) << "Received valid PFS re-key accept, ID: " << action.exchangeId();
+                        mSecretChat->setNewG_B(action.G_B());
+                        mSecretChat->setNewKeyFingerprint(action.keyFingerprint());
+                    }
+                    else
+                    {
+                        qCWarning(TG_SECRET_DECRYPTER) << "Received invalid PFS re-key accept, ID: " << action.exchangeId() << ", our ID: " << mSecretChat->NewKeyExchangeId();
+                        //TODO: Send Cancel to other party
+                    }
+
+
+
+                    }
+                    break;
+
+                    case DecryptedMessageAction::typeDecryptedMessageActionCommitKey: {
+
+                        if (mSecretChat->NewKeyExchangeId() == action.exchangeId())
+                        {
+                            qCInfo(TG_SECRET_DECRYPTER) << "Received valid PFS re-key commit, ID: " << action.exchangeId();
+
+                        }
+                        else
+                        {
+                            qCWarning(TG_SECRET_DECRYPTER) << "Received invalid PFS re-key commit, ID: " << action.exchangeId() << ", our ID: " << mSecretChat->NewKeyExchangeId();
+                            //TODO: Send Cancel to other party
+                        }
+
+                    }
+                    break;
+
+                    case DecryptedMessageAction::typeDecryptedMessageActionAbortKey: {
+                        if (mSecretChat->NewKeyExchangeId() == action.exchangeId())
+                        {
+                        qCInfo(TG_SECRET_DECRYPTER) << "Received valid PFS re-key abort, ID: " << action.exchangeId();
+
+                        }
+                        else
+                        {
+                            qCWarning(TG_SECRET_DECRYPTER) << "Received invalid PFS re-key abort, ID: " << action.exchangeId() << ", our ID: " << mSecretChat->NewKeyExchangeId();
+                            //TODO: Send Cancel to other party
+                        }
+
+                    }
+                    break;
+
+                    default:
+                    break;
                 }
             } else {
                 qCDebug(TG_SECRET_DECRYPTER) << "Received message";
@@ -270,7 +334,7 @@ DecryptedMessage Decrypter::fetchDecryptedMessage() {
            x == (qint32)DecryptedMessage::typeDecryptedMessageService_level8 ||
            x == (qint32)DecryptedMessage::typeDecryptedMessage ||
            x == (qint32)DecryptedMessage::typeDecryptedMessageService ||
-           x == (qint32)DecryptedMessage::typeDecryptedMessage_level45);
+           x == (qint32)DecryptedMessage::typeDecryptedMessage45);
     if (!ok)
     {
         std::stringstream error;
@@ -280,40 +344,39 @@ DecryptedMessage Decrypter::fetchDecryptedMessage() {
     DecryptedMessage message((DecryptedMessage::DecryptedMessageType)x);
 
     switch (x) {
-    case DecryptedMessage::typeDecryptedMessage_level8: {
-	message.setRandomId(fetchLong());
-        message.setRandomBytes(fetchBytes());
-        message.setMessage(fetchQString());
-        message.setMedia(fetchDecryptedMessageMedia());
+        case DecryptedMessage::typeDecryptedMessage_level8:
+            message.setRandomId(fetchLong());
+            message.setRandomBytes(fetchBytes());
+            message.setMessage(fetchQString());
+            message.setMedia(fetchDecryptedMessageMedia());
         break;
-    }
-    case DecryptedMessage::typeDecryptedMessageService_level8: {
-	message.setRandomId(fetchLong());
-        message.setRandomBytes(fetchBytes());
-        message.setAction(fetchDecryptedMessageAction());
+
+        case DecryptedMessage::typeDecryptedMessageService_level8:
+            message.setRandomId(fetchLong());
+            message.setRandomBytes(fetchBytes());
+            message.setAction(fetchDecryptedMessageAction());
         break;
-    }
-    case DecryptedMessage::typeDecryptedMessage: {
-	message.setRandomId(fetchLong());
-        message.setTtl(fetchInt());
-        message.setMessage(fetchQString());
-        message.setMedia(fetchDecryptedMessageMedia());
+
+        case DecryptedMessage::typeDecryptedMessage:
+            message.setRandomId(fetchLong());
+            message.setTtl(fetchInt());
+            message.setMessage(fetchQString());
+            message.setMedia(fetchDecryptedMessageMedia());
         break;
-    }
-    case DecryptedMessage::typeDecryptedMessageService: {
-	message.setRandomId(fetchLong());
-        message.setAction(fetchDecryptedMessageAction());
+
+        case DecryptedMessage::typeDecryptedMessageService:
+            message.setRandomId(fetchLong());
+            message.setAction(fetchDecryptedMessageAction());
         break;
-    }
-    case DecryptedMessage::typeDecryptedMessage_level45: {
-        qint32 flags = fetchInt();
-    	message.setRandomId(fetchLong());
-        message.setTtl(fetchInt());
-        message.setMessage(fetchQString());
-        if (flags & (1<<9))
-        	message.setMedia(fetchDecryptedMessageMedia());
+
+        case DecryptedMessage::typeDecryptedMessage45:
+            qint32 flags = fetchInt();
+            message.setRandomId(fetchLong());
+            message.setTtl(fetchInt());
+            message.setMessage(fetchQString());
+            if (flags & (1<<9))
+                message.setMedia(fetchDecryptedMessageMedia());
         break;
-    }
     }
     return message;
 }
@@ -462,7 +525,12 @@ DecryptedMessageAction Decrypter::fetchDecryptedMessageAction() {
            x == (qint32)DecryptedMessageAction::typeDecryptedMessageActionFlushHistory ||
            x == (qint32)DecryptedMessageAction::typeDecryptedMessageActionResend ||
            x == (qint32)DecryptedMessageAction::typeDecryptedMessageActionNotifyLayer ||
-           x == (qint32)DecryptedMessageAction::typeDecryptedMessageActionTyping);
+           x == (qint32)DecryptedMessageAction::typeDecryptedMessageActionTyping ||
+           x == (qint32)DecryptedMessageAction::typeDecryptedMessageActionRequestKey ||
+           x == (qint32)DecryptedMessageAction::typeDecryptedMessageActionAcceptKey ||
+           x == (qint32)DecryptedMessageAction::typeDecryptedMessageActionAbortKey ||
+           x == (qint32)DecryptedMessageAction::typeDecryptedMessageActionCommitKey ||
+           x == (qint32)DecryptedMessageAction::typeDecryptedMessageActionNoop);
     if (!ok)
     {
         std::stringstream error;
@@ -472,34 +540,56 @@ DecryptedMessageAction Decrypter::fetchDecryptedMessageAction() {
     DecryptedMessageAction action((DecryptedMessageAction::DecryptedMessageActionType)x);
 
     switch (x) {
-    case DecryptedMessageAction::typeDecryptedMessageActionSetMessageTTL: {
-        action.setTtlSeconds(fetchInt());
+        case DecryptedMessageAction::typeDecryptedMessageActionSetMessageTTL:
+            action.setTtlSeconds(fetchInt());
         break;
-    }
-    case DecryptedMessageAction::typeDecryptedMessageActionReadMessages:
-    case DecryptedMessageAction::typeDecryptedMessageActionDeleteMessages:
-    case DecryptedMessageAction::typeDecryptedMessageActionScreenshotMessages: {
-        ASSERT(fetchInt() == (qint32)CoreTypes::typeVector);
-        qint32 n = fetchInt();
-        QList<qint64> randomIds;
-        for (qint32 i = 0; i < n; i++) {
-            randomIds.append(fetchLong());
+
+        case DecryptedMessageAction::typeDecryptedMessageActionReadMessages:
+        case DecryptedMessageAction::typeDecryptedMessageActionDeleteMessages:
+        case DecryptedMessageAction::typeDecryptedMessageActionScreenshotMessages:
+        {
+            ASSERT(fetchInt() == (qint32)CoreTypes::typeVector);
+            qint32 n = fetchInt();
+            QList<qint64> randomIds;
+            for (qint32 i = 0; i < n; i++) {
+                randomIds.append(fetchLong());
+            }
+            action.setRandomIds(randomIds);
         }
-        action.setRandomIds(randomIds);
-    }
-    case DecryptedMessageAction::typeDecryptedMessageActionResend: {
-        action.setStartSeqNo(fetchInt());
-        action.setEndSeqNo(fetchInt());
         break;
-    }
-    case DecryptedMessageAction::typeDecryptedMessageActionNotifyLayer: {
-        action.setLayer(fetchInt());
+
+        case DecryptedMessageAction::typeDecryptedMessageActionResend:
+            action.setStartSeqNo(fetchInt());
+            action.setEndSeqNo(fetchInt());
         break;
-    }
-    case DecryptedMessageAction::typeDecryptedMessageActionTyping: {
-        action.setAction(fetchSendMessageAction());
+
+        case DecryptedMessageAction::typeDecryptedMessageActionNotifyLayer:
+            action.setLayer(fetchInt());
         break;
-    }
+
+        case DecryptedMessageAction::typeDecryptedMessageActionTyping:
+            action.setAction(fetchSendMessageAction());
+        break;
+
+        case DecryptedMessageAction::typeDecryptedMessageActionRequestKey:
+            action.setExchangeId(fetchLong());
+            action.setG_A(fetchQString());
+        break;
+
+        case DecryptedMessageAction::typeDecryptedMessageActionAcceptKey:
+            action.setExchangeId(fetchLong());
+            action.setG_B(fetchQString());
+            action.setKeyFingerprint(fetchLong());
+        break;
+
+        case DecryptedMessageAction::typeDecryptedMessageActionCommitKey:
+            action.setExchangeId(fetchLong());
+            action.setKeyFingerprint(fetchLong());
+        break;
+
+        case DecryptedMessageAction::typeDecryptedMessageActionNoop:
+
+        break;
     }
     return action;
 }

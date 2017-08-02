@@ -93,6 +93,17 @@ public:
     QList<qint64> sequence();
     void setSequence(const QList<qint64> &sequence);
 
+    //PFS
+    qint64 NewKeyFingerprint() { return mNewKeyFingerprint; }
+    QString NewG_A() { return mNewG_A; }
+    QString NewG_B() { return mNewG_B; }
+    qint64 NewKeyExchangeId() { return mNewKeyExchangeId; }
+
+    void setNewKeyFingerprint(qint64 fingerprint) { mNewKeyFingerprint = fingerprint; }
+    void setNewG_A(QString newG_A) { mNewG_A = newG_A; }
+    void setNewG_B(QString newG_B) { mNewG_B = newG_B; }
+    void setNewKeyExchangeId(qint64 exchangeId) { mNewKeyExchangeId = exchangeId; }
+
 private:
     Settings *mSettings;
     State mState;
@@ -106,6 +117,12 @@ private:
     BIGNUM *mMyKey;
     qint64 mKeyFingerprint;
     uchar mSharedKey[SHARED_KEY_LENGTH];
+
+    //PFS
+    qint64 mNewKeyFingerprint;
+    QString mNewG_A;
+    QString mNewG_B;
+    qint64 mNewKeyExchangeId;
 
     qint32 mLayer;
     qint32 mInSeqNo;
