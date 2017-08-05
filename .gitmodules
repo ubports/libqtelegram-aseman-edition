@@ -1,3 +1,6 @@
 [submodule "libqtelegram-code-generator"]
 	path = libqtelegram-code-generator
-	url = https://github.com/Aseman-Land/libqtelegram-code-generator.git
+	url = https://github.com/ubports/libqtelegram-code-generator.git
+	branch = ubports-2.x
+	ignore = dirty
+
