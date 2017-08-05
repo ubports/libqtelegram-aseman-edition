@@ -62,7 +62,6 @@ public:
         mLibraryState(Telegram::LoggedOut),
         mLastRetryType(Telegram::NotRetry),
         mSlept(false),
-        mApi(0),
         mSecretState(0) {}
 
     Telegram::LibraryState mLibraryState;
@@ -78,7 +77,6 @@ public:
     Settings *mSettings;
     CryptoUtils *mCrypto;
 
-    TelegramApi *mApi;
     DcProvider *mDcProvider;
     FileHandler::Ptr mFileHandler;
 
@@ -115,10 +113,12 @@ public:
 Telegram::Telegram(const QString &defaultHostAddress, qint16 defaultHostPort, qint16 defaultHostDcId, qint32 appId, const QString &appHash, const QString &phoneNumber, const QString &configPath, const QString &publicKeyFile) :
     TelegramCore()
 {
-    qInfo() << "Initializing Telegram class";
     // Qt5.2 doesn't support .ini files to control logging, so use this
     // manual workaround instead.
-    // http://blog.qt.digia.com/blog/2014/03/11/qt-weekly-1-categorized-logging/
+    // http://blog.qt.io/blog/2014/03/11/qt-weekly-1-categorized-logging/
+    QLoggingCategory::setFilterRules(QString(qgetenv("QT_LOGGING_RULES")));
+
+    qInfo(TG_LIB_API) << "Initializing Telegram class";
     prv = new TelegramPrivate;
     prv->initTimeout = 0;
     prv->initTimerId = 0;
@@ -137,7 +137,6 @@ Telegram::Telegram(const QString &defaultHostAddress, qint16 defaultHostPort, qi
     prv->mCrypto = 0;
     prv->mSettings = 0;
 
-    QLoggingCategory::setFilterRules(QString(qgetenv("QT_LOGGING_RULES")));
 }
 
 bool Telegram::sleep() {
@@ -303,10 +302,10 @@ void Telegram::onAuthLoggedIn() {
     Q_EMIT authLoggedIn();
 }
 
-void Telegram::onAuthLogOutAnswer(qint64 id, bool ok) {
+void Telegram::onAuthLogOutAnswer(qint64 id, bool result, const QVariant &attachedData) {
     prv->mDcProvider->logOut();
     prv->mLibraryState = LoggedOut;
-    Q_EMIT authLogOutAnswer(id,ok);
+    TelegramCore::onAuthLogOutAnswer(id, result, attachedData);
 }
 
 qint32 Telegram::ourId() {
@@ -321,7 +320,6 @@ void Telegram::onDcProviderReady() {
     connect(mApi, &TelegramApi::fatalError, this, &Telegram::fatalError);
 
     // updates
-    qInfo() << "Connect updates signals";
     connect(mApi, SIGNAL(updatesGetStateAnswer(qint64, const UpdatesState&, const QVariant)), this, SIGNAL(updatesGetStateAnswer(qint64, const UpdatesState&)));
     connect(mApi, SIGNAL(updatesGetDifferenceAnswer(qint64, const UpdatesDifference&, const QVariant&)), this, SLOT(onUpdatesDifference(qint64, const UpdatesDifference&, const QVariant&)));
 
@@ -1067,7 +1065,7 @@ void Telegram::createSharedKey(SecretChat *secretChat, BIGNUM *p, QByteArray gAO
 }
 
 // error and internal managements
-void Telegram::onError(qint64 id, qint32 errorCode, const QString &errorText, const QString &functionName) {
+void Telegram::onError(qint64 id, qint32 errorCode, const QString &errorText, const QString &functionName, const QVariant &attachedData) {
     if(errorCode == 400) {
         if(errorText == "ENCRYPTION_ID_INVALID" || /* We receive this when a chat has crashed */
            errorText == "ENCRYPTION_ALREADY_DECLINED") { /* This is an already declined chat, remove it from DB */
@@ -1076,7 +1074,7 @@ void Telegram::onError(qint64 id, qint32 errorCode, const QString &errorText, co
         }
     }
     else if (errorCode == 401) {
-        onAuthLogOutAnswer(id, false);
+        onAuthLogOutAnswer(id, false, attachedData);
     }
 
     Q_EMIT error(id, errorCode, errorText, functionName);
@@ -1125,77 +1123,18 @@ void Telegram::onUserAuthorized(qint64, qint32 expires, const User &) {
     prv->mDcProvider->transferAuth();
 }
 
-void Telegram::onPhotosPhotos(qint64 msgId, const QList<Photo> &photos, const QList<User> &users) {
-    Q_EMIT photosGetUserPhotosAnswer(msgId, photos.size(), photos, users);
+void Telegram::onContactsGetContactsAnswer(qint64 msgId, const ContactsContacts &result, const QVariant &attachedData) {
+    prv->m_cachedContacts = result.contacts();
+    prv->m_cachedUsers = result.users();
+    TelegramCore::onContactsGetContactsAnswer(msgId, result, attachedData);
 }
 
-void Telegram::onContactsContacts(qint64 msgId, const QList<Contact> &contacts, const QList<User> &users) {
-    prv->m_cachedContacts = contacts;
-    prv->m_cachedUsers = users;
-    Q_EMIT contactsGetContactsAnswer(msgId, true, contacts, users);
-}
 
 void Telegram::onContactsImportContactsAnswer() {
     prv->mLastContacts.clear();
 }
 
-void Telegram::onContactsContactsNotModified(qint64 msgId) {
-    Q_EMIT contactsGetContactsAnswer(msgId, false, prv->m_cachedContacts, prv->m_cachedUsers);
-}
-
 // not direct Responses
-
-void Telegram::onContactsBlocked(qint64 id, const QList<ContactBlocked> &blocked, const QList<User> &users) {
-    Q_EMIT contactsGetBlockedAnswer(id, blocked.size(), blocked, users);
-}
-
-void Telegram::onMessagesSentMessage(qint64 id, qint32 msgId, qint32 date, const MessageMedia &media, qint32 pts, qint32 pts_count, qint32 seq) {
-    QList<ContactsLink> links;
-    Q_EMIT messagesSendMessageAnswer(id, msgId, date, media, pts, pts_count, seq, links);
-}
-
-void Telegram::onMessagesSendMediaAnswer(qint64 fileId, const UpdatesType &updates) {
-    //depending on responded media, emit one signal or another
-    const int mediaType = prv->pendingMediaSends.take(fileId);
-    switch (mediaType) {
-    case MessageMedia::typeMessageMediaPhoto:
-        Q_EMIT messagesSendPhotoAnswer(fileId, updates);
-        break;
-    case MessageMedia::typeMessageMediaVideo:
-        Q_EMIT messagesSendVideoAnswer(fileId, updates);
-        break;
-    case MessageMedia::typeMessageMediaGeo:
-        Q_EMIT messagesSendGeoPointAnswer(fileId, updates);
-        break;
-    case MessageMedia::typeMessageMediaContact:
-        Q_EMIT messagesSendContactAnswer(fileId, updates);
-        break;
-    case MessageMedia::typeMessageMediaDocument:
-        Q_EMIT messagesSendDocumentAnswer(fileId, updates);
-        break;
-    case MessageMedia::typeMessageMediaAudio:
-        Q_EMIT messagesSendAudioAnswer(fileId, updates);
-        break;
-    default:
-        Q_EMIT messagesSendMediaAnswer(fileId, updates);
-    }
-}
-
-void Telegram::onMessagesGetMessagesMessages(qint64 id, const QList<Message> &messages, const QList<Chat> &chats, const QList<User> &users) {
-    Q_EMIT messagesGetMessagesAnswer(id, messages.size(), messages, chats, users);
-}
-
-void Telegram::onMessagesDialogs(qint64 id, const QList<Dialog> &dialogs, const QList<Message> &messages, const QList<Chat> &chats, const QList<User> &users) {
-    Q_EMIT messagesGetDialogsAnswer(id, dialogs.size(), dialogs, messages, chats, users);
-}
-
-void Telegram::onMessagesGetHistoryMessages(qint64 id, const QList<Message> &messages, const QList<Chat> &chats, const QList<User> &users) {
-    Q_EMIT messagesGetHistoryAnswer(id, messages.size(), messages, chats, users);
-}
-
-void Telegram::onMessagesSearchMessages(qint64 id, const QList<Message> &messages, const QList<Chat> &chats, const QList<User> &users) {
-    Q_EMIT messagesSearchAnswer(id, messages.size(), messages, chats, users);
-}
 
 void Telegram::onUpdatesDifference(qint64 msgId, const UpdatesDifference &result, const QVariant &attachedData) {
     processDifferences(msgId, result.newMessages(), result.newEncryptedMessages(), result.otherUpdates(),
@@ -1224,12 +1163,6 @@ void Telegram::processDifferences(qint64 id, const QList<Message> &messages, con
 }
 
 // Requests
-qint64 Telegram::helpGetInviteText(const QString &langCode) {
-    CHECK_API;
-    prv->mLastLangCode = langCode;
-    prv->mLastRetryType = GetInviteText;
-    return mApi->helpGetInviteText(langCode);
-}
 
 qint64 Telegram::authCheckPhone() {
    return authCheckPhone(prv->mSettings->phoneNumber());
@@ -1457,30 +1390,6 @@ bool lessThan(const Contact &c1, const Contact &c2) {
     return c1.userId() < c2.userId();
 }
 
-qint64 Telegram::contactsGetContacts() {
-    //If there already is a full contact list on the client, an md5-hash of a comma-separated list of contact IDs
-    //in ascending order may be passed in this 'hash' parameter. If the contact set was not changed,
-    //contactsContactsNotModified() will be returned from Api, so the cached client list is returned with the
-    //signal that they are the same contacts as previous request
-    CHECK_API;
-    QString hash;
-    if (!prv->m_cachedContacts.isEmpty()) {
-        qSort(prv->m_cachedContacts.begin(), prv->m_cachedContacts.end(), lessThan); //lessThan method must be outside any class or be static
-        QString hashBase;
-        if (prv->m_cachedContacts.size() > 0) {
-            hashBase.append(QString::number(prv->m_cachedContacts.at(0).userId()));
-        }
-        for (qint32 i = 1; i < prv->m_cachedContacts.size(); i++) {
-            hashBase.append(",");
-            hashBase.append(QString::number(prv->m_cachedContacts.at(i).userId()));
-        }
-        QCryptographicHash md5Generator(QCryptographicHash::Md5);
-        md5Generator.addData(hashBase.toStdString().c_str());
-        hash = md5Generator.result().toHex();
-    }
-    return mApi->contactsGetContacts(hash);
-}
-
 qint64 Telegram::contactsImportContacts(const QList<InputContact> &contacts, bool replace) {
     CHECK_API;
     prv->mLastContacts = contacts;
@@ -1526,6 +1435,29 @@ qint64 Telegram::contactsGetBlocked(qint32 offset, qint32 limit) {
 qint64 Telegram::messagesSendMessage(const InputPeer &peer, qint64 randomId, const QString &message, int replyToMsgId) {
     CHECK_API;
     return mApi->messagesSendMessage(peer, replyToMsgId, message, randomId);
+}
+
+qint64 Telegram::contactsGetContacts() {
+    //If there already is a full contact list on the client, an md5-hash of a comma-separated list of contact IDs
+    //in ascending order may be passed in this 'hash' parameter. If the contact set was not changed,
+    //contactsContactsNotModified() will be returned from Api, so the cached client list is returned with the
+    //signal that they are the same contacts as previous request
+    QString hash;
+    if (!prv->m_cachedContacts.isEmpty()) {
+        qSort(prv->m_cachedContacts.begin(), prv->m_cachedContacts.end(), lessThan); //lessThan method must be outside any class or be static
+        QString hashBase;
+        if (prv->m_cachedContacts.size() > 0) {
+            hashBase.append(QString::number(prv->m_cachedContacts.at(0).userId()));
+        }
+        for (qint32 i = 1; i < prv->m_cachedContacts.size(); i++) {
+            hashBase.append(",");
+            hashBase.append(QString::number(prv->m_cachedContacts.at(i).userId()));
+        }
+        QCryptographicHash md5Generator(QCryptographicHash::Md5);
+        md5Generator.addData(hashBase.toStdString().c_str());
+        hash = md5Generator.result().toHex();
+    }
+    return TelegramCore::contactsGetContacts(hash);
 }
 
 qint64 Telegram::messagesSendPhoto(const InputPeer &peer, qint64 randomId, const QByteArray &bytes, const QString &fileName, qint32 replyToMsgId) {

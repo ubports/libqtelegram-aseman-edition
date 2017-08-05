@@ -15,12 +15,12 @@ FileHandler::FileHandler(TelegramCore *core, TelegramApi *api, CryptoUtils *cryp
 
     qInfo() << "Initializing FileHandler class";
 
-    connect(mApi, SIGNAL(uploadSaveFilePartAnswer(qint64, bool, const QVariant&)), this, SLOT(onUploadSaveFilePartResult(qint64, bool, const QVariant&)));
-    connect(mApi, SIGNAL(uploadSaveBigFilePartAnswer(qint64, bool, const QVariant&)), this, SLOT(onUploadSaveFilePartResult(qint64, bool, const QVariant&)));
-    connect(mApi, SIGNAL(uploadGetFileAnswer(qint64,const UploadFile&, const QVariant&)), this, SLOT(onUploadGetFileAnswer(qint64,const UploadFile&, const QVariant&)));
-    connect(mApi, SIGNAL(uploadGetFileError(qint64, qint32, const QString&, const QVariant&)), this, SLOT(onUploadGetFileError(qint64, qint32, const QString&, const QVariant&)));
-    connect(mApi, SIGNAL(messagesSendMediaAnswer(qint64,const UpdatesType&, const QVariant&)), SLOT(onMessagesSentMedia(qint64,const UpdatesType&, const QVariant&)));
-    connect(mApi, SIGNAL(messagesSendEncryptedFileAnswer(qint64, const MessagesSentEncryptedMessage&, const QVariant&)), this, SLOT(onMessagesSentEncryptedFile(qint64, const MessagesSentEncryptedMessage&, const QVariant&)));
+    connect(mApi, &Telegram::onUploadSaveFilePartAnswer, this, &FileHandler::onUploadSaveFilePartResult);
+    connect(mApi, &Telegram::onUploadSaveBigFilePartAnswer, this, &FileHandler::onUploadSaveFilePartResult);
+    connect(mApi, &Telegram::onUploadGetFileAnswer, this, &FileHandler::onUploadGetFileAnswer);
+    connect(mApi, &Telegram::onUploadGetFileError, this, &FileHandler::onUploadGetFileError);
+    connect(mApi, &Telegram::onMessagesSendMediaAnswer, this, &FileHandler::onMessagesSentMedia);
+    connect(mApi, &Telegram::onMessagesSendEncryptedFileAnswer, this, &FileHandler::onMessagesSentEncryptedFile);
 }
 
 FileHandler::~FileHandler() {

@@ -190,21 +190,6 @@ public:
     qint64 messagesSendEncryptedFile(const InputEncryptedChat &chat, const InputEncryptedFile &file);//needed?
     qint64 messagesSendEncryptedService(const InputEncryptedChat &chat, const DecryptedMessageAction &action);//needed?
 
-
-    // Working with geochats
-    qint64 geochatsGetLocated(const InputGeoPoint &geoPoint, qint32 radius, qint32 limit);
-    qint64 geochatsGetRecents(qint32 sliceCount, const QList<GeoChatMessage> &messages, const QList<Chat> &chats, const QList<User> &users);
-    qint64 geochatsCheckin(const InputGeoChat &peer);
-    qint64 geochatsGetFullChat(const InputGeoChat &peer);
-    qint64 geochatsEditChatTitle(const InputGeoChat &peer, const QString &title, const QString &address);
-    qint64 geochatsEditChatPhoto(const InputGeoChat &peer, const InputChatPhoto &photo);
-    qint64 geochatSearch(const InputGeoChat &peer, const QString &query, const MessagesFilter &filter, qint32 minDate = 0, qint32 maxDate = 0, qint32 offset = 0, qint32 maxId = 0, qint32 limit = 0);
-    qint64 geochatGetHistory(const InputGeoChat &peer, qint32 offset = 0, qint32 maxId = 0, qint32 limit = 0);
-    qint64 geochatSetTyping(const InputGeoChat &peer, bool typing);
-    qint64 geochatSendMessage(const InputGeoChat &peer, const QString &message);
-    qint64 geochatSendMedia(const InputGeoChat &peer, const InputMedia &media);
-    qint64 geochatCreateGeoChat(const QString &title, const InputGeoPoint &geoPoint, const QString &address, const QString &venue);
-
     // Stickers
     qint64 messagesGetStickers(const QString &emoticon, const QString &hash);
     qint64 messagesGetAllStickers(const QString &hash);
@@ -225,11 +210,6 @@ public:
     qint64 uploadGetFile(const InputFileLocation &file, qint32 fileSize, qint32 dc = 0, const QByteArray &key = QByteArray(), const QByteArray &iv = QByteArray());
     qint64 uploadCancelFile(qint64 fileId);
 
-    // Miscellaneous
-    qint64 helpGetSuppport();
-    qint64 helpGetInviteText(const QString &langCode); // Returns text of a text message with an invitation.
-    qint64 helpGetAppUpdate(const QString &deviceModel, const QString &systemVersion, const QString &appVersion, const QString &langCode);
-
     // additional public methods
     void init(qint32 timeout);
     void init();
@@ -246,107 +226,10 @@ public:
 Q_SIGNALS:
     // Errors
     void error(qint64 id, qint32 errorCode, const QString &errorText, const QString &functionName = QString());
-    void authSignInError(qint64 id, qint32 errorCode, const QString &errorText);
-    void authSignUpError(qint64 id, qint32 errorCode, const QString &errorText);
 
     // Registration / authorization
     void authNeeded();
     void authLoggedIn();
-    void authCheckPhoneAnswer(qint64 msgId, const AuthCheckedPhone &result);
-    void authCheckPhoneError(qint64 msgId, qint32 errorCode, const QString &errorText);
-    void authCheckPhoneSent(qint64 msgId, const QString &phoneNumber);
-    void authSendCodeAnswer(qint64 msgId, const AuthSentCode &result, const QVariant &attachedData);
-    void authSendCodeError(qint64 id);
-    void authSendSmsAnswer(qint64 id, bool ok);
-    void authSendCallAnswer(qint64 id, bool ok);
-    void authLogOutAnswer(qint64 id, bool ok);
-    void authSendInvitesAnswer(qint64 id, bool ok);
-    void authResetAuthorizationsAnswer(qint64 id, bool ok);
-    void authCheckPasswordAnswer(qint64 msgId, qint32 expires, const User &user);
-    void authRequestPasswordRecoveryAnswer(qint64 msgId, const AuthPasswordRecovery &recovery);
-    void authRecoverPasswordAnswer(qint64 msgId, const AuthAuthorization &auth);
-
-    // Working with Notifications. Settings
-    void accountRegisterDeviceAnswer(qint64 id, bool ok);
-    void accountUnregisterDeviceAnswer(qint64 id, bool ok);
-    void accountUpdateNotifySettingsAnswer(qint64 id, bool ok);
-    void accountGetNotifySettingsAnswer(qint64 id, const PeerNotifySettings &peerNotifySettings);
-    void accountResetNotifySettingsAnswer(qint64 id, bool ok);
-    void accountUpdateProfileAnswer(qint64 id, const User &user);
-    void accountUpdateStatusAnswer(qint64 id, bool ok);
-    void accountGetWallPapersAnswer(qint64 id, const QList<WallPaper> &wallPapers);
-    void accountCheckUsernameAnswer(qint64 id, bool ok);
-    void accountUpdateUsernameAnswer(qint64 id, const User &user);
-    void accountDeleteAccountAnswer(qint64 msgId, bool ok);
-    void accountGetAccountTTLAnswer(qint64 msgId, const AccountDaysTTL &ttl);
-    void accountSetAccountTTLAnswer(qint64 msgId, bool ok);
-    void accountUpdateDeviceLockedAnswer(qint64 msgId, bool ok);
-    void accountChangePhoneAnswer(qint64 msgId, const User &user);
-    void accountSentChangePhoneCode(qint64 msgId, const QString &phone_code_hash, qint32 send_call_timeout);
-    void accountGetPasswordAnswer(qint64 msgId, const AccountPassword &password);
-    void accountGetAuthorizationsAnswer(qint64 msgId, const AccountAuthorizations &auths);
-    void accountResetAuthorizationAnswer(qint64 msgId, bool ok);
-    void accountGetPasswordSettingsAnswer(qint64 msgId, const AccountPasswordSettings &settings);
-    void accountUpdatePasswordSettingsAnswer(qint64 msgId, bool ok);
-    void photosUploadProfilePhotoAnswer(qint64 id, const Photo &photo, const QList<User> &users);
-    void photosUpdateProfilePhotoAnswer(qint64 id, const UserProfilePhoto &userProfilePhoto);
-
-    // Working with users
-    void usersGetUsersAnswer(qint64 id, const QList<User> &users);
-    void usersGetFullUserAnswer(qint64 id, const User &user, const ContactsLink &link, const Photo &profilePhoto, const PeerNotifySettings &notifySettings, bool blocked, const QString &realFirstName, const QString &realLastName);
-    void photosGetUserPhotosAnswer(qint64 id, qint32 sliceCount, const QList<Photo> &photos, const QList<User> &users);
-
-    // Working with contacts
-    void contactsGetStatusesAnswer(qint64 id, const QList<ContactStatus> &statuses);
-    void contactsGetContactsAnswer(qint64 id, bool modified, QList<Contact> contacts, QList<User> users);
-    void contactsImportContactsAnswer(qint64 id, const QList<ImportedContact> &importedContacts, const QList<qint64> &retryContacts, const QList<User> &users);
-    void contactsDeleteContactAnswer(qint64 id, const ContactLink &myLink, const ContactLink &foreignLink, const User &user);
-    void contactsDeleteContactsAnswer(qint64 id, bool ok);
-    void contactsFound(qint64 id, const QList<ContactFound> &founds, const QList<User> &users);
-    void contactsResolveUsernameAnswer(qint64 msgId, const User& user);
-
-    // Working with blacklist
-    void contactsBlockAnswer(qint64 id, bool ok);
-    void contactsUnblockAnswer(qint64 id, bool ok);
-    void contactsBlockResult(qint64 id, bool ok);
-    void contactsGetBlockedAnswer(qint64 id, qint32 sliceCount, const QList<ContactBlocked> &blocked, const QList<User> &users);
-
-    // Working with messages
-    void messagesSendMessageAnswer(qint64 id, qint32 msgId, qint32 date, const MessageMedia &media, qint32 pts, qint32 pts_count, qint32 seq, const QList<ContactsLink> &links);
-    void messagesSendMediaAnswer(qint64 id, const UpdatesType &updates);
-    void messagesSendPhotoAnswer(qint64 id, const UpdatesType &updates);
-    void messagesSendGeoPointAnswer(qint64 id, const UpdatesType &updates);
-    void messagesSendContactAnswer(qint64 id, const UpdatesType &updates);
-    void messagesSendVideoAnswer(qint64 id, const UpdatesType &updates);
-    void messagesSendAudioAnswer(qint64 id, const UpdatesType &updates);
-    void messagesSendDocumentAnswer(qint64 id, const UpdatesType &updates);
-    void messagesForwardPhotoAnswer(qint64 id, const UpdatesType &updates);
-    void messagesForwardVideoAnswer(qint64 id, const UpdatesType &updates);
-    void messagesForwardAudioAnswer(qint64 id, const UpdatesType &updates);
-    void messagesForwardDocumentAnswer(qint64 id, const UpdatesType &updates);
-    void messagesSetTypingAnswer(qint64 id, bool ok);
-    void messagesGetMessagesAnswer(qint64 id, qint32 sliceCount, const QList<Message> &messages, const QList<Chat> &chats, const QList<User> &users);
-    void messagesGetDialogsAnswer(qint64 id, qint32 sliceCount, const QList<Dialog> &dialogs, const QList<Message> &messages, const QList<Chat> &chats, const QList<User> &users);
-    void messagesGetHistoryAnswer(qint64 id, qint32 sliceCount, const QList<Message> &messages, const QList<Chat> &chats, const QList<User> &users);
-    void messagesSearchAnswer(qint64 id, qint32 sliceCount, const QList<Message> &messages, const QList<Chat> &chats, const QList<User> &users);
-    void messagesReadHistoryAnswer(qint64 id, qint32 pts, qint32 pts_count, qint32 offset);
-    void messagesDeleteHistoryAnswer(qint64 id, qint32 pts, qint32 pts_count, qint32 offset);
-    void messagesReadMessageContentsAnswer(qint64 msgId, const MessagesAffectedMessages &watchedMessages);
-    void messagesDeleteMessagesAnswer(qint64 id, const MessagesAffectedMessages &deletedMessages);
-    void messagesReceivedMessagesAnswer(qint64 id, const QList<ReceivedNotifyMessage> &confirmedMsgIds);
-    void messagesForwardMessageAnswer(qint64 id, const UpdatesType &updates);
-    void messagesForwardMessagesAnswer(qint64 id, const UpdatesType &updates);
-    void messagesSendBroadcastAnswer(qint64 id, const UpdatesType &updates);
-    void messagesGetWebPagePreviewAnswer(qint64 msgId, const MessageMedia &updates);
-
-    // Working with chats
-    void messagesGetChatsAnswer(qint64 id, const QList<Chat> &chats);
-    void messagesGetFullChatAnswer(qint64 id, const ChatFull &chatFull, const QList<Chat> &chats, const QList<User> &users);
-    void messagesEditChatTitleAnswer(qint64 id, const UpdatesType &updates);// statedMessage or statedMessageLink
-    void messagesEditChatPhotoStatedMessageAnswer(qint64 msgId, const UpdatesType &updates); // statedMessage or statedMessageLink
-    void messagesAddChatUserAnswer(qint64 id, const UpdatesType &updates); // statedMessage or statedMessageLink
-    void messagesDeleteChatUserAnswer(qint64 id, const UpdatesType &updates); // statedMessage or statedMessageLink
-    void messagesCreateChatAnswer(qint64 id, const UpdatesType &updates); // statedMessage or statedMessageLink
 
     // Working with secret chats
     void messagesCreateEncryptedChatAnswer(qint32 chatId, qint32 date, qint32 peerId, qint64 accessHash);
@@ -358,48 +241,14 @@ Q_SIGNALS:
     void messagesSendEncryptedAnswer(qint64 id, qint32 date, const EncryptedFile &encryptedFile = EncryptedFile()); // messagesSentEncryptedMessage/messagesSentEncryptedFile
     void messagesSendEncryptedFileAnswer(qint64 id, qint32 date, const EncryptedFile &encryptedFile = EncryptedFile()); // messagesSentEncryptedMessage/messagesSentEncryptedFile
     void messagesSendEncryptedServiceAnswer(qint64 id, qint32 date, EncryptedFile encryptedFile = EncryptedFile()); // messagesSentEncryptedMessage/messagesSentEncryptedFile
-    void messagesReceivedQueueAnwer(qint64 id, const QList<qint64> &msgIds);
-
-    // Stickers
-    void messagesGetStickersAnwer(qint64 msgId, const MessagesStickers &stickers);
-    void messagesGetAllStickersAnwer(qint64 msgId, const MessagesAllStickers &stickers);
-    void messagesGetStickerSetAnwer(qint64 msgId, const MessagesStickerSet &stickerset);
-    void messagesInstallStickerSetAnwer(qint64 msgId, bool ok);
-    void messagesUninstallStickerSetAnwer(qint64 msgId, bool ok);
-
-    // Invites
-    void messagesExportChatInviteAnwer(qint64 msgId, const ExportedChatInvite &invite);
-    void messagesCheckChatInviteAnwer(qint64 msgId, const ChatInvite &invite);
-    void messagesImportChatInviteAnwer(qint64 msgId, const UpdatesType &updates);
-
-    // Working with geochats
-    void geochatsGetLocatedAnswer(qint64 id, const QList<ChatLocated> &results, const QList<GeoChatMessage> &messages, const QList<Chat> &chats, const QList<User> &users);
-    void geochatsGetRecentsAnswer(qint64 id, qint32 sliceCount, const QList<GeoChatMessage> &messages, const QList<Chat> &chats, const QList<User> &users);
-    void geochatsCheckinAnswer(qint64 id, const GeoChatMessage &message, const QList<Chat> &chats, const QList<User> &users, qint32 seq);
-    void geochatsGetFullChatAnswer(qint64 id, const ChatFull &fullChat, const QList<Chat> &chats, const QList<User> &users);
-    void geochatsEditChatTitleAnswer(qint64 id, const GeoChatMessage &message, const QList<Chat> &chats, const QList<User> &user, qint32 seq);
-    void geochatsEditChatPhotoAnswer(qint64 id, const GeoChatMessage &message, const QList<Chat> &chats, const QList<User> &user, qint32 seq);
-    void geochatsSearchAnswer(qint64 id, qint32 sliceCount, const QList<GeoChatMessage> &messages, const QList<Chat> &chats, const QList<User> &users);
-    void geochatsGetHistory(qint64 id, qint32 sliceCount, const QList<GeoChatMessage> &messages, const QList<Chat> &chats, const QList<User> &users);
-    void geochatsSetTyping(qint64 id, bool ok);
-    void geochatsSendMessage(qint64 id, const GeoChatMessage &message, const QList<Chat> &chats, const QList<User> &user, qint32 seq);
-    void geochatsSendMedia(qint64 id, const GeoChatMessage &message, const QList<Chat> &chats, const QList<User> &user, qint32 seq);
-    void geochatsCreateGeoChatAnswer(qint64 id, const GeoChatMessage &message, const QList<Chat> &chats, const QList<User> &users, qint32 seq);
 
     // Working with updates
-    void updatesGetStateAnswer(qint64, const UpdatesState&);
-    void updatesGetDifferenceAnswer(qint64 id, qint32 date, qint32 seq);
     void updatesGetDifferenceAnswer(qint64 id, const QList<Message> &messages, const QList<SecretChatMessage> &secretChatMessages, const QList<Update> &otherUpdates, const QList<Chat> &chats, const QList<User> &users, const UpdatesState &state, bool isIntermediateState);
 
     // Working with files
     void uploadGetFileAnswer(qint64 fileId, const StorageFileType &type, qint32 mtime, const QByteArray &bytes, qint32 partId, qint32 downloaded, qint32 total);
     void uploadCancelFileAnswer(qint64 fileId, bool cancelled);
     void uploadSendFileAnswer(qint64 fileId, qint32 partId, qint32 uploaded, qint32 totalSize);
-
-    // Miscellaneous
-    void helpGetSuppportAnswer(qint64 id, const QString &phoneNumber, const User &user);
-    void helpGetInviteTextAnswer(qint64 id, const HelpInviteText &message);
-    void helpGetAppUpdateAnswer(qint64 id, qint32 updateId, bool critical, QString url, QString text); // if updateId <=0 there isn't any update
 
     // Updates
     void updatesTooLong();
@@ -440,28 +289,23 @@ private:
     void createSharedKey(SecretChat * secretChat, BIGNUM *p, QByteArray gAOrB);
     SecretChatMessage toSecretChatMessage(const EncryptedMessage &encryptedMessage);
     void processDifferences(qint64 id, const QList<Message> &messages, const QList<EncryptedMessage> &newEncryptedMessages, const QList<Update> &otherUpdates, const QList<Chat> &chats, const QList<User> &users, const UpdatesState &state, bool isIntermediateState);
+    void authorizeUser(qint64 id, const User &user);
+    void messagesDhConfigNotModified(qint64 msgId, const QByteArray &random, Callback<EncryptedChat> callBack);
+
+protected:
+    void onAuthLogOutAnswer(qint64 id, bool ok, const QVariant &attachedData);
+    void onContactsGetContactsAnswer(qint64 msgId, const ContactsContacts &result, const QVariant &attachedData);
 
 private Q_SLOTS:
+    void onError(qint64 id, qint32 errorCode, const QString &errorText, const QString &functionName, const QVariant &attachedData);
     void onDcProviderReady();
     void onAuthLoggedIn();
-    void onError(qint64 id, qint32 errorCode, const QString &errorText, const QString &functionName);
     void onErrorRetry(qint64 id, qint32 errorCode, const QString &errorText);
     void onAuthCheckPhoneDcChanged();
     void onHelpGetInviteTextDcChanged();
     void onImportContactsDcChanged();
     void onUserAuthorized(qint64 id, qint32 expires, const User &user);
-    void onAuthLogOutAnswer(qint64 id, bool ok);
-    void onPhotosPhotos(qint64 msgId, const QList<Photo> &photos, const QList<User> &users);
     void onContactsImportContactsAnswer();
-    void onContactsContacts(qint64 msgId, const QList<Contact> &contacts, const QList<User> &users);
-    void onContactsContactsNotModified(qint64 msgId);
-    void onContactsBlocked(qint64 msgId, const QList<ContactBlocked> &blocked, const QList<User> &users);
-    void onMessagesSentMessage(qint64 id, qint32 msgId, qint32 date, const MessageMedia &media, qint32 pts, qint32 pts_count, qint32 seq);
-    void onMessagesSendMediaAnswer(qint64 fileId, const UpdatesType &updates);
-    void onMessagesGetMessagesMessages(qint64 msgId, const QList<Message> &messages, const QList<Chat> &chats, const QList<User> &users);
-    void onMessagesDialogs(qint64 msgId, const QList<Dialog> &dialogs, const QList<Message> &messages, const QList<Chat> &chats, const QList<User> &users);
-    void onMessagesGetHistoryMessages(qint64 msgId, const QList<Message> &messages, const QList<Chat> &chats, const QList<User> &users);
-    void onMessagesSearchMessages(qint64 msgId, const QList<Message> &messages, const QList<Chat> &chats, const QList<User> &users);
     void onMessagesDhConfig(qint64 msgId, qint32 g, const QByteArray &p, qint32 version, const QByteArray &random);
     void onMessagesDhConfigNotModified(qint64 msgId, const QByteArray &random);
     void onMessagesRequestEncryptionEncryptedChat(qint64 msgId, const EncryptedChat &chat);
