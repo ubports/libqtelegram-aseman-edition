@@ -25,7 +25,8 @@ public:
         TypeInputMessagesFilterPhotoVideo,
         TypeInputMessagesFilterPhotoVideoDocuments,
         TypeInputMessagesFilterDocument,
-        TypeInputMessagesFilterAudio
+        TypeInputMessagesFilterAudio,
+        TypeInputMessagesFilterAudioDocuments
     };
 
     MessagesFilterObject(const MessagesFilter &core, QObject *parent = 0);
@@ -102,6 +103,9 @@ inline void MessagesFilterObject::setClassType(quint32 classType) {
     case TypeInputMessagesFilterAudio:
         result = MessagesFilter::typeInputMessagesFilterAudio;
         break;
+    case TypeInputMessagesFilterAudioDocuments:
+        result = MessagesFilter::typeInputMessagesFilterAudioDocuments;
+        break;
     default:
         result = MessagesFilter::typeInputMessagesFilterEmpty;
         break;
@@ -136,6 +140,9 @@ inline quint32 MessagesFilterObject::classType() const {
         break;
     case MessagesFilter::typeInputMessagesFilterAudio:
         result = TypeInputMessagesFilterAudio;
+        break;
+    case MessagesFilter::typeInputMessagesFilterAudioDocuments:
+        result = TypeInputMessagesFilterAudioDocuments;
         break;
     default:
         result = TypeInputMessagesFilterEmpty;

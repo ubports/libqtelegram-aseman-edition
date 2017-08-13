@@ -9,7 +9,7 @@
 #### Schema:
 
 ```c++
-userFull#771095da user:User link:contacts.Link profile_photo:Photo notify_settings:PeerNotifySettings blocked:Bool real_first_name:string real_last_name:string = UserFull;
+userFull#5a89ac5b user:User link:contacts.Link profile_photo:Photo notify_settings:PeerNotifySettings blocked:Bool bot_info:BotInfo = UserFull;
 ```
 
 #### Parameters:
@@ -21,6 +21,5 @@ userFull#771095da user:User link:contacts.Link profile_photo:Photo notify_settin
 |profilePhoto|[Photo](photo.md)|
 |notifySettings|[PeerNotifySettings](peernotifysettings.md)|
 |blocked|bool|
-|realFirstName|QString|
-|realLastName|QString|
+|botInfo|[BotInfo](botinfo.md)|
 

@@ -10,24 +10,25 @@
 #include "core/outboundpkt.h"
 #include "../coretypes.h"
 
+#include "telegram/types/updatestype.h"
+#include "telegram/types/inputuser.h"
+#include <QtGlobal>
+#include <QString>
 #include "telegram/types/messagesmessages.h"
 #include <QList>
-#include <QtGlobal>
 #include "telegram/types/messagesdialogs.h"
 #include "telegram/types/inputpeer.h"
-#include <QString>
 #include "telegram/types/messagesfilter.h"
 #include "telegram/types/messagesaffectedhistory.h"
 #include "telegram/types/messagesaffectedmessages.h"
 #include "telegram/types/receivednotifymessage.h"
 #include "telegram/types/sendmessageaction.h"
 #include "telegram/types/messagessentmessage.h"
-#include "telegram/types/updatestype.h"
+#include "telegram/types/replymarkup.h"
 #include "telegram/types/inputmedia.h"
 #include "telegram/types/messageschats.h"
 #include "telegram/types/messageschatfull.h"
 #include "telegram/types/inputchatphoto.h"
-#include "telegram/types/inputuser.h"
 #include "telegram/types/messagesdhconfig.h"
 #include "telegram/types/encryptedchat.h"
 #include <QByteArray>
@@ -49,6 +50,7 @@ class LIBQTELEGRAMSHARED_EXPORT Messages : public TelegramFunctionObject
 {
 public:
     enum MessagesFunction {
+        fncMessagesStartBot = 0x1b3e0ffc,
         fncMessagesGetMessages = 0x4222fa74,
         fncMessagesGetDialogs = 0xeccf1df6,
         fncMessagesGetHistory = 0x92a1df2f,
@@ -58,8 +60,8 @@ public:
         fncMessagesDeleteMessages = 0xa5f18925,
         fncMessagesReceivedMessages = 0x5a954c0,
         fncMessagesSetTyping = 0xa3825e50,
-        fncMessagesSendMessage = 0x9add8f26,
-        fncMessagesSendMedia = 0x2d7923b1,
+        fncMessagesSendMessage = 0xfc55e6b5,
+        fncMessagesSendMedia = 0xc8f16791,
         fncMessagesForwardMessages = 0x55e1728d,
         fncMessagesGetChats = 0x3c6aa187,
         fncMessagesGetFullChat = 0x3b831c66,
@@ -95,6 +97,9 @@ public:
     Messages();
     virtual ~Messages();
 
+    static bool startBot(OutboundPkt *out, const InputUser &bot, qint32 chatId, qint64 randomId, const QString &startParam);
+    static UpdatesType startBotResult(InboundPkt *in);
+
     static bool getMessages(OutboundPkt *out, const QList<qint32> &id);
     static MessagesMessages getMessagesResult(InboundPkt *in);
 
@@ -122,10 +127,10 @@ public:
     static bool setTyping(OutboundPkt *out, const InputPeer &peer, const SendMessageAction &action);
     static bool setTypingResult(InboundPkt *in);
 
-    static bool sendMessage(OutboundPkt *out, const InputPeer &peer, qint32 replyToMsgId, const QString &message, qint64 randomId);
+    static bool sendMessage(OutboundPkt *out, const InputPeer &peer, qint32 replyToMsgId, const QString &message, qint64 randomId, const ReplyMarkup &replyMarkup);
     static MessagesSentMessage sendMessageResult(InboundPkt *in);
 
-    static bool sendMedia(OutboundPkt *out, const InputPeer &peer, qint32 replyToMsgId, const InputMedia &media, qint64 randomId);
+    static bool sendMedia(OutboundPkt *out, const InputPeer &peer, qint32 replyToMsgId, const InputMedia &media, qint64 randomId, const ReplyMarkup &replyMarkup);
     static UpdatesType sendMediaResult(InboundPkt *in);
 
     static bool forwardMessages(OutboundPkt *out, const InputPeer &peer, const QList<qint32> &id, const QList<qint64> &randomId);
@@ -225,6 +230,21 @@ inline Functions::Messages::Messages() {
 }
 
 inline Functions::Messages::~Messages() {
+}
+
+inline bool Functions::Messages::startBot(OutboundPkt *out, const InputUser &bot, qint32 chatId, qint64 randomId, const QString &startParam) {
+    out->appendInt(fncMessagesStartBot);
+    if(!bot.push(out)) return false;
+    out->appendInt(chatId);
+    out->appendLong(randomId);
+    out->appendQString(startParam);
+    return true;
+}
+
+inline UpdatesType Functions::Messages::startBotResult(InboundPkt *in) {
+    UpdatesType result;
+    if(!result.fetch(in)) return result;
+    return result;
 }
 
 inline bool Functions::Messages::getMessages(OutboundPkt *out, const QList<qint32> &id) {
@@ -366,17 +386,19 @@ inline bool Functions::Messages::setTypingResult(InboundPkt *in) {
     return result;
 }
 
-inline bool Functions::Messages::sendMessage(OutboundPkt *out, const InputPeer &peer, qint32 replyToMsgId, const QString &message, qint64 randomId) {
+inline bool Functions::Messages::sendMessage(OutboundPkt *out, const InputPeer &peer, qint32 replyToMsgId, const QString &message, qint64 randomId, const ReplyMarkup &replyMarkup) {
     out->appendInt(fncMessagesSendMessage);
     
     qint32 flags = 0;
     if(replyToMsgId != 0) flags = (1<<0 | flags);
+    if(replyMarkup != 0) flags = (1<<2 | flags);
     
     out->appendInt(flags);
     if(!peer.push(out)) return false;
     if(flags & 1<<0) out->appendInt(replyToMsgId);
     out->appendQString(message);
     out->appendLong(randomId);
+    if(flags & 1<<2) if(!replyMarkup.push(out)) return false;
     return true;
 }
 
@@ -386,17 +408,19 @@ inline MessagesSentMessage Functions::Messages::sendMessageResult(InboundPkt *in
     return result;
 }
 
-inline bool Functions::Messages::sendMedia(OutboundPkt *out, const InputPeer &peer, qint32 replyToMsgId, const InputMedia &media, qint64 randomId) {
+inline bool Functions::Messages::sendMedia(OutboundPkt *out, const InputPeer &peer, qint32 replyToMsgId, const InputMedia &media, qint64 randomId, const ReplyMarkup &replyMarkup) {
     out->appendInt(fncMessagesSendMedia);
     
     qint32 flags = 0;
     if(replyToMsgId != 0) flags = (1<<0 | flags);
+    if(replyMarkup != 0) flags = (1<<2 | flags);
     
     out->appendInt(flags);
     if(!peer.push(out)) return false;
     if(flags & 1<<0) out->appendInt(replyToMsgId);
     if(!media.push(out)) return false;
     out->appendLong(randomId);
+    if(flags & 1<<2) if(!replyMarkup.push(out)) return false;
     return true;
 }
 

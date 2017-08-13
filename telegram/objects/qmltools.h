@@ -11,6 +11,8 @@ void qtelegramRegisterQmlTypes(const char *uri, int major, int minor) {
     qmlRegisterType<AccountDaysTTLObject>(uri, major, minor, "AccountDaysTTL");
     qmlRegisterType<AudioObject>(uri, major, minor, "Audio");
     qmlRegisterType<AuthorizationObject>(uri, major, minor, "Authorization");
+    qmlRegisterType<BotCommandObject>(uri, major, minor, "BotCommand");
+    qmlRegisterType<BotInfoObject>(uri, major, minor, "BotInfo");
     qmlRegisterType<ChatObject>(uri, major, minor, "Chat");
     qmlRegisterType<ChatFullObject>(uri, major, minor, "ChatFull");
     qmlRegisterType<ChatInviteObject>(uri, major, minor, "ChatInvite");
@@ -65,6 +67,8 @@ void qtelegramRegisterQmlTypes(const char *uri, int major, int minor) {
     qmlRegisterType<InputStickerSetObject>(uri, major, minor, "InputStickerSet");
     qmlRegisterType<InputUserObject>(uri, major, minor, "InputUser");
     qmlRegisterType<InputVideoObject>(uri, major, minor, "InputVideo");
+    qmlRegisterType<KeyboardButtonObject>(uri, major, minor, "KeyboardButton");
+    qmlRegisterType<KeyboardButtonRowObject>(uri, major, minor, "KeyboardButtonRow");
     qmlRegisterType<MessageObject>(uri, major, minor, "Message");
     qmlRegisterType<MessageActionObject>(uri, major, minor, "MessageAction");
     qmlRegisterType<MessageMediaObject>(uri, major, minor, "MessageMedia");
@@ -79,6 +83,7 @@ void qtelegramRegisterQmlTypes(const char *uri, int major, int minor) {
     qmlRegisterType<PrivacyKeyObject>(uri, major, minor, "PrivacyKey");
     qmlRegisterType<PrivacyRuleObject>(uri, major, minor, "PrivacyRule");
     qmlRegisterType<ReceivedNotifyMessageObject>(uri, major, minor, "ReceivedNotifyMessage");
+    qmlRegisterType<ReplyMarkupObject>(uri, major, minor, "ReplyMarkup");
     qmlRegisterType<SecretChatMessageObject>(uri, major, minor, "SecretChatMessage");
     qmlRegisterType<SendMessageActionObject>(uri, major, minor, "SendMessageAction");
     qmlRegisterType<StickerPackObject>(uri, major, minor, "StickerPack");

@@ -9,6 +9,7 @@
 * [typeInputMessagesFilterPhotoVideoDocuments](#messagesfiltertypeinputmessagesfilterphotovideodocuments)
 * [typeInputMessagesFilterDocument](#messagesfiltertypeinputmessagesfilterdocument)
 * [typeInputMessagesFilterAudio](#messagesfiltertypeinputmessagesfilteraudio)
+* [typeInputMessagesFilterAudioDocuments](#messagesfiltertypeinputmessagesfilteraudiodocuments)
 
 ## MessagesFilter::typeInputMessagesFilterEmpty
 
@@ -82,6 +83,17 @@ inputMessagesFilterDocument#9eddf188 = MessagesFilter;
 
 ```c++
 inputMessagesFilterAudio#cfc87522 = MessagesFilter;
+```
+
+#### Parameters:
+
+
+## MessagesFilter::typeInputMessagesFilterAudioDocuments
+
+#### Schema:
+
+```c++
+inputMessagesFilterAudioDocuments#5afbf764 = MessagesFilter;
 ```
 
 #### Parameters:

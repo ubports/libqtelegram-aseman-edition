@@ -9,13 +9,12 @@
 #### Schema:
 
 ```c++
-auth.authorization#f6b673a4 expires:int user:User = auth.Authorization;
+auth.authorization#ff036af1 user:User = auth.Authorization;
 ```
 
 #### Parameters:
 
 |Name|Type|
 |----|----|
-|expires|qint32|
 |user|[User](user.md)|
 

@@ -14,7 +14,7 @@ class LIBQTELEGRAMSHARED_EXPORT DcOptionObject : public TelegramTypeQObject
 {
     Q_OBJECT
     Q_ENUMS(DcOptionClassType)
-    Q_PROPERTY(QString hostname READ hostname WRITE setHostname NOTIFY hostnameChanged)
+    Q_PROPERTY(qint32 flags READ flags WRITE setFlags NOTIFY flagsChanged)
     Q_PROPERTY(qint32 id READ id WRITE setId NOTIFY idChanged)
     Q_PROPERTY(QString ipAddress READ ipAddress WRITE setIpAddress NOTIFY ipAddressChanged)
     Q_PROPERTY(qint32 port READ port WRITE setPort NOTIFY portChanged)
@@ -30,8 +30,8 @@ public:
     DcOptionObject(QObject *parent = 0);
     virtual ~DcOptionObject();
 
-    void setHostname(const QString &hostname);
-    QString hostname() const;
+    void setFlags(qint32 flags);
+    qint32 flags() const;
 
     void setId(qint32 id);
     qint32 id() const;
@@ -54,7 +54,7 @@ public:
 Q_SIGNALS:
     void coreChanged();
     void classTypeChanged();
-    void hostnameChanged();
+    void flagsChanged();
     void idChanged();
     void ipAddressChanged();
     void portChanged();
@@ -80,15 +80,15 @@ inline DcOptionObject::DcOptionObject(QObject *parent) :
 inline DcOptionObject::~DcOptionObject() {
 }
 
-inline void DcOptionObject::setHostname(const QString &hostname) {
-    if(m_core.hostname() == hostname) return;
-    m_core.setHostname(hostname);
-    Q_EMIT hostnameChanged();
+inline void DcOptionObject::setFlags(qint32 flags) {
+    if(m_core.flags() == flags) return;
+    m_core.setFlags(flags);
+    Q_EMIT flagsChanged();
     Q_EMIT coreChanged();
 }
 
-inline QString DcOptionObject::hostname() const {
-    return m_core.hostname();
+inline qint32 DcOptionObject::flags() const {
+    return m_core.flags();
 }
 
 inline void DcOptionObject::setId(qint32 id) {
@@ -128,7 +128,7 @@ inline DcOptionObject &DcOptionObject::operator =(const DcOption &b) {
     if(m_core == b) return *this;
     m_core = b;
 
-    Q_EMIT hostnameChanged();
+    Q_EMIT flagsChanged();
     Q_EMIT idChanged();
     Q_EMIT ipAddressChanged();
     Q_EMIT portChanged();

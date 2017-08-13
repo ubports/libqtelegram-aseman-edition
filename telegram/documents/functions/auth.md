@@ -2,6 +2,8 @@
 
 ## Methods:
 
+* **Import bot authorization** - [TelegramCore::authImportBotAuthorization](methods/importbotauthorization.md)
+
 * **Check phone** - [TelegramCore::authCheckPhone](methods/checkphone.md)
 
 * **Send code** - [TelegramCore::authSendCode](methods/sendcode.md)

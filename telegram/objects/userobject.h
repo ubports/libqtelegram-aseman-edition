@@ -17,7 +17,9 @@ class LIBQTELEGRAMSHARED_EXPORT UserObject : public TelegramTypeQObject
     Q_OBJECT
     Q_ENUMS(UserClassType)
     Q_PROPERTY(qint64 accessHash READ accessHash WRITE setAccessHash NOTIFY accessHashChanged)
+    Q_PROPERTY(qint32 botInfoVersion READ botInfoVersion WRITE setBotInfoVersion NOTIFY botInfoVersionChanged)
     Q_PROPERTY(QString firstName READ firstName WRITE setFirstName NOTIFY firstNameChanged)
+    Q_PROPERTY(qint32 flags READ flags WRITE setFlags NOTIFY flagsChanged)
     Q_PROPERTY(qint32 id READ id WRITE setId NOTIFY idChanged)
     Q_PROPERTY(QString lastName READ lastName WRITE setLastName NOTIFY lastNameChanged)
     Q_PROPERTY(QString phone READ phone WRITE setPhone NOTIFY phoneChanged)
@@ -30,11 +32,7 @@ class LIBQTELEGRAMSHARED_EXPORT UserObject : public TelegramTypeQObject
 public:
     enum UserClassType {
         TypeUserEmpty,
-        TypeUserSelf,
-        TypeUserContact,
-        TypeUserRequest,
-        TypeUserForeign,
-        TypeUserDeleted
+        TypeUser
     };
 
     UserObject(const User &core, QObject *parent = 0);
@@ -44,8 +42,14 @@ public:
     void setAccessHash(qint64 accessHash);
     qint64 accessHash() const;
 
+    void setBotInfoVersion(qint32 botInfoVersion);
+    qint32 botInfoVersion() const;
+
     void setFirstName(const QString &firstName);
     QString firstName() const;
+
+    void setFlags(qint32 flags);
+    qint32 flags() const;
 
     void setId(qint32 id);
     qint32 id() const;
@@ -78,7 +82,9 @@ Q_SIGNALS:
     void coreChanged();
     void classTypeChanged();
     void accessHashChanged();
+    void botInfoVersionChanged();
     void firstNameChanged();
+    void flagsChanged();
     void idChanged();
     void lastNameChanged();
     void phoneChanged();
@@ -134,6 +140,17 @@ inline qint64 UserObject::accessHash() const {
     return m_core.accessHash();
 }
 
+inline void UserObject::setBotInfoVersion(qint32 botInfoVersion) {
+    if(m_core.botInfoVersion() == botInfoVersion) return;
+    m_core.setBotInfoVersion(botInfoVersion);
+    Q_EMIT botInfoVersionChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 UserObject::botInfoVersion() const {
+    return m_core.botInfoVersion();
+}
+
 inline void UserObject::setFirstName(const QString &firstName) {
     if(m_core.firstName() == firstName) return;
     m_core.setFirstName(firstName);
@@ -143,6 +160,17 @@ inline void UserObject::setFirstName(const QString &firstName) {
 
 inline QString UserObject::firstName() const {
     return m_core.firstName();
+}
+
+inline void UserObject::setFlags(qint32 flags) {
+    if(m_core.flags() == flags) return;
+    m_core.setFlags(flags);
+    Q_EMIT flagsChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 UserObject::flags() const {
+    return m_core.flags();
 }
 
 inline void UserObject::setId(qint32 id) {
@@ -230,7 +258,9 @@ inline UserObject &UserObject::operator =(const User &b) {
     m_status->setCore(b.status());
 
     Q_EMIT accessHashChanged();
+    Q_EMIT botInfoVersionChanged();
     Q_EMIT firstNameChanged();
+    Q_EMIT flagsChanged();
     Q_EMIT idChanged();
     Q_EMIT lastNameChanged();
     Q_EMIT phoneChanged();
@@ -251,20 +281,8 @@ inline void UserObject::setClassType(quint32 classType) {
     case TypeUserEmpty:
         result = User::typeUserEmpty;
         break;
-    case TypeUserSelf:
-        result = User::typeUserSelf;
-        break;
-    case TypeUserContact:
-        result = User::typeUserContact;
-        break;
-    case TypeUserRequest:
-        result = User::typeUserRequest;
-        break;
-    case TypeUserForeign:
-        result = User::typeUserForeign;
-        break;
-    case TypeUserDeleted:
-        result = User::typeUserDeleted;
+    case TypeUser:
+        result = User::typeUser;
         break;
     default:
         result = User::typeUserEmpty;
@@ -283,20 +301,8 @@ inline quint32 UserObject::classType() const {
     case User::typeUserEmpty:
         result = TypeUserEmpty;
         break;
-    case User::typeUserSelf:
-        result = TypeUserSelf;
-        break;
-    case User::typeUserContact:
-        result = TypeUserContact;
-        break;
-    case User::typeUserRequest:
-        result = TypeUserRequest;
-        break;
-    case User::typeUserForeign:
-        result = TypeUserForeign;
-        break;
-    case User::typeUserDeleted:
-        result = TypeUserDeleted;
+    case User::typeUser:
+        result = TypeUser;
         break;
     default:
         result = TypeUserEmpty;

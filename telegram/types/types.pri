@@ -9,6 +9,8 @@ HEADERS += \
     $$PWD/accountdaysttl.h \
     $$PWD/audio.h \
     $$PWD/authorization.h \
+    $$PWD/botcommand.h \
+    $$PWD/botinfo.h \
     $$PWD/chat.h \
     $$PWD/chatfull.h \
     $$PWD/chatinvite.h \
@@ -63,6 +65,8 @@ HEADERS += \
     $$PWD/inputstickerset.h \
     $$PWD/inputuser.h \
     $$PWD/inputvideo.h \
+    $$PWD/keyboardbutton.h \
+    $$PWD/keyboardbuttonrow.h \
     $$PWD/message.h \
     $$PWD/messageaction.h \
     $$PWD/messagemedia.h \
@@ -77,6 +81,7 @@ HEADERS += \
     $$PWD/privacykey.h \
     $$PWD/privacyrule.h \
     $$PWD/receivednotifymessage.h \
+    $$PWD/replymarkup.h \
     $$PWD/secretchatmessage.h \
     $$PWD/sendmessageaction.h \
     $$PWD/stickerpack.h \

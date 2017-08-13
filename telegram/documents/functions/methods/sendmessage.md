@@ -7,7 +7,7 @@ TelegramCore::messagesSendMessage
 ## Schema:
 
 ```c++
-messages.sendMessage#9add8f26 flags:# peer:InputPeer reply_to_msg_id:flags.0?int message:string random_id:long = messages.SentMessage;
+messages.sendMessage#fc55e6b5 flags:# peer:InputPeer reply_to_msg_id:flags.0?int message:string random_id:long reply_markup:flags.2?ReplyMarkup = messages.SentMessage;
 ```
 ## Parameters:
 
@@ -17,6 +17,7 @@ messages.sendMessage#9add8f26 flags:# peer:InputPeer reply_to_msg_id:flags.0?int
 |replyToMsgId|qint32||
 |message|QString||
 |randomId|qint64||
+|replyMarkup|[ReplyMarkup](../../types/replymarkup.md)||
 |callBack|Callback&lt;[MessagesSentMessage](../../types/messagessentmessage.md)&gt;|0|
 |timeout|qint32|TelegramCore::timeOut()|
 
@@ -53,7 +54,7 @@ onSendMessageError(qint64 msgId, qint32 errorCode, const QString &errorText)
 ## Examples:
 
 ```c++
-tg->sendMessage(peer, reply_to_msg_id, message, random_id, [=](TG_SEND_MESSAGE_CALLBACK){
+tg->sendMessage(peer, reply_to_msg_id, message, random_id, reply_markup, [=](TG_SEND_MESSAGE_CALLBACK){
     ...
 }, 30000);
 ```

@@ -19,6 +19,7 @@
 #include <QtGlobal>
 #include "messagemedia.h"
 #include <QString>
+#include "replymarkup.h"
 #include "peer.h"
 
 class LIBQTELEGRAMSHARED_EXPORT Message : public TelegramTypeObject
@@ -26,7 +27,7 @@ class LIBQTELEGRAMSHARED_EXPORT Message : public TelegramTypeObject
 public:
     enum MessageClassType {
         typeMessageEmpty = 0x83e5de54,
-        typeMessage = 0xa7ab1991,
+        typeMessage = 0xc3060325,
         typeMessageService = 0x1d86f70e
     };
 
@@ -62,6 +63,9 @@ public:
     void setMessage(const QString &message);
     QString message() const;
 
+    void setReplyMarkup(const ReplyMarkup &replyMarkup);
+    ReplyMarkup replyMarkup() const;
+
     void setReplyToMsgId(qint32 replyToMsgId);
     qint32 replyToMsgId() const;
 
@@ -94,6 +98,7 @@ private:
     qint32 m_id;
     MessageMedia m_media;
     QString m_message;
+    ReplyMarkup m_replyMarkup;
     qint32 m_replyToMsgId;
     Peer m_toId;
     MessageClassType m_classType;
@@ -218,6 +223,14 @@ inline QString Message::message() const {
     return m_message;
 }
 
+inline void Message::setReplyMarkup(const ReplyMarkup &replyMarkup) {
+    m_replyMarkup = replyMarkup;
+}
+
+inline ReplyMarkup Message::replyMarkup() const {
+    return m_replyMarkup;
+}
+
 inline void Message::setReplyToMsgId(qint32 replyToMsgId) {
     m_replyToMsgId = replyToMsgId;
 }
@@ -245,6 +258,7 @@ inline bool Message::operator ==(const Message &b) const {
            m_id == b.m_id &&
            m_media == b.m_media &&
            m_message == b.m_message &&
+           m_replyMarkup == b.m_replyMarkup &&
            m_replyToMsgId == b.m_replyToMsgId &&
            m_toId == b.m_toId;
 }
@@ -285,6 +299,9 @@ inline bool Message::fetch(InboundPkt *in) {
         m_date = in->fetchInt();
         m_message = in->fetchQString();
         m_media.fetch(in);
+        if(m_flags & 1<<6) {
+            m_replyMarkup.fetch(in);
+        }
         m_classType = static_cast<MessageClassType>(x);
         return true;
     }
@@ -328,6 +345,7 @@ inline bool Message::push(OutboundPkt *out) const {
         out->appendInt(m_date);
         out->appendQString(m_message);
         m_media.push(out);
+        m_replyMarkup.push(out);
         return true;
     }
         break;
@@ -369,6 +387,7 @@ inline QMap<QString, QVariant> Message::toMap() const {
         result["date"] = QVariant::fromValue<qint32>(date());
         result["message"] = QVariant::fromValue<QString>(message());
         result["media"] = m_media.toMap();
+        result["replyMarkup"] = m_replyMarkup.toMap();
         return result;
     }
         break;
@@ -408,6 +427,7 @@ inline Message Message::fromMap(const QMap<QString, QVariant> &map) {
         result.setDate( map.value("date").value<qint32>() );
         result.setMessage( map.value("message").value<QString>() );
         result.setMedia( MessageMedia::fromMap(map.value("media").toMap()) );
+        result.setReplyMarkup( ReplyMarkup::fromMap(map.value("replyMarkup").toMap()) );
         return result;
     }
     if(map.value("classType").toString() == "Message::typeMessageService") {
@@ -447,6 +467,7 @@ inline QDataStream &operator<<(QDataStream &stream, const Message &item) {
         stream << item.date();
         stream << item.message();
         stream << item.media();
+        stream << item.replyMarkup();
         break;
     case Message::typeMessageService:
         stream << item.flags();
@@ -502,6 +523,9 @@ inline QDataStream &operator>>(QDataStream &stream, Message &item) {
         MessageMedia m_media;
         stream >> m_media;
         item.setMedia(m_media);
+        ReplyMarkup m_reply_markup;
+        stream >> m_reply_markup;
+        item.setReplyMarkup(m_reply_markup);
     }
         break;
     case Message::typeMessageService: {

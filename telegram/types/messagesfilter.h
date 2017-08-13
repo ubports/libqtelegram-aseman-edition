@@ -26,7 +26,8 @@ public:
         typeInputMessagesFilterPhotoVideo = 0x56e9f0e4,
         typeInputMessagesFilterPhotoVideoDocuments = 0xd95e73bb,
         typeInputMessagesFilterDocument = 0x9eddf188,
-        typeInputMessagesFilterAudio = 0xcfc87522
+        typeInputMessagesFilterAudio = 0xcfc87522,
+        typeInputMessagesFilterAudioDocuments = 0x5afbf764
     };
 
     MessagesFilter(MessagesFilterClassType classType = typeInputMessagesFilterEmpty, InboundPkt *in = 0);
@@ -138,6 +139,12 @@ inline bool MessagesFilter::fetch(InboundPkt *in) {
     }
         break;
     
+    case typeInputMessagesFilterAudioDocuments: {
+        m_classType = static_cast<MessagesFilterClassType>(x);
+        return true;
+    }
+        break;
+    
     default:
         LQTG_FETCH_ASSERT;
         return false;
@@ -178,6 +185,11 @@ inline bool MessagesFilter::push(OutboundPkt *out) const {
         break;
     
     case typeInputMessagesFilterAudio: {
+        return true;
+    }
+        break;
+    
+    case typeInputMessagesFilterAudioDocuments: {
         return true;
     }
         break;
@@ -232,6 +244,12 @@ inline QMap<QString, QVariant> MessagesFilter::toMap() const {
     }
         break;
     
+    case typeInputMessagesFilterAudioDocuments: {
+        result["classType"] = "MessagesFilter::typeInputMessagesFilterAudioDocuments";
+        return result;
+    }
+        break;
+    
     default:
         return result;
     }
@@ -265,6 +283,10 @@ inline MessagesFilter MessagesFilter::fromMap(const QMap<QString, QVariant> &map
     }
     if(map.value("classType").toString() == "MessagesFilter::typeInputMessagesFilterAudio") {
         result.setClassType(typeInputMessagesFilterAudio);
+        return result;
+    }
+    if(map.value("classType").toString() == "MessagesFilter::typeInputMessagesFilterAudioDocuments") {
+        result.setClassType(typeInputMessagesFilterAudioDocuments);
         return result;
     }
     return result;
@@ -301,6 +323,9 @@ inline QDataStream &operator<<(QDataStream &stream, const MessagesFilter &item) 
     case MessagesFilter::typeInputMessagesFilterAudio:
         
         break;
+    case MessagesFilter::typeInputMessagesFilterAudioDocuments:
+        
+        break;
     }
     return stream;
 }
@@ -335,6 +360,10 @@ inline QDataStream &operator>>(QDataStream &stream, MessagesFilter &item) {
     }
         break;
     case MessagesFilter::typeInputMessagesFilterAudio: {
+        
+    }
+        break;
+    case MessagesFilter::typeInputMessagesFilterAudioDocuments: {
         
     }
         break;

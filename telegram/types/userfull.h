@@ -15,17 +15,17 @@
 
 #include <QDataStream>
 
+#include "botinfo.h"
 #include "contactslink.h"
 #include "peernotifysettings.h"
 #include "photo.h"
-#include <QString>
 #include "user.h"
 
 class LIBQTELEGRAMSHARED_EXPORT UserFull : public TelegramTypeObject
 {
 public:
     enum UserFullClassType {
-        typeUserFull = 0x771095da
+        typeUserFull = 0x5a89ac5b
     };
 
     UserFull(UserFullClassType classType = typeUserFull, InboundPkt *in = 0);
@@ -36,6 +36,9 @@ public:
     void setBlocked(bool blocked);
     bool blocked() const;
 
+    void setBotInfo(const BotInfo &botInfo);
+    BotInfo botInfo() const;
+
     void setLink(const ContactsLink &link);
     ContactsLink link() const;
 
@@ -44,12 +47,6 @@ public:
 
     void setProfilePhoto(const Photo &profilePhoto);
     Photo profilePhoto() const;
-
-    void setRealFirstName(const QString &realFirstName);
-    QString realFirstName() const;
-
-    void setRealLastName(const QString &realLastName);
-    QString realLastName() const;
 
     void setUser(const User &user);
     User user() const;
@@ -72,11 +69,10 @@ public:
 
 private:
     bool m_blocked;
+    BotInfo m_botInfo;
     ContactsLink m_link;
     PeerNotifySettings m_notifySettings;
     Photo m_profilePhoto;
-    QString m_realFirstName;
-    QString m_realLastName;
     User m_user;
     UserFullClassType m_classType;
 };
@@ -118,6 +114,14 @@ inline bool UserFull::blocked() const {
     return m_blocked;
 }
 
+inline void UserFull::setBotInfo(const BotInfo &botInfo) {
+    m_botInfo = botInfo;
+}
+
+inline BotInfo UserFull::botInfo() const {
+    return m_botInfo;
+}
+
 inline void UserFull::setLink(const ContactsLink &link) {
     m_link = link;
 }
@@ -142,22 +146,6 @@ inline Photo UserFull::profilePhoto() const {
     return m_profilePhoto;
 }
 
-inline void UserFull::setRealFirstName(const QString &realFirstName) {
-    m_realFirstName = realFirstName;
-}
-
-inline QString UserFull::realFirstName() const {
-    return m_realFirstName;
-}
-
-inline void UserFull::setRealLastName(const QString &realLastName) {
-    m_realLastName = realLastName;
-}
-
-inline QString UserFull::realLastName() const {
-    return m_realLastName;
-}
-
 inline void UserFull::setUser(const User &user) {
     m_user = user;
 }
@@ -169,11 +157,10 @@ inline User UserFull::user() const {
 inline bool UserFull::operator ==(const UserFull &b) const {
     return m_classType == b.m_classType &&
            m_blocked == b.m_blocked &&
+           m_botInfo == b.m_botInfo &&
            m_link == b.m_link &&
            m_notifySettings == b.m_notifySettings &&
            m_profilePhoto == b.m_profilePhoto &&
-           m_realFirstName == b.m_realFirstName &&
-           m_realLastName == b.m_realLastName &&
            m_user == b.m_user;
 }
 
@@ -195,8 +182,7 @@ inline bool UserFull::fetch(InboundPkt *in) {
         m_profilePhoto.fetch(in);
         m_notifySettings.fetch(in);
         m_blocked = in->fetchBool();
-        m_realFirstName = in->fetchQString();
-        m_realLastName = in->fetchQString();
+        m_botInfo.fetch(in);
         m_classType = static_cast<UserFullClassType>(x);
         return true;
     }
@@ -217,8 +203,7 @@ inline bool UserFull::push(OutboundPkt *out) const {
         m_profilePhoto.push(out);
         m_notifySettings.push(out);
         out->appendBool(m_blocked);
-        out->appendQString(m_realFirstName);
-        out->appendQString(m_realLastName);
+        m_botInfo.push(out);
         return true;
     }
         break;
@@ -238,8 +223,7 @@ inline QMap<QString, QVariant> UserFull::toMap() const {
         result["profilePhoto"] = m_profilePhoto.toMap();
         result["notifySettings"] = m_notifySettings.toMap();
         result["blocked"] = QVariant::fromValue<bool>(blocked());
-        result["realFirstName"] = QVariant::fromValue<QString>(realFirstName());
-        result["realLastName"] = QVariant::fromValue<QString>(realLastName());
+        result["botInfo"] = m_botInfo.toMap();
         return result;
     }
         break;
@@ -258,8 +242,7 @@ inline UserFull UserFull::fromMap(const QMap<QString, QVariant> &map) {
         result.setProfilePhoto( Photo::fromMap(map.value("profilePhoto").toMap()) );
         result.setNotifySettings( PeerNotifySettings::fromMap(map.value("notifySettings").toMap()) );
         result.setBlocked( map.value("blocked").value<bool>() );
-        result.setRealFirstName( map.value("realFirstName").value<QString>() );
-        result.setRealLastName( map.value("realLastName").value<QString>() );
+        result.setBotInfo( BotInfo::fromMap(map.value("botInfo").toMap()) );
         return result;
     }
     return result;
@@ -281,8 +264,7 @@ inline QDataStream &operator<<(QDataStream &stream, const UserFull &item) {
         stream << item.profilePhoto();
         stream << item.notifySettings();
         stream << item.blocked();
-        stream << item.realFirstName();
-        stream << item.realLastName();
+        stream << item.botInfo();
         break;
     }
     return stream;
@@ -309,12 +291,9 @@ inline QDataStream &operator>>(QDataStream &stream, UserFull &item) {
         bool m_blocked;
         stream >> m_blocked;
         item.setBlocked(m_blocked);
-        QString m_real_first_name;
-        stream >> m_real_first_name;
-        item.setRealFirstName(m_real_first_name);
-        QString m_real_last_name;
-        stream >> m_real_last_name;
-        item.setRealLastName(m_real_last_name);
+        BotInfo m_bot_info;
+        stream >> m_bot_info;
+        item.setBotInfo(m_bot_info);
     }
         break;
     }

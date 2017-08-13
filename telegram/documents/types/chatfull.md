@@ -9,7 +9,7 @@
 #### Schema:
 
 ```c++
-chatFull#cade0791 id:int participants:ChatParticipants chat_photo:Photo notify_settings:PeerNotifySettings exported_invite:ExportedChatInvite = ChatFull;
+chatFull#2e02a614 id:int participants:ChatParticipants chat_photo:Photo notify_settings:PeerNotifySettings exported_invite:ExportedChatInvite bot_info:Vector<BotInfo> = ChatFull;
 ```
 
 #### Parameters:
@@ -21,4 +21,5 @@ chatFull#cade0791 id:int participants:ChatParticipants chat_photo:Photo notify_s
 |chatPhoto|[Photo](photo.md)|
 |notifySettings|[PeerNotifySettings](peernotifysettings.md)|
 |exportedInvite|[ExportedChatInvite](exportedchatinvite.md)|
+|botInfo|QList&lt;[BotInfo](botinfo.md)&gt;|
 

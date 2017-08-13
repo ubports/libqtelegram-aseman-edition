@@ -15,7 +15,6 @@ class LIBQTELEGRAMSHARED_EXPORT AuthAuthorizationObject : public TelegramTypeQOb
 {
     Q_OBJECT
     Q_ENUMS(AuthAuthorizationClassType)
-    Q_PROPERTY(qint32 expires READ expires WRITE setExpires NOTIFY expiresChanged)
     Q_PROPERTY(UserObject* user READ user WRITE setUser NOTIFY userChanged)
     Q_PROPERTY(AuthAuthorization core READ core WRITE setCore NOTIFY coreChanged)
     Q_PROPERTY(quint32 classType READ classType WRITE setClassType NOTIFY classTypeChanged)
@@ -28,9 +27,6 @@ public:
     AuthAuthorizationObject(const AuthAuthorization &core, QObject *parent = 0);
     AuthAuthorizationObject(QObject *parent = 0);
     virtual ~AuthAuthorizationObject();
-
-    void setExpires(qint32 expires);
-    qint32 expires() const;
 
     void setUser(UserObject* user);
     UserObject* user() const;
@@ -47,7 +43,6 @@ public:
 Q_SIGNALS:
     void coreChanged();
     void classTypeChanged();
-    void expiresChanged();
     void userChanged();
 
 private Q_SLOTS:
@@ -79,17 +74,6 @@ inline AuthAuthorizationObject::AuthAuthorizationObject(QObject *parent) :
 inline AuthAuthorizationObject::~AuthAuthorizationObject() {
 }
 
-inline void AuthAuthorizationObject::setExpires(qint32 expires) {
-    if(m_core.expires() == expires) return;
-    m_core.setExpires(expires);
-    Q_EMIT expiresChanged();
-    Q_EMIT coreChanged();
-}
-
-inline qint32 AuthAuthorizationObject::expires() const {
-    return m_core.expires();
-}
-
 inline void AuthAuthorizationObject::setUser(UserObject* user) {
     if(m_user == user) return;
     if(m_user) delete m_user;
@@ -112,7 +96,6 @@ inline AuthAuthorizationObject &AuthAuthorizationObject::operator =(const AuthAu
     m_core = b;
     m_user->setCore(b.user());
 
-    Q_EMIT expiresChanged();
     Q_EMIT userChanged();
     Q_EMIT coreChanged();
     return *this;

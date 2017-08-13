@@ -2,6 +2,8 @@
 
 ## Methods:
 
+* **Start bot** - [TelegramCore::messagesStartBot](methods/startbot.md)
+
 * **Get messages** - [TelegramCore::messagesGetMessages](methods/getmessages.md)
 
 * **Get dialogs** - [TelegramCore::messagesGetDialogs](methods/getdialogs.md)

@@ -9,7 +9,7 @@
 #### Schema:
 
 ```c++
-dcOption#2ec2a43c id:int hostname:string ip_address:string port:int = DcOption;
+dcOption#5d8c6cc flags:# id:int ip_address:string port:int = DcOption;
 ```
 
 #### Parameters:
@@ -17,7 +17,6 @@ dcOption#2ec2a43c id:int hostname:string ip_address:string port:int = DcOption;
 |Name|Type|
 |----|----|
 |id|qint32|
-|hostname|QString|
 |ipAddress|QString|
 |port|qint32|
 

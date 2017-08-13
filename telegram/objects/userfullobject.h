@@ -9,6 +9,7 @@
 #include "telegram/types/userfull.h"
 
 #include <QPointer>
+#include "botinfoobject.h"
 #include "contactslinkobject.h"
 #include "peernotifysettingsobject.h"
 #include "photoobject.h"
@@ -19,11 +20,10 @@ class LIBQTELEGRAMSHARED_EXPORT UserFullObject : public TelegramTypeQObject
     Q_OBJECT
     Q_ENUMS(UserFullClassType)
     Q_PROPERTY(bool blocked READ blocked WRITE setBlocked NOTIFY blockedChanged)
+    Q_PROPERTY(BotInfoObject* botInfo READ botInfo WRITE setBotInfo NOTIFY botInfoChanged)
     Q_PROPERTY(ContactsLinkObject* link READ link WRITE setLink NOTIFY linkChanged)
     Q_PROPERTY(PeerNotifySettingsObject* notifySettings READ notifySettings WRITE setNotifySettings NOTIFY notifySettingsChanged)
     Q_PROPERTY(PhotoObject* profilePhoto READ profilePhoto WRITE setProfilePhoto NOTIFY profilePhotoChanged)
-    Q_PROPERTY(QString realFirstName READ realFirstName WRITE setRealFirstName NOTIFY realFirstNameChanged)
-    Q_PROPERTY(QString realLastName READ realLastName WRITE setRealLastName NOTIFY realLastNameChanged)
     Q_PROPERTY(UserObject* user READ user WRITE setUser NOTIFY userChanged)
     Q_PROPERTY(UserFull core READ core WRITE setCore NOTIFY coreChanged)
     Q_PROPERTY(quint32 classType READ classType WRITE setClassType NOTIFY classTypeChanged)
@@ -40,6 +40,9 @@ public:
     void setBlocked(bool blocked);
     bool blocked() const;
 
+    void setBotInfo(BotInfoObject* botInfo);
+    BotInfoObject* botInfo() const;
+
     void setLink(ContactsLinkObject* link);
     ContactsLinkObject* link() const;
 
@@ -48,12 +51,6 @@ public:
 
     void setProfilePhoto(PhotoObject* profilePhoto);
     PhotoObject* profilePhoto() const;
-
-    void setRealFirstName(const QString &realFirstName);
-    QString realFirstName() const;
-
-    void setRealLastName(const QString &realLastName);
-    QString realLastName() const;
 
     void setUser(UserObject* user);
     UserObject* user() const;
@@ -71,20 +68,21 @@ Q_SIGNALS:
     void coreChanged();
     void classTypeChanged();
     void blockedChanged();
+    void botInfoChanged();
     void linkChanged();
     void notifySettingsChanged();
     void profilePhotoChanged();
-    void realFirstNameChanged();
-    void realLastNameChanged();
     void userChanged();
 
 private Q_SLOTS:
+    void coreBotInfoChanged();
     void coreLinkChanged();
     void coreNotifySettingsChanged();
     void coreProfilePhotoChanged();
     void coreUserChanged();
 
 private:
+    QPointer<BotInfoObject> m_botInfo;
     QPointer<ContactsLinkObject> m_link;
     QPointer<PeerNotifySettingsObject> m_notifySettings;
     QPointer<PhotoObject> m_profilePhoto;
@@ -94,12 +92,15 @@ private:
 
 inline UserFullObject::UserFullObject(const UserFull &core, QObject *parent) :
     TelegramTypeQObject(parent),
+    m_botInfo(0),
     m_link(0),
     m_notifySettings(0),
     m_profilePhoto(0),
     m_user(0),
     m_core(core)
 {
+    m_botInfo = new BotInfoObject(m_core.botInfo(), this);
+    connect(m_botInfo.data(), &BotInfoObject::coreChanged, this, &UserFullObject::coreBotInfoChanged);
     m_link = new ContactsLinkObject(m_core.link(), this);
     connect(m_link.data(), &ContactsLinkObject::coreChanged, this, &UserFullObject::coreLinkChanged);
     m_notifySettings = new PeerNotifySettingsObject(m_core.notifySettings(), this);
@@ -112,12 +113,15 @@ inline UserFullObject::UserFullObject(const UserFull &core, QObject *parent) :
 
 inline UserFullObject::UserFullObject(QObject *parent) :
     TelegramTypeQObject(parent),
+    m_botInfo(0),
     m_link(0),
     m_notifySettings(0),
     m_profilePhoto(0),
     m_user(0),
     m_core()
 {
+    m_botInfo = new BotInfoObject(m_core.botInfo(), this);
+    connect(m_botInfo.data(), &BotInfoObject::coreChanged, this, &UserFullObject::coreBotInfoChanged);
     m_link = new ContactsLinkObject(m_core.link(), this);
     connect(m_link.data(), &ContactsLinkObject::coreChanged, this, &UserFullObject::coreLinkChanged);
     m_notifySettings = new PeerNotifySettingsObject(m_core.notifySettings(), this);
@@ -140,6 +144,23 @@ inline void UserFullObject::setBlocked(bool blocked) {
 
 inline bool UserFullObject::blocked() const {
     return m_core.blocked();
+}
+
+inline void UserFullObject::setBotInfo(BotInfoObject* botInfo) {
+    if(m_botInfo == botInfo) return;
+    if(m_botInfo) delete m_botInfo;
+    m_botInfo = botInfo;
+    if(m_botInfo) {
+        m_botInfo->setParent(this);
+        m_core.setBotInfo(m_botInfo->core());
+        connect(m_botInfo.data(), &BotInfoObject::coreChanged, this, &UserFullObject::coreBotInfoChanged);
+    }
+    Q_EMIT botInfoChanged();
+    Q_EMIT coreChanged();
+}
+
+inline BotInfoObject*  UserFullObject::botInfo() const {
+    return m_botInfo;
 }
 
 inline void UserFullObject::setLink(ContactsLinkObject* link) {
@@ -193,28 +214,6 @@ inline PhotoObject*  UserFullObject::profilePhoto() const {
     return m_profilePhoto;
 }
 
-inline void UserFullObject::setRealFirstName(const QString &realFirstName) {
-    if(m_core.realFirstName() == realFirstName) return;
-    m_core.setRealFirstName(realFirstName);
-    Q_EMIT realFirstNameChanged();
-    Q_EMIT coreChanged();
-}
-
-inline QString UserFullObject::realFirstName() const {
-    return m_core.realFirstName();
-}
-
-inline void UserFullObject::setRealLastName(const QString &realLastName) {
-    if(m_core.realLastName() == realLastName) return;
-    m_core.setRealLastName(realLastName);
-    Q_EMIT realLastNameChanged();
-    Q_EMIT coreChanged();
-}
-
-inline QString UserFullObject::realLastName() const {
-    return m_core.realLastName();
-}
-
 inline void UserFullObject::setUser(UserObject* user) {
     if(m_user == user) return;
     if(m_user) delete m_user;
@@ -235,17 +234,17 @@ inline UserObject*  UserFullObject::user() const {
 inline UserFullObject &UserFullObject::operator =(const UserFull &b) {
     if(m_core == b) return *this;
     m_core = b;
+    m_botInfo->setCore(b.botInfo());
     m_link->setCore(b.link());
     m_notifySettings->setCore(b.notifySettings());
     m_profilePhoto->setCore(b.profilePhoto());
     m_user->setCore(b.user());
 
     Q_EMIT blockedChanged();
+    Q_EMIT botInfoChanged();
     Q_EMIT linkChanged();
     Q_EMIT notifySettingsChanged();
     Q_EMIT profilePhotoChanged();
-    Q_EMIT realFirstNameChanged();
-    Q_EMIT realLastNameChanged();
     Q_EMIT userChanged();
     Q_EMIT coreChanged();
     return *this;
@@ -292,6 +291,13 @@ inline void UserFullObject::setCore(const UserFull &core) {
 
 inline UserFull UserFullObject::core() const {
     return m_core;
+}
+
+inline void UserFullObject::coreBotInfoChanged() {
+    if(m_core.botInfo() == m_botInfo->core()) return;
+    m_core.setBotInfo(m_botInfo->core());
+    Q_EMIT botInfoChanged();
+    Q_EMIT coreChanged();
 }
 
 inline void UserFullObject::coreLinkChanged() {

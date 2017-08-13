@@ -15,14 +15,14 @@
 
 #include <QDataStream>
 
-#include <QString>
 #include <QtGlobal>
+#include <QString>
 
 class LIBQTELEGRAMSHARED_EXPORT DcOption : public TelegramTypeObject
 {
 public:
     enum DcOptionClassType {
-        typeDcOption = 0x2ec2a43c
+        typeDcOption = 0x5d8c6cc
     };
 
     DcOption(DcOptionClassType classType = typeDcOption, InboundPkt *in = 0);
@@ -30,8 +30,8 @@ public:
     DcOption(const Null&);
     virtual ~DcOption();
 
-    void setHostname(const QString &hostname);
-    QString hostname() const;
+    void setFlags(qint32 flags);
+    qint32 flags() const;
 
     void setId(qint32 id);
     qint32 id() const;
@@ -59,7 +59,7 @@ public:
     QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
-    QString m_hostname;
+    qint32 m_flags;
     qint32 m_id;
     QString m_ipAddress;
     qint32 m_port;
@@ -72,6 +72,7 @@ QDataStream LIBQTELEGRAMSHARED_EXPORT &operator<<(QDataStream &stream, const DcO
 QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, DcOption &item);
 
 inline DcOption::DcOption(DcOptionClassType classType, InboundPkt *in) :
+    m_flags(0),
     m_id(0),
     m_port(0),
     m_classType(classType)
@@ -80,6 +81,7 @@ inline DcOption::DcOption(DcOptionClassType classType, InboundPkt *in) :
 }
 
 inline DcOption::DcOption(InboundPkt *in) :
+    m_flags(0),
     m_id(0),
     m_port(0),
     m_classType(typeDcOption)
@@ -89,6 +91,7 @@ inline DcOption::DcOption(InboundPkt *in) :
 
 inline DcOption::DcOption(const Null &null) :
     TelegramTypeObject(null),
+    m_flags(0),
     m_id(0),
     m_port(0),
     m_classType(typeDcOption)
@@ -98,12 +101,12 @@ inline DcOption::DcOption(const Null &null) :
 inline DcOption::~DcOption() {
 }
 
-inline void DcOption::setHostname(const QString &hostname) {
-    m_hostname = hostname;
+inline void DcOption::setFlags(qint32 flags) {
+    m_flags = flags;
 }
 
-inline QString DcOption::hostname() const {
-    return m_hostname;
+inline qint32 DcOption::flags() const {
+    return m_flags;
 }
 
 inline void DcOption::setId(qint32 id) {
@@ -132,7 +135,7 @@ inline qint32 DcOption::port() const {
 
 inline bool DcOption::operator ==(const DcOption &b) const {
     return m_classType == b.m_classType &&
-           m_hostname == b.m_hostname &&
+           m_flags == b.m_flags &&
            m_id == b.m_id &&
            m_ipAddress == b.m_ipAddress &&
            m_port == b.m_port;
@@ -151,8 +154,8 @@ inline bool DcOption::fetch(InboundPkt *in) {
     int x = in->fetchInt();
     switch(x) {
     case typeDcOption: {
+        m_flags = in->fetchInt();
         m_id = in->fetchInt();
-        m_hostname = in->fetchQString();
         m_ipAddress = in->fetchQString();
         m_port = in->fetchInt();
         m_classType = static_cast<DcOptionClassType>(x);
@@ -170,8 +173,8 @@ inline bool DcOption::push(OutboundPkt *out) const {
     out->appendInt(m_classType);
     switch(m_classType) {
     case typeDcOption: {
+        out->appendInt(m_flags);
         out->appendInt(m_id);
-        out->appendQString(m_hostname);
         out->appendQString(m_ipAddress);
         out->appendInt(m_port);
         return true;
@@ -189,7 +192,6 @@ inline QMap<QString, QVariant> DcOption::toMap() const {
     case typeDcOption: {
         result["classType"] = "DcOption::typeDcOption";
         result["id"] = QVariant::fromValue<qint32>(id());
-        result["hostname"] = QVariant::fromValue<QString>(hostname());
         result["ipAddress"] = QVariant::fromValue<QString>(ipAddress());
         result["port"] = QVariant::fromValue<qint32>(port());
         return result;
@@ -206,7 +208,6 @@ inline DcOption DcOption::fromMap(const QMap<QString, QVariant> &map) {
     if(map.value("classType").toString() == "DcOption::typeDcOption") {
         result.setClassType(typeDcOption);
         result.setId( map.value("id").value<qint32>() );
-        result.setHostname( map.value("hostname").value<QString>() );
         result.setIpAddress( map.value("ipAddress").value<QString>() );
         result.setPort( map.value("port").value<qint32>() );
         return result;
@@ -225,8 +226,8 @@ inline QDataStream &operator<<(QDataStream &stream, const DcOption &item) {
     stream << static_cast<uint>(item.classType());
     switch(item.classType()) {
     case DcOption::typeDcOption:
+        stream << item.flags();
         stream << item.id();
-        stream << item.hostname();
         stream << item.ipAddress();
         stream << item.port();
         break;
@@ -240,12 +241,12 @@ inline QDataStream &operator>>(QDataStream &stream, DcOption &item) {
     item.setClassType(static_cast<DcOption::DcOptionClassType>(type));
     switch(type) {
     case DcOption::typeDcOption: {
+        qint32 m_flags;
+        stream >> m_flags;
+        item.setFlags(m_flags);
         qint32 m_id;
         stream >> m_id;
         item.setId(m_id);
-        QString m_hostname;
-        stream >> m_hostname;
-        item.setHostname(m_hostname);
         QString m_ip_address;
         stream >> m_ip_address;
         item.setIpAddress(m_ip_address);

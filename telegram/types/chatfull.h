@@ -15,6 +15,8 @@
 
 #include <QDataStream>
 
+#include <QList>
+#include "botinfo.h"
 #include "photo.h"
 #include "exportedchatinvite.h"
 #include <QtGlobal>
@@ -25,13 +27,16 @@ class LIBQTELEGRAMSHARED_EXPORT ChatFull : public TelegramTypeObject
 {
 public:
     enum ChatFullClassType {
-        typeChatFull = 0xcade0791
+        typeChatFull = 0x2e02a614
     };
 
     ChatFull(ChatFullClassType classType = typeChatFull, InboundPkt *in = 0);
     ChatFull(InboundPkt *in);
     ChatFull(const Null&);
     virtual ~ChatFull();
+
+    void setBotInfo(const QList<BotInfo> &botInfo);
+    QList<BotInfo> botInfo() const;
 
     void setChatPhoto(const Photo &chatPhoto);
     Photo chatPhoto() const;
@@ -65,6 +70,7 @@ public:
     QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
+    QList<BotInfo> m_botInfo;
     Photo m_chatPhoto;
     ExportedChatInvite m_exportedInvite;
     qint32 m_id;
@@ -100,6 +106,14 @@ inline ChatFull::ChatFull(const Null &null) :
 }
 
 inline ChatFull::~ChatFull() {
+}
+
+inline void ChatFull::setBotInfo(const QList<BotInfo> &botInfo) {
+    m_botInfo = botInfo;
+}
+
+inline QList<BotInfo> ChatFull::botInfo() const {
+    return m_botInfo;
 }
 
 inline void ChatFull::setChatPhoto(const Photo &chatPhoto) {
@@ -144,6 +158,7 @@ inline ChatParticipants ChatFull::participants() const {
 
 inline bool ChatFull::operator ==(const ChatFull &b) const {
     return m_classType == b.m_classType &&
+           m_botInfo == b.m_botInfo &&
            m_chatPhoto == b.m_chatPhoto &&
            m_exportedInvite == b.m_exportedInvite &&
            m_id == b.m_id &&
@@ -169,6 +184,14 @@ inline bool ChatFull::fetch(InboundPkt *in) {
         m_chatPhoto.fetch(in);
         m_notifySettings.fetch(in);
         m_exportedInvite.fetch(in);
+        if(in->fetchInt() != (qint32)CoreTypes::typeVector) return false;
+        qint32 m_botInfo_length = in->fetchInt();
+        m_botInfo.clear();
+        for (qint32 i = 0; i < m_botInfo_length; i++) {
+            BotInfo type;
+            type.fetch(in);
+            m_botInfo.append(type);
+        }
         m_classType = static_cast<ChatFullClassType>(x);
         return true;
     }
@@ -189,6 +212,11 @@ inline bool ChatFull::push(OutboundPkt *out) const {
         m_chatPhoto.push(out);
         m_notifySettings.push(out);
         m_exportedInvite.push(out);
+        out->appendInt(CoreTypes::typeVector);
+        out->appendInt(m_botInfo.count());
+        for (qint32 i = 0; i < m_botInfo.count(); i++) {
+            m_botInfo[i].push(out);
+        }
         return true;
     }
         break;
@@ -208,6 +236,10 @@ inline QMap<QString, QVariant> ChatFull::toMap() const {
         result["chatPhoto"] = m_chatPhoto.toMap();
         result["notifySettings"] = m_notifySettings.toMap();
         result["exportedInvite"] = m_exportedInvite.toMap();
+        QList<QVariant> _botInfo;
+        Q_FOREACH(const BotInfo &m__type, m_botInfo)
+            _botInfo << m__type.toMap();
+        result["botInfo"] = _botInfo;
         return result;
     }
         break;
@@ -226,6 +258,11 @@ inline ChatFull ChatFull::fromMap(const QMap<QString, QVariant> &map) {
         result.setChatPhoto( Photo::fromMap(map.value("chatPhoto").toMap()) );
         result.setNotifySettings( PeerNotifySettings::fromMap(map.value("notifySettings").toMap()) );
         result.setExportedInvite( ExportedChatInvite::fromMap(map.value("exportedInvite").toMap()) );
+        QList<QVariant> map_botInfo = map["botInfo"].toList();
+        QList<BotInfo> _botInfo;
+        Q_FOREACH(const QVariant &var, map_botInfo)
+            _botInfo << BotInfo::fromMap(var.toMap());
+        result.setBotInfo(_botInfo);
         return result;
     }
     return result;
@@ -247,6 +284,7 @@ inline QDataStream &operator<<(QDataStream &stream, const ChatFull &item) {
         stream << item.chatPhoto();
         stream << item.notifySettings();
         stream << item.exportedInvite();
+        stream << item.botInfo();
         break;
     }
     return stream;
@@ -273,6 +311,9 @@ inline QDataStream &operator>>(QDataStream &stream, ChatFull &item) {
         ExportedChatInvite m_exported_invite;
         stream >> m_exported_invite;
         item.setExportedInvite(m_exported_invite);
+        QList<BotInfo> m_bot_info;
+        stream >> m_bot_info;
+        item.setBotInfo(m_bot_info);
     }
         break;
     }

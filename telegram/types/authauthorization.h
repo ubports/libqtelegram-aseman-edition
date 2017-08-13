@@ -15,23 +15,19 @@
 
 #include <QDataStream>
 
-#include <QtGlobal>
 #include "user.h"
 
 class LIBQTELEGRAMSHARED_EXPORT AuthAuthorization : public TelegramTypeObject
 {
 public:
     enum AuthAuthorizationClassType {
-        typeAuthAuthorization = 0xf6b673a4
+        typeAuthAuthorization = 0xff036af1
     };
 
     AuthAuthorization(AuthAuthorizationClassType classType = typeAuthAuthorization, InboundPkt *in = 0);
     AuthAuthorization(InboundPkt *in);
     AuthAuthorization(const Null&);
     virtual ~AuthAuthorization();
-
-    void setExpires(qint32 expires);
-    qint32 expires() const;
 
     void setUser(const User &user);
     User user() const;
@@ -53,7 +49,6 @@ public:
     QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
-    qint32 m_expires;
     User m_user;
     AuthAuthorizationClassType m_classType;
 };
@@ -64,14 +59,12 @@ QDataStream LIBQTELEGRAMSHARED_EXPORT &operator<<(QDataStream &stream, const Aut
 QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, AuthAuthorization &item);
 
 inline AuthAuthorization::AuthAuthorization(AuthAuthorizationClassType classType, InboundPkt *in) :
-    m_expires(0),
     m_classType(classType)
 {
     if(in) fetch(in);
 }
 
 inline AuthAuthorization::AuthAuthorization(InboundPkt *in) :
-    m_expires(0),
     m_classType(typeAuthAuthorization)
 {
     fetch(in);
@@ -79,20 +72,11 @@ inline AuthAuthorization::AuthAuthorization(InboundPkt *in) :
 
 inline AuthAuthorization::AuthAuthorization(const Null &null) :
     TelegramTypeObject(null),
-    m_expires(0),
     m_classType(typeAuthAuthorization)
 {
 }
 
 inline AuthAuthorization::~AuthAuthorization() {
-}
-
-inline void AuthAuthorization::setExpires(qint32 expires) {
-    m_expires = expires;
-}
-
-inline qint32 AuthAuthorization::expires() const {
-    return m_expires;
 }
 
 inline void AuthAuthorization::setUser(const User &user) {
@@ -105,7 +89,6 @@ inline User AuthAuthorization::user() const {
 
 inline bool AuthAuthorization::operator ==(const AuthAuthorization &b) const {
     return m_classType == b.m_classType &&
-           m_expires == b.m_expires &&
            m_user == b.m_user;
 }
 
@@ -122,7 +105,6 @@ inline bool AuthAuthorization::fetch(InboundPkt *in) {
     int x = in->fetchInt();
     switch(x) {
     case typeAuthAuthorization: {
-        m_expires = in->fetchInt();
         m_user.fetch(in);
         m_classType = static_cast<AuthAuthorizationClassType>(x);
         return true;
@@ -139,7 +121,6 @@ inline bool AuthAuthorization::push(OutboundPkt *out) const {
     out->appendInt(m_classType);
     switch(m_classType) {
     case typeAuthAuthorization: {
-        out->appendInt(m_expires);
         m_user.push(out);
         return true;
     }
@@ -155,7 +136,6 @@ inline QMap<QString, QVariant> AuthAuthorization::toMap() const {
     switch(static_cast<int>(m_classType)) {
     case typeAuthAuthorization: {
         result["classType"] = "AuthAuthorization::typeAuthAuthorization";
-        result["expires"] = QVariant::fromValue<qint32>(expires());
         result["user"] = m_user.toMap();
         return result;
     }
@@ -170,7 +150,6 @@ inline AuthAuthorization AuthAuthorization::fromMap(const QMap<QString, QVariant
     AuthAuthorization result;
     if(map.value("classType").toString() == "AuthAuthorization::typeAuthAuthorization") {
         result.setClassType(typeAuthAuthorization);
-        result.setExpires( map.value("expires").value<qint32>() );
         result.setUser( User::fromMap(map.value("user").toMap()) );
         return result;
     }
@@ -188,7 +167,6 @@ inline QDataStream &operator<<(QDataStream &stream, const AuthAuthorization &ite
     stream << static_cast<uint>(item.classType());
     switch(item.classType()) {
     case AuthAuthorization::typeAuthAuthorization:
-        stream << item.expires();
         stream << item.user();
         break;
     }
@@ -201,9 +179,6 @@ inline QDataStream &operator>>(QDataStream &stream, AuthAuthorization &item) {
     item.setClassType(static_cast<AuthAuthorization::AuthAuthorizationClassType>(type));
     switch(type) {
     case AuthAuthorization::typeAuthAuthorization: {
-        qint32 m_expires;
-        stream >> m_expires;
-        item.setExpires(m_expires);
         User m_user;
         stream >> m_user;
         item.setUser(m_user);

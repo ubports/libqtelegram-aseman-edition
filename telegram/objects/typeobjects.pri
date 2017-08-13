@@ -10,6 +10,8 @@ HEADERS += \
     $$PWD/accountdaysttlobject.h \
     $$PWD/audioobject.h \
     $$PWD/authorizationobject.h \
+    $$PWD/botcommandobject.h \
+    $$PWD/botinfoobject.h \
     $$PWD/chatobject.h \
     $$PWD/chatfullobject.h \
     $$PWD/chatinviteobject.h \
@@ -64,6 +66,8 @@ HEADERS += \
     $$PWD/inputstickersetobject.h \
     $$PWD/inputuserobject.h \
     $$PWD/inputvideoobject.h \
+    $$PWD/keyboardbuttonobject.h \
+    $$PWD/keyboardbuttonrowobject.h \
     $$PWD/messageobject.h \
     $$PWD/messageactionobject.h \
     $$PWD/messagemediaobject.h \
@@ -78,6 +82,7 @@ HEADERS += \
     $$PWD/privacykeyobject.h \
     $$PWD/privacyruleobject.h \
     $$PWD/receivednotifymessageobject.h \
+    $$PWD/replymarkupobject.h \
     $$PWD/secretchatmessageobject.h \
     $$PWD/sendmessageactionobject.h \
     $$PWD/stickerpackobject.h \
@@ -139,6 +144,8 @@ SOURCES += \
     $$PWD/accountdaysttlobject.cpp \
     $$PWD/audioobject.cpp \
     $$PWD/authorizationobject.cpp \
+    $$PWD/botcommandobject.cpp \
+    $$PWD/botinfoobject.cpp \
     $$PWD/chatobject.cpp \
     $$PWD/chatfullobject.cpp \
     $$PWD/chatinviteobject.cpp \
@@ -193,6 +200,8 @@ SOURCES += \
     $$PWD/inputstickersetobject.cpp \
     $$PWD/inputuserobject.cpp \
     $$PWD/inputvideoobject.cpp \
+    $$PWD/keyboardbuttonobject.cpp \
+    $$PWD/keyboardbuttonrowobject.cpp \
     $$PWD/messageobject.cpp \
     $$PWD/messageactionobject.cpp \
     $$PWD/messagemediaobject.cpp \
@@ -207,6 +216,7 @@ SOURCES += \
     $$PWD/privacykeyobject.cpp \
     $$PWD/privacyruleobject.cpp \
     $$PWD/receivednotifymessageobject.cpp \
+    $$PWD/replymarkupobject.cpp \
     $$PWD/secretchatmessageobject.cpp \
     $$PWD/sendmessageactionobject.cpp \
     $$PWD/stickerpackobject.cpp \

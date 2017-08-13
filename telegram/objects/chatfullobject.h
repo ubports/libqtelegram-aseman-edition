@@ -18,6 +18,7 @@ class LIBQTELEGRAMSHARED_EXPORT ChatFullObject : public TelegramTypeQObject
 {
     Q_OBJECT
     Q_ENUMS(ChatFullClassType)
+    Q_PROPERTY(QList<BotInfo> botInfo READ botInfo WRITE setBotInfo NOTIFY botInfoChanged)
     Q_PROPERTY(PhotoObject* chatPhoto READ chatPhoto WRITE setChatPhoto NOTIFY chatPhotoChanged)
     Q_PROPERTY(ExportedChatInviteObject* exportedInvite READ exportedInvite WRITE setExportedInvite NOTIFY exportedInviteChanged)
     Q_PROPERTY(qint32 id READ id WRITE setId NOTIFY idChanged)
@@ -34,6 +35,9 @@ public:
     ChatFullObject(const ChatFull &core, QObject *parent = 0);
     ChatFullObject(QObject *parent = 0);
     virtual ~ChatFullObject();
+
+    void setBotInfo(const QList<BotInfo> &botInfo);
+    QList<BotInfo> botInfo() const;
 
     void setChatPhoto(PhotoObject* chatPhoto);
     PhotoObject* chatPhoto() const;
@@ -62,6 +66,7 @@ public:
 Q_SIGNALS:
     void coreChanged();
     void classTypeChanged();
+    void botInfoChanged();
     void chatPhotoChanged();
     void exportedInviteChanged();
     void idChanged();
@@ -119,6 +124,17 @@ inline ChatFullObject::ChatFullObject(QObject *parent) :
 }
 
 inline ChatFullObject::~ChatFullObject() {
+}
+
+inline void ChatFullObject::setBotInfo(const QList<BotInfo> &botInfo) {
+    if(m_core.botInfo() == botInfo) return;
+    m_core.setBotInfo(botInfo);
+    Q_EMIT botInfoChanged();
+    Q_EMIT coreChanged();
+}
+
+inline QList<BotInfo> ChatFullObject::botInfo() const {
+    return m_core.botInfo();
 }
 
 inline void ChatFullObject::setChatPhoto(PhotoObject* chatPhoto) {
@@ -208,6 +224,7 @@ inline ChatFullObject &ChatFullObject::operator =(const ChatFull &b) {
     m_notifySettings->setCore(b.notifySettings());
     m_participants->setCore(b.participants());
 
+    Q_EMIT botInfoChanged();
     Q_EMIT chatPhotoChanged();
     Q_EMIT exportedInviteChanged();
     Q_EMIT idChanged();

@@ -76,6 +76,8 @@ TelegramApi::TelegramApi(Session *session, Settings *settings, CryptoUtils *cryp
     accountUpdatePasswordSettingsMethods.onAnswer = &TelegramApi::onAccountUpdatePasswordSettingsAnswer;
     accountUpdatePasswordSettingsMethods.onError = &TelegramApi::onAccountUpdatePasswordSettingsError;
     
+    authImportBotAuthorizationMethods.onAnswer = &TelegramApi::onAuthImportBotAuthorizationAnswer;
+    authImportBotAuthorizationMethods.onError = &TelegramApi::onAuthImportBotAuthorizationError;
     authCheckPhoneMethods.onAnswer = &TelegramApi::onAuthCheckPhoneAnswer;
     authCheckPhoneMethods.onError = &TelegramApi::onAuthCheckPhoneError;
     authSendCodeMethods.onAnswer = &TelegramApi::onAuthSendCodeAnswer;
@@ -172,6 +174,8 @@ TelegramApi::TelegramApi(Session *session, Settings *settings, CryptoUtils *cryp
     helpGetSupportMethods.onAnswer = &TelegramApi::onHelpGetSupportAnswer;
     helpGetSupportMethods.onError = &TelegramApi::onHelpGetSupportError;
     
+    messagesStartBotMethods.onAnswer = &TelegramApi::onMessagesStartBotAnswer;
+    messagesStartBotMethods.onError = &TelegramApi::onMessagesStartBotError;
     messagesGetMessagesMethods.onAnswer = &TelegramApi::onMessagesGetMessagesAnswer;
     messagesGetMessagesMethods.onError = &TelegramApi::onMessagesGetMessagesError;
     messagesGetDialogsMethods.onAnswer = &TelegramApi::onMessagesGetDialogsAnswer;
@@ -825,6 +829,31 @@ void TelegramApi::onAccountUpdatePasswordSettingsError(Query *q, qint32 errorCod
         Q_EMIT accountUpdatePasswordSettingsError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
+
+qint64 TelegramApi::authImportBotAuthorization(qint32 flags, qint32 api_id, const QString &api_hash, const QString &bot_auth_token, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Auth::importBotAuthorization(&p, flags, api_id, api_hash, bot_auth_token);
+    return session->sendQuery(p, &authImportBotAuthorizationMethods, attachedData, "Auth->importBotAuthorization" );
+}
+
+void TelegramApi::onAuthImportBotAuthorizationAnswer(Query *q, InboundPkt &inboundPkt) {
+    const AuthAuthorization &result = Functions::Auth::importBotAuthorizationResult(&inboundPkt);
+    if(result.error())
+        onAuthImportBotAuthorizationError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT authImportBotAuthorizationAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onAuthImportBotAuthorizationError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT authImportBotAuthorizationError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
 
 qint64 TelegramApi::authCheckPhone(const QString &phone_number, const QVariant &attachedData, Session *session) {
     if(!session) session = mMainSession;
@@ -1941,6 +1970,31 @@ void TelegramApi::onHelpGetSupportError(Query *q, qint32 errorCode, const QStrin
 }
 
 
+qint64 TelegramApi::messagesStartBot(const InputUser &bot, qint32 chat_id, qint64 random_id, const QString &start_param, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Messages::startBot(&p, bot, chat_id, random_id, start_param);
+    return session->sendQuery(p, &messagesStartBotMethods, attachedData, "Messages->startBot" );
+}
+
+void TelegramApi::onMessagesStartBotAnswer(Query *q, InboundPkt &inboundPkt) {
+    const UpdatesType &result = Functions::Messages::startBotResult(&inboundPkt);
+    if(result.error())
+        onMessagesStartBotError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT messagesStartBotAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onMessagesStartBotError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT messagesStartBotError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
 qint64 TelegramApi::messagesGetMessages(const QList<qint32> &id, const QVariant &attachedData, Session *session) {
     if(!session) session = mMainSession;
     CHECK_SESSION(session)
@@ -2160,13 +2214,13 @@ void TelegramApi::onMessagesSetTypingError(Query *q, qint32 errorCode, const QSt
         Q_EMIT messagesSetTypingError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
-qint64 TelegramApi::messagesSendMessage(const InputPeer &peer, qint32 reply_to_msg_id, const QString &message, qint64 random_id, const QVariant &attachedData, Session *session) {
+qint64 TelegramApi::messagesSendMessage(const InputPeer &peer, qint32 reply_to_msg_id, const QString &message, qint64 random_id, const ReplyMarkup &reply_markup, const QVariant &attachedData, Session *session) {
     if(!session) session = mMainSession;
     CHECK_SESSION(session)
     DEBUG_FUNCTION
     OutboundPkt p(mSettings);
     INIT_MAIN_CONNECTION(session)
-    Functions::Messages::sendMessage(&p, peer, reply_to_msg_id, message, random_id);
+    Functions::Messages::sendMessage(&p, peer, reply_to_msg_id, message, random_id, reply_markup);
     return session->sendQuery(p, &messagesSendMessageMethods, attachedData, "Messages->sendMessage" );
 }
 
@@ -2185,13 +2239,13 @@ void TelegramApi::onMessagesSendMessageError(Query *q, qint32 errorCode, const Q
         Q_EMIT messagesSendMessageError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
-qint64 TelegramApi::messagesSendMedia(const InputPeer &peer, qint32 reply_to_msg_id, const InputMedia &media, qint64 random_id, const QVariant &attachedData, Session *session) {
+qint64 TelegramApi::messagesSendMedia(const InputPeer &peer, qint32 reply_to_msg_id, const InputMedia &media, qint64 random_id, const ReplyMarkup &reply_markup, const QVariant &attachedData, Session *session) {
     if(!session) session = mMainSession;
     CHECK_SESSION(session)
     DEBUG_FUNCTION
     OutboundPkt p(mSettings);
     INIT_MAIN_CONNECTION(session)
-    Functions::Messages::sendMedia(&p, peer, reply_to_msg_id, media, random_id);
+    Functions::Messages::sendMedia(&p, peer, reply_to_msg_id, media, random_id, reply_markup);
     return session->sendQuery(p, &messagesSendMediaMethods, attachedData, "Messages->sendMedia" );
 }
 

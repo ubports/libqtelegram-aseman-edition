@@ -6,6 +6,10 @@
 
 * [Authorization](authorization.md)
 
+* [BotCommand](botcommand.md)
+
+* [BotInfo](botinfo.md)
+
 * [Chat](chat.md)
 
 * [ChatFull](chatfull.md)
@@ -114,6 +118,10 @@
 
 * [InputVideo](inputvideo.md)
 
+* [KeyboardButton](keyboardbutton.md)
+
+* [KeyboardButtonRow](keyboardbuttonrow.md)
+
 * [Message](message.md)
 
 * [MessageAction](messageaction.md)
@@ -141,6 +149,8 @@
 * [PrivacyRule](privacyrule.md)
 
 * [ReceivedNotifyMessage](receivednotifymessage.md)
+
+* [ReplyMarkup](replymarkup.md)
 
 * [SecretChatMessage](secretchatmessage.md)
 

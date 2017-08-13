@@ -44,6 +44,7 @@ public:
     qint64 accountGetPasswordSettings(const QByteArray &current_password_hash, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 accountUpdatePasswordSettings(const QByteArray &current_password_hash, const AccountPasswordInputSettings &new_settings, const QVariant &attachedData = QVariant(), Session *session = 0);
     
+    qint64 authImportBotAuthorization(qint32 flags, qint32 api_id, const QString &api_hash, const QString &bot_auth_token, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 authCheckPhone(const QString &phone_number, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 authSendCode(const QString &phone_number, qint32 sms_type, qint32 api_id, const QString &api_hash, const QString &lang_code, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 authSendCall(const QString &phone_number, const QString &phone_code_hash, const QVariant &attachedData = QVariant(), Session *session = 0);
@@ -94,6 +95,7 @@ public:
     qint64 helpGetInviteText(const QString &lang_code, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 helpGetSupport(const QVariant &attachedData = QVariant(), Session *session = 0);
     
+    qint64 messagesStartBot(const InputUser &bot, qint32 chat_id, qint64 random_id, const QString &start_param, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesGetMessages(const QList<qint32> &id, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesGetDialogs(qint32 offset, qint32 max_id, qint32 limit, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesGetHistory(const InputPeer &peer, qint32 offset, qint32 max_id, qint32 limit, const QVariant &attachedData = QVariant(), Session *session = 0);
@@ -103,8 +105,8 @@ public:
     qint64 messagesDeleteMessages(const QList<qint32> &id, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesReceivedMessages(qint32 max_id, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesSetTyping(const InputPeer &peer, const SendMessageAction &action, const QVariant &attachedData = QVariant(), Session *session = 0);
-    qint64 messagesSendMessage(const InputPeer &peer, qint32 reply_to_msg_id, const QString &message, qint64 random_id, const QVariant &attachedData = QVariant(), Session *session = 0);
-    qint64 messagesSendMedia(const InputPeer &peer, qint32 reply_to_msg_id, const InputMedia &media, qint64 random_id, const QVariant &attachedData = QVariant(), Session *session = 0);
+    qint64 messagesSendMessage(const InputPeer &peer, qint32 reply_to_msg_id, const QString &message, qint64 random_id, const ReplyMarkup &reply_markup, const QVariant &attachedData = QVariant(), Session *session = 0);
+    qint64 messagesSendMedia(const InputPeer &peer, qint32 reply_to_msg_id, const InputMedia &media, qint64 random_id, const ReplyMarkup &reply_markup, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesForwardMessages(const InputPeer &peer, const QList<qint32> &id, const QList<qint64> &random_id, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesGetChats(const QList<qint32> &id, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesGetFullChat(qint32 chat_id, const QVariant &attachedData = QVariant(), Session *session = 0);
@@ -176,6 +178,7 @@ Q_SIGNALS:
     void accountGetPasswordSettingsAnswer(qint64 msgId, const AccountPasswordSettings &result, const QVariant &attachedData);
     void accountUpdatePasswordSettingsAnswer(qint64 msgId, bool result, const QVariant &attachedData);
     
+    void authImportBotAuthorizationAnswer(qint64 msgId, const AuthAuthorization &result, const QVariant &attachedData);
     void authCheckPhoneAnswer(qint64 msgId, const AuthCheckedPhone &result, const QVariant &attachedData);
     void authSendCodeAnswer(qint64 msgId, const AuthSentCode &result, const QVariant &attachedData);
     void authSendCallAnswer(qint64 msgId, bool result, const QVariant &attachedData);
@@ -226,6 +229,7 @@ Q_SIGNALS:
     void helpGetInviteTextAnswer(qint64 msgId, const HelpInviteText &result, const QVariant &attachedData);
     void helpGetSupportAnswer(qint64 msgId, const HelpSupport &result, const QVariant &attachedData);
     
+    void messagesStartBotAnswer(qint64 msgId, const UpdatesType &result, const QVariant &attachedData);
     void messagesGetMessagesAnswer(qint64 msgId, const MessagesMessages &result, const QVariant &attachedData);
     void messagesGetDialogsAnswer(qint64 msgId, const MessagesDialogs &result, const QVariant &attachedData);
     void messagesGetHistoryAnswer(qint64 msgId, const MessagesMessages &result, const QVariant &attachedData);
@@ -308,6 +312,7 @@ Q_SIGNALS:
     void accountGetPasswordSettingsError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void accountUpdatePasswordSettingsError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     
+    void authImportBotAuthorizationError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void authCheckPhoneError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void authSendCodeError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void authSendCallError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
@@ -358,6 +363,7 @@ Q_SIGNALS:
     void helpGetInviteTextError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void helpGetSupportError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     
+    void messagesStartBotError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void messagesGetMessagesError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void messagesGetDialogsError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void messagesGetHistoryError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
@@ -445,6 +451,7 @@ private:
     QueryMethods accountGetPasswordSettingsMethods;
     QueryMethods accountUpdatePasswordSettingsMethods;
     
+    QueryMethods authImportBotAuthorizationMethods;
     QueryMethods authCheckPhoneMethods;
     QueryMethods authSendCodeMethods;
     QueryMethods authSendCallMethods;
@@ -495,6 +502,7 @@ private:
     QueryMethods helpGetInviteTextMethods;
     QueryMethods helpGetSupportMethods;
     
+    QueryMethods messagesStartBotMethods;
     QueryMethods messagesGetMessagesMethods;
     QueryMethods messagesGetDialogsMethods;
     QueryMethods messagesGetHistoryMethods;
@@ -577,6 +585,7 @@ private:
     void onAccountGetPasswordSettingsAnswer(Query *q, InboundPkt &inboundPkt);
     void onAccountUpdatePasswordSettingsAnswer(Query *q, InboundPkt &inboundPkt);
     
+    void onAuthImportBotAuthorizationAnswer(Query *q, InboundPkt &inboundPkt);
     void onAuthCheckPhoneAnswer(Query *q, InboundPkt &inboundPkt);
     void onAuthSendCodeAnswer(Query *q, InboundPkt &inboundPkt);
     void onAuthSendCallAnswer(Query *q, InboundPkt &inboundPkt);
@@ -627,6 +636,7 @@ private:
     void onHelpGetInviteTextAnswer(Query *q, InboundPkt &inboundPkt);
     void onHelpGetSupportAnswer(Query *q, InboundPkt &inboundPkt);
     
+    void onMessagesStartBotAnswer(Query *q, InboundPkt &inboundPkt);
     void onMessagesGetMessagesAnswer(Query *q, InboundPkt &inboundPkt);
     void onMessagesGetDialogsAnswer(Query *q, InboundPkt &inboundPkt);
     void onMessagesGetHistoryAnswer(Query *q, InboundPkt &inboundPkt);
@@ -709,6 +719,7 @@ private:
     void onAccountGetPasswordSettingsError(Query *q, qint32 errorCode, const QString &errorText);
     void onAccountUpdatePasswordSettingsError(Query *q, qint32 errorCode, const QString &errorText);
     
+    void onAuthImportBotAuthorizationError(Query *q, qint32 errorCode, const QString &errorText);
     void onAuthCheckPhoneError(Query *q, qint32 errorCode, const QString &errorText);
     void onAuthSendCodeError(Query *q, qint32 errorCode, const QString &errorText);
     void onAuthSendCallError(Query *q, qint32 errorCode, const QString &errorText);
@@ -759,6 +770,7 @@ private:
     void onHelpGetInviteTextError(Query *q, qint32 errorCode, const QString &errorText);
     void onHelpGetSupportError(Query *q, qint32 errorCode, const QString &errorText);
     
+    void onMessagesStartBotError(Query *q, qint32 errorCode, const QString &errorText);
     void onMessagesGetMessagesError(Query *q, qint32 errorCode, const QString &errorText);
     void onMessagesGetDialogsError(Query *q, qint32 errorCode, const QString &errorText);
     void onMessagesGetHistoryError(Query *q, qint32 errorCode, const QString &errorText);
