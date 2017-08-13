@@ -118,7 +118,6 @@ Telegram::Telegram(const QString &defaultHostAddress, qint16 defaultHostPort, qi
     // http://blog.qt.io/blog/2014/03/11/qt-weekly-1-categorized-logging/
     QLoggingCategory::setFilterRules(QString(qgetenv("QT_LOGGING_RULES")));
 
-    qInfo(TG_LIB_API) << "Initializing Telegram class";
     prv = new TelegramPrivate;
     prv->initTimeout = 0;
     prv->initTimerId = 0;
