@@ -18,7 +18,7 @@ class FileHandler : public QObject
 public:
     typedef QSharedPointer<FileHandler> Ptr;
 
-    explicit FileHandler(TelegramCore *core, TelegramApi* api, CryptoUtils *crypto, Settings *settings, DcProvider &dcProvider, SecretState &secretState, QObject *parent = 0);
+    explicit FileHandler(TelegramCore *core, TelegramApi *api, CryptoUtils *crypto, Settings *settings, DcProvider &dcProvider, SecretState &secretState, QObject *parent = 0);
     ~FileHandler();
 
     qint64 uploadSendFile(FileOperation &op, const QString &fileName, const QByteArray &bytes, const QByteArray &thumbnailBytes = 0, const QString &thumbnailName = QString::null);
@@ -32,12 +32,12 @@ Q_SIGNALS:
     void uploadCancelFileAnswer(qint64 fileId, bool cancelled);
     void error(qint64 id, qint32 errorCode, const QString &errorText);
 
-    void messagesSentMedia(qint64 fileId, const UpdatesType &updates, const QVariant &attachedData);
+    void messagesSentMedia(qint64 fileId, const UpdatesType &updates);
     void messagesSendEncryptedFileAnswer(qint64 id, qint32 date, const EncryptedFile &encryptedFile = EncryptedFile());
 
 private:
-    TelegramCore *mCore;
     TelegramApi *mApi;
+    TelegramCore *mCore;
     CryptoUtils *mCrypto;
     Settings *mSettings;
     DcProvider &mDcProvider;
@@ -69,13 +69,13 @@ private:
 
 private Q_SLOTS:
     void onUploadSendFileSessionCreated();
-    void onUploadSaveFilePartResult(qint64 msgId, bool result, const QVariant &attachedData);
+    void onUploadSaveFilePartResult(qint64 msgId, bool ok, const QVariant &attachedData);
     void onUploadGetFileSessionCreated();
-    void onUploadGetFileAnswer(qint64 msgId, const UploadFile &result, const QVariant &attachedData);
-    void onUploadGetFileError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
+    void onUploadGetFileAnswer(qint64 msgId, const UploadFile &result);
+    void onUploadGetFileError(qint64 id, qint32 errorCode, const QString &errorText);
 
-    void onMessagesSentMedia(qint64 id, const UpdatesType &updates, const QVariant &attachedData);
-    void onMessagesSentEncryptedFile(qint64 msgId, const MessagesSentEncryptedMessage &result, const QVariant &attachedData);
+    void onMessagesSentMedia(qint64 id, const UpdatesType &updates);
+    void onMessagesSentEncryptedFile(qint64 msgId, const MessagesSentEncryptedMessage &result);
 
     void onUpdateMessageId(qint64 oldMsgId, qint64 newMsgId);
 };
