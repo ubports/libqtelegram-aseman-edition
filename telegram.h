@@ -315,10 +315,7 @@ private Q_SLOTS:
     void onImportContactsDcChanged();
 
     void onContactsImportContactsAnswer();
-    void onMessagesDhConfig(qint64 msgId, qint32 g, const QByteArray &p, qint32 version, const QByteArray &random);
-    void onMessagesDhConfigNotModified(qint64 msgId, const QByteArray &random);
     void onMessagesRequestEncryptionEncryptedChat(qint64 msgId, const EncryptedChat &chat);
-    void onUpdatesDifference(qint64 msgId, const UpdatesDifference &result, const QVariant &attachedData);
 
     // secret chats slots
     void onUpdateShort(const Update &update);
