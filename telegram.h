@@ -313,7 +313,7 @@ private Q_SLOTS:
     void onAuthCheckPhoneDcChanged();
     void onHelpGetInviteTextDcChanged();
     void onImportContactsDcChanged();
-    void onUserAuthorized(qint64 id, qint32 expires, const User &user);
+
     void onContactsImportContactsAnswer();
     void onMessagesDhConfig(qint64 msgId, qint32 g, const QByteArray &p, qint32 version, const QByteArray &random);
     void onMessagesDhConfigNotModified(qint64 msgId, const QByteArray &random);

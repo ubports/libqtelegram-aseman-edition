@@ -1108,12 +1108,11 @@ void Telegram::onImportContactsDcChanged() {
 }
 
 
-void Telegram::onUserAuthorized(qint64, qint32 expires, const User &) {
+void Telegram::authorizeUser(qint64, const User &) {
     // change state of current dc
     qint32 workingDcNum = prv->mSettings->workingDcNum();
     DC *dc = prv->mDcProvider->getDc(workingDcNum);
     dc->setState(DC::userSignedIn);
-    dc->setExpires(expires);
     QList<DC *> dcsList = prv->mDcProvider->getDcs();
     // save the settings here, after user auth ready in current dc
     prv->mSettings->setDcsList(dcsList);
