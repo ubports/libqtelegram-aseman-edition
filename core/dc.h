@@ -19,8 +19,9 @@
  *
  */
 
-#ifndef NETWORKMGR_H
-#define NETWORKMGR_H
+#ifndef DC_H
+#define DC_H
+
 
 #include <QObject>
 #include "outboundpkt.h"
@@ -29,7 +30,7 @@
 #include "settings.h"
 #include "util/cryptoutils.h"
 
-class DC : public Endpoint
+class DC
 {
 public:
     enum DcState {
@@ -42,15 +43,7 @@ public:
         userSignedIn
     };
 
-    explicit DC(qint32 dcNum) :
-        m_id(dcNum),
-        m_state(init),
-        m_authKeyId(0),
-        m_expires(0),
-        m_serverSalt(0),
-        mTimeDifference(0),
-        m_mediaOnly(false) {}
-
+    DC(qint32 dcNum);
     inline qint32 id() { return m_id; }
     inline void setState(DcState dcState) { m_state = dcState; }
     inline DcState state() { return m_state; }
@@ -66,7 +59,14 @@ public:
     inline bool mediaOnly() const { return m_mediaOnly; }
     inline void setMediaOnly(bool mediaOnly) { m_mediaOnly = mediaOnly; }
 
-private:
+    void addEndpoint(QString ipAddress, qint32 port);
+    bool hasEndpoint(QString ipAddress, qint32 port);
+    Endpoint nextEndpoint();
+
+    private:
+
+    QList<Endpoint> endpoints;
+    qint32 m_Endpoint;
 
     // dc metadata
     qint32 m_id;

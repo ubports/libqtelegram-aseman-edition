@@ -117,8 +117,7 @@ void DcProvider::initialize() {
             }
 
             // create a dc authenticator based in dc info
-            mDcs[defaultDcId]->setHost(defaultDcHost);
-            mDcs[defaultDcId]->setPort(defaultDcPort);
+            mDcs[defaultDcId]->addEndpoint(defaultDcHost, defaultDcPort);
             DCAuth *dcAuth = new DCAuth(mDcs[defaultDcId], mSettings, mCrypto, this);
             mDcAuths.insert(defaultDcId, dcAuth);
             connect(dcAuth, SIGNAL(fatalError()), this, SLOT(logOut()));
@@ -269,24 +268,29 @@ void DcProvider::onConfigReceived(qint64 msgId, const Config &config, const QVar
 
     const QList<DcOption> &dcOptions = config.dcOptions();
 
-    mPendingDcs = dcOptions.length() -1; //all the received options but the default one, yet used
+    Q_FOREACH (DcOption dcOption, dcOptions) {
+        mPendingDcs++;
+
+    }
+
+    mPendingDcs -=1; //all the received options but the default one, yet used
+
 
     Q_FOREACH (DcOption dcOption, dcOptions) {
         qCDebug(TG_CORE_DCPROVIDER) << "dcOption | id =" << dcOption.id() << ", ipAddress =" << dcOption.ipAddress() <<
                     ", port =" << dcOption.port() << ", hostname =" << dcOption.ipAddress();
-
         // for every new DC or not authenticated DC, insert into m_dcs and authenticate
         DC *dc = mDcs.value(dcOption.id());
 
         // check if dc is not null or if received host and port are not equals than settings ones
-        if ((!dc) || (dc->state() < DC::authKeyCreated && ((dc->host() != dcOption.ipAddress()) || (dc->port() != dcOption.port()))) ) {
+        if ((!dc) || (dc->state() < DC::authKeyCreated)) {
             // if not exists dc or host and port different, create a new dc object for this dcId and add it to m_dcs map
             dc = new DC(dcOption.id());
-            dc->setHost(dcOption.ipAddress());
-            dc->setPort(dcOption.port());
             mDcs.insert(dcOption.id(), dc);
         }
 
+        if (!dc->hasEndpoint(dcOption.ipAddress(), dcOption.port()))
+            dc->addEndpoint(dcOption.ipAddress(), dcOption.port());
         // let's see if needed to create shared key for it
         // In any other case, the host and port have been retrieved from auth file settings and the DC object is already created
         if (dc->state() < DC::authKeyCreated) {

@@ -228,8 +228,9 @@ void Settings::writeAuthFile() {
         QString ar = pre + QString::number(i) + "/";
 
         map[ar + ST_DC_NUM] = m_dcsList[i]->id();
-        map[ar + ST_HOST] = m_dcsList[i]->host();
-        map[ar + ST_PORT] = m_dcsList[i]->port();
+        Endpoint firstEP = m_dcsList[i]->nextEndpoint();
+        map[ar + ST_HOST] = firstEP.host();
+        map[ar + ST_PORT] = firstEP.port();
         map[ar + ST_IPV6] = m_dcsList[i]->ipv6();
         map[ar + ST_MEDIA] = m_dcsList[i]->mediaOnly();
         map[ar + ST_DC_STATE] = m_dcsList[i]->state();

@@ -200,7 +200,7 @@ void FileHandler::onUploadSaveFilePartResult(qint64 msgId, bool ok, const QVaria
                     InputPeer peer = op->peer();
                     qint64 randomId = op->randomId();
                     qint32 replyToMsgId = op->replyToMsgId();
-                    requestId = mCore->messagesSendMedia(peer, replyToMsgId, metadata, randomId);
+                    requestId = mCore->messagesSendMedia(peer, replyToMsgId, metadata, randomId, ReplyMarkup());
                     break;
                 }
                 case FileOperation::editChatPhoto: {

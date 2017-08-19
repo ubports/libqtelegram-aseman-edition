@@ -1433,7 +1433,7 @@ qint64 Telegram::contactsGetBlocked(qint32 offset, qint32 limit) {
 
 qint64 Telegram::messagesSendMessage(const InputPeer &peer, qint64 randomId, const QString &message, int replyToMsgId) {
     CHECK_API;
-    return mApi->messagesSendMessage(peer, replyToMsgId, message, randomId);
+    return mApi->messagesSendMessage(peer, replyToMsgId, message, randomId, ReplyMarkup());
 }
 
 qint64 Telegram::contactsGetContacts() {
@@ -1483,7 +1483,7 @@ qint64 Telegram::messagesSendGeoPoint(const InputPeer &peer, qint64 randomId, co
     CHECK_API;
     InputMedia inputMedia(InputMedia::typeInputMediaGeoPoint);
     inputMedia.setGeoPoint(inputGeoPoint);
-    qint64 msgId = mApi->messagesSendMedia(peer, replyToMsgId, inputMedia, randomId);
+    qint64 msgId = mApi->messagesSendMedia(peer, replyToMsgId, inputMedia, randomId, ReplyMarkup());
     prv->pendingMediaSends[msgId] = inputMedia.classType();
     return msgId;
 }
@@ -1494,7 +1494,7 @@ qint64 Telegram::messagesSendContact(const InputPeer &peer, qint64 randomId, con
     inputMedia.setPhoneNumber(phoneNumber);
     inputMedia.setFirstName(firstName);
     inputMedia.setLastName(lastName);
-    qint64 msgId = mApi->messagesSendMedia(peer, replyToMsgId, inputMedia, randomId);
+    qint64 msgId = mApi->messagesSendMedia(peer, replyToMsgId, inputMedia, randomId, ReplyMarkup());
     prv->pendingMediaSends[msgId] = inputMedia.classType();
     return msgId;
 }
@@ -1621,7 +1621,7 @@ qint64 Telegram::messagesForwardPhoto(const InputPeer &peer, qint64 randomId, qi
     inputPhoto.setAccessHash(accessHash);
     InputMedia inputMedia(InputMedia::typeInputMediaPhoto);
     inputMedia.setIdInputPhoto(inputPhoto);
-    return messagesSendMedia(peer, replyToMsgId, inputMedia, randomId);
+    return messagesSendMedia(peer, replyToMsgId, inputMedia, randomId, ReplyMarkup());
 }
 
 qint64 Telegram::messagesForwardVideo(const InputPeer &peer, qint64 randomId, qint64 videoId, qint64 accessHash, qint32 replyToMsgId) {
@@ -1631,7 +1631,7 @@ qint64 Telegram::messagesForwardVideo(const InputPeer &peer, qint64 randomId, qi
     inputVideo.setAccessHash(accessHash);
     InputMedia inputMedia(InputMedia::typeInputMediaVideo);
     inputMedia.setIdInputVideo(inputVideo);
-    return messagesSendMedia(peer, replyToMsgId, inputMedia, randomId);
+    return messagesSendMedia(peer, replyToMsgId, inputMedia, randomId, ReplyMarkup());
 }
 
 qint64 Telegram::messagesForwardAudio(const InputPeer &peer, qint64 randomId, qint64 audioId, qint64 accessHash, qint32 replyToMsgId) {
@@ -1641,7 +1641,7 @@ qint64 Telegram::messagesForwardAudio(const InputPeer &peer, qint64 randomId, qi
     inputAudio.setAccessHash(accessHash);
     InputMedia inputMedia(InputMedia::typeInputMediaAudio);
     inputMedia.setIdInputAudio(inputAudio);
-    return messagesSendMedia(peer, replyToMsgId, inputMedia, randomId);
+    return messagesSendMedia(peer, replyToMsgId, inputMedia, randomId, ReplyMarkup());
 }
 
 qint64 Telegram::messagesForwardDocument(const InputPeer &peer, qint64 randomId, qint64 documentId, qint64 accessHash, qint32 replyToMsgId) {
@@ -1651,7 +1651,7 @@ qint64 Telegram::messagesForwardDocument(const InputPeer &peer, qint64 randomId,
     inputDocument.setAccessHash(accessHash);
     InputMedia inputMedia(InputMedia::typeInputMediaDocument);
     inputMedia.setIdInputDocument(inputDocument);
-    return messagesSendMedia(peer, replyToMsgId, inputMedia, randomId);
+    return messagesSendMedia(peer, replyToMsgId, inputMedia, randomId, ReplyMarkup());
 }
 
 qint64 Telegram::uploadSendFile(FileOperation &op, int mediaType, const QString &fileName, const QByteArray &bytes, const QByteArray &thumbnailBytes, const QString &thumbnailName)

@@ -48,7 +48,8 @@ SOURCES += \
     $$PWD/core/session.cpp \
     $$PWD/core/dcauth.cpp \
     $$PWD/telegram.cpp \
-    $$PWD/file/uploadfileengine.cpp
+    $$PWD/file/uploadfileengine.cpp \
+    $$PWD/core/dc.cpp
 
 HEADERS += \
     $$PWD/util/cryptoutils.h \
