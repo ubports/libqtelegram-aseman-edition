@@ -320,7 +320,6 @@ void Telegram::onDcProviderReady() {
 
     // updates
     connect(mApi, SIGNAL(updatesGetStateAnswer(qint64, const UpdatesState&, const QVariant)), this, SIGNAL(updatesGetStateAnswer(qint64, const UpdatesState&)));
-    connect(mApi, SIGNAL(updatesGetDifferenceAnswer(qint64, const UpdatesDifference&, const QVariant&)), this, SLOT(onUpdatesDifference(qint64, const UpdatesDifference&, const QVariant&)));
 
     // logic additional signal slots
     connect(mApi, SIGNAL(mainSessionDcChanged(DC*)), this, SLOT(onAuthCheckPhoneDcChanged()));
@@ -666,22 +665,27 @@ qint64 Telegram::generateGAorB(SecretChat *secretChat) {
     return reqId;
 }
 
-void Telegram::onMessagesDhConfig(qint64 msgId, qint32 g, const QByteArray &p, qint32 version, const QByteArray &random) {
-    qCDebug(TG_LIB_SECRET) << "received new DH parameters g ="<< QString::number(g) << ",p =" << p.toBase64()
-                           << ",version =" << version;
-    prv->mSecretState.setVersion(version);
-    prv->mSecretState.setG(g);
-    prv->mSecretState.setP(p);
+void Telegram::onMessagesGetDhConfigAnswer(qint64 msgId, const MessagesDhConfig &result, const QVariant &attachedData) {
 
-    if (prv->mCrypto->checkDHParams(prv->mSecretState.p(), g) < 0) {
+    qCDebug(TG_LIB_SECRET) << "received new DH parameters g ="<< result.g() << ",p =" << result.p().toBase64()
+                           << ",version =" << result.version();
+
+    prv->mSecretState.setVersion(result.version());
+    prv->mSecretState.setG(result.g());
+    prv->mSecretState.setP(result.p());
+
+    if (prv->mCrypto->checkDHParams(prv->mSecretState.p(), result.g()) < 0 &&
+        result.classType() == MessagesDhConfig::typeMessagesDhConfig) {
         qCCritical(TG_TELEGRAM) << "Diffie-Hellman config parameters are not valid";
-        return;
+
+    } else {
+        messagesDhConfigNotModified(msgId, result.random());
     }
 
-    onMessagesDhConfigNotModified(msgId, random);
+    TelegramCore::onMessagesGetDhConfigAnswer(msgId, result, attachedData);
 }
 
-void Telegram::onMessagesDhConfigNotModified(qint64 msgId, const QByteArray &random) {
+void Telegram::messagesDhConfigNotModified(qint64 msgId, const QByteArray &random) {
     qCDebug(TG_LIB_SECRET) << "processing DH parameters";
     SecretChat *secretChat = prv->mSecretState.chats().take(msgId);
     ASSERT(secretChat);
