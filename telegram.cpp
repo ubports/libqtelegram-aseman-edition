@@ -1135,11 +1135,97 @@ void Telegram::onContactsImportContactsAnswer() {
 
 // not direct Responses
 
-void Telegram::onUpdatesDifference(qint64 msgId, const UpdatesDifference &result, const QVariant &attachedData) {
-    processDifferences(msgId, result.newMessages(), result.newEncryptedMessages(), result.otherUpdates(),
-        result.chats(), result.users(), result.state(),
-        (result.classType() == UpdatesDifference::typeUpdatesDifferenceSlice));
-    TelegramCore::onUpdatesGetDifferenceAnswer(msgId, result, attachedData);
+void Telegram::onAuthSendCodeAnswer(qint64 msgId, const AuthSentCode &result, const QVariant &attachedData) {
+    prv->m_phoneCodeHash = result.phoneCodeHash();
+    TelegramCore::onAuthSendCodeAnswer(msgId, result, attachedData);
+}
+
+void Telegram::onAuthSignUpAnswer(qint64 msgId, const AuthAuthorization &result, const QVariant &attachedData)
+{
+    authorizeUser(msgId, result.user());
+    TelegramCore::onAuthSignUpAnswer(msgId, result, attachedData);
+}
+
+void Telegram::onAuthSignInAnswer(qint64 msgId, const AuthAuthorization &result, const QVariant &attachedData)
+{
+    authorizeUser(msgId, result.user());
+    TelegramCore::onAuthSignInAnswer(msgId, result, attachedData);
+}
+
+void Telegram::onAuthCheckPasswordAnswer(qint64 msgId, const AuthAuthorization &result, const QVariant &attachedData)
+{
+    authorizeUser(msgId, result.user());
+    TelegramCore::onAuthCheckPasswordAnswer(msgId, result, attachedData);
+}
+
+//void Telegram::onAuthImportBotAuthorizationAnswer(qint64 msgId, const AuthAuthorization &result, const QVariant &attachedData)
+//{
+//    authorizeUser(msgId, result.user());
+//    TelegramCore::onAuthImportBotAuthorizationAnswer(msgId, result, attachedData);
+//}
+
+void Telegram::onUpdatesGetDifferenceAnswer(qint64 id, const UpdatesDifference &result, const QVariant &attachedData) {
+    processDifferences(id, result.newMessages(), result.newEncryptedMessages(), result.otherUpdates(),
+                       result.chats(), result.users(), result.state(),
+                       (result.classType() == UpdatesDifference::typeUpdatesDifferenceSlice));
+    TelegramCore::onUpdatesGetDifferenceAnswer(id, result, attachedData);
+}
+
+void Telegram::onMessagesAcceptEncryptionAnswer(qint64 msgId, const EncryptedChat &result, const QVariant &attachedData)
+{
+    qCDebug(TG_LIB_SECRET) << "Joined to secret chat" << result.id() << "with peer" << result.adminId();
+    SecretChat *secretChat = prv->mSecretState.chats().value(result.id());
+    secretChat->setState(SecretChat::Accepted);
+    prv->mSecretState.save();
+    Q_EMIT messagesEncryptedChatCreated(result.id(), result.date(), result.adminId(), result.accessHash());
+
+    //notify peer about our layer
+    InputEncryptedChat inputEncryptedChat;
+    inputEncryptedChat.setChatId(result.id());
+    inputEncryptedChat.setAccessHash(secretChat->accessHash());
+
+    prv->mEncrypter->setSecretChat(secretChat);
+    qint64 randomId;
+    Utils::randomBytes(&randomId, 8);
+
+    DecryptedMessageAction action(DecryptedMessageAction::typeDecryptedMessageActionNotifyLayerSecret17);
+    action.setLayer(CoreTypes::typeLayerVersion);
+
+    DecryptedMessage decryptedMessage(DecryptedMessage::typeDecryptedMessageServiceSecret17);
+    decryptedMessage.setRandomId(randomId);
+    decryptedMessage.setAction(action);
+
+    QByteArray data = prv->mEncrypter->generateEncryptedData(decryptedMessage);
+    TelegramCore::messagesSendEncryptedService(inputEncryptedChat, randomId, data);
+
+    secretChat->increaseOutSeqNo();
+    secretChat->appendToSequence(randomId);
+    prv->mSecretState.save();
+
+    qCDebug(TG_LIB_SECRET) << "Notified our layer:" << CoreTypes::typeLayerVersion;
+    TelegramCore::onMessagesAcceptEncryptionAnswer(msgId, result, attachedData);
+}
+
+void Telegram::onMessagesDiscardEncryptionAnswer(qint64 msgId, bool result, const QVariant &attachedData)
+{
+    SecretChat *secretChat = prv->mSecretState.chats().take(msgId);
+    if(!secretChat) {
+        onMessagesDiscardEncryptionError(msgId, -1, "LIBQTELEGRAM_SECRETCHAT_ERROR", attachedData);
+        return;
+    }
+
+    qint32 chatId = secretChat->chatId();
+    if (result) {
+        prv->mSecretState.chats().remove(chatId);
+        prv->mSecretState.save();
+        qCDebug(TG_LIB_SECRET) << "Discarded secret chat" << chatId;
+        delete secretChat;
+        secretChat = 0;
+        TelegramCore::onMessagesDiscardEncryptionAnswer(msgId, result, attachedData);
+    } else {
+        qCWarning(TG_LIB_SECRET) << "Could not discard secret chat with id" << chatId;
+        onMessagesDiscardEncryptionError(msgId, -1, "LIBQTELEGRAM_SECRETCHAT_ERROR", attachedData);
+    }
 }
 
 void Telegram::processDifferences(qint64 id, const QList<Message> &messages, const QList<EncryptedMessage> &newEncryptedMessages, const QList<Update> &otherUpdates, const QList<Chat> &chats, const QList<User> &users, const UpdatesState &state, bool isIntermediateState) {
@@ -1160,7 +1246,6 @@ void Telegram::processDifferences(qint64 id, const QList<Message> &messages, con
 
     Q_EMIT updatesGetDifferenceAnswer(id, messages, secretChatMessages, otherUpdates, chats, users, state, isIntermediateState);
 }
-
 // Requests
 
 qint64 Telegram::authCheckPhone() {
