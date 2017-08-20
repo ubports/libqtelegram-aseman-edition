@@ -432,7 +432,7 @@ void FileHandler::onMessagesSentMedia(qint64 msgId, const UpdatesType &result) {
     if(!fileId) // It's uploaded file
         return;
 
-    Q_EMIT messagesSentMedia(fileId, result);
+    Q_EMIT messagesSentMedia(fileId, result, QVariant());
 }
 
 void FileHandler::onMessagesSentEncryptedFile(qint64 msgId, const MessagesSentEncryptedMessage &result) {

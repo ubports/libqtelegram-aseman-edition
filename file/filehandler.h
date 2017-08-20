@@ -32,7 +32,7 @@ Q_SIGNALS:
     void uploadCancelFileAnswer(qint64 fileId, bool cancelled);
     void error(qint64 id, qint32 errorCode, const QString &errorText);
 
-    void messagesSentMedia(qint64 fileId, const UpdatesType &updates);
+    void messagesSentMedia(qint64 fileId, const UpdatesType &updates, const QVariant &attachedData);
     void messagesSendEncryptedFileAnswer(qint64 id, qint32 date, const EncryptedFile &encryptedFile = EncryptedFile());
 
 private:
