@@ -98,8 +98,8 @@ private Q_SLOTS:
     void onApiError();
     void onConfigReceived(qint64 msgId, const Config &config, const QVariant &attachedData);
     void onTransferSessionReady(DC*);
-    void onAuthExportedAuthorization(qint64, qint32 ourId, const QByteArray &bytes);
-    void onAuthImportedAuthorization(qint64, qint32 expires, const User &);
+    void onAuthExportedAuthorization(qint64, const AuthExportedAuthorization &result);
+    void onAuthImportedAuthorization(qint64, const AuthAuthorization &);
 };
 
 #endif // DCPROVIDER_H

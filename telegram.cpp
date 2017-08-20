@@ -320,22 +320,21 @@ void Telegram::onDcProviderReady() {
 
     // updates
     connect(mApi, SIGNAL(updatesGetStateAnswer(qint64, const UpdatesState&, const QVariant)), this, SIGNAL(updatesGetStateAnswer(qint64, const UpdatesState&)));
-    connect(mApi, SIGNAL(updatesGetDifferenceAnswer(qint64, const UpdatesDifference&, const QVariant&)), this, SLOT(onUpdatesDifference(qint64, const UpdatesDifference&, const QVariant&)));
 
     // logic additional signal slots
     connect(mApi, SIGNAL(mainSessionDcChanged(DC*)), this, SLOT(onAuthCheckPhoneDcChanged()));
     connect(mApi, SIGNAL(mainSessionDcChanged(DC*)), this, SLOT(onHelpGetInviteTextDcChanged()));
     connect(mApi, SIGNAL(mainSessionDcChanged(DC*)), this, SLOT(onImportContactsDcChanged()));
-    connect(mApi, SIGNAL(mainSessionReady()), this, SIGNAL(connected()));
-    connect(mApi, SIGNAL(mainSessionClosed()), this, SIGNAL(disconnected()));
+    connect(mApi, &TelegramApi::mainSessionReady, this, &Telegram::connected);
+    connect(mApi, &TelegramApi::mainSessionClosed, this, &Telegram::disconnected);
 
     prv->mFileHandler = FileHandler::Ptr(new FileHandler(this, mApi, prv->mCrypto, prv->mSettings, *prv->mDcProvider, prv->mSecretState));
-    connect(prv->mFileHandler.data(), SIGNAL(uploadSendFileAnswer(qint64,qint32,qint32,qint32)), SIGNAL(uploadSendFileAnswer(qint64,qint32,qint32,qint32)));
-    connect(prv->mFileHandler.data(), SIGNAL(uploadGetFileAnswer(qint64,const StorageFileType&,qint32,const QByteArray&,qint32,qint32,qint32)), SIGNAL(uploadGetFileAnswer(qint64,const StorageFileType&,qint32,const QByteArray&,qint32,qint32,qint32)));
-    connect(prv->mFileHandler.data(), SIGNAL(uploadCancelFileAnswer(qint64,bool)), SIGNAL(uploadCancelFileAnswer(qint64,bool)));
-    connect(prv->mFileHandler.data(), SIGNAL(error(qint64,qint32,const QString&)), SIGNAL(error(qint64,qint32,const QString&)));
-    connect(prv->mFileHandler.data(), SIGNAL(messagesSentMedia(qint64,const UpdatesType&, const QVariant&)), SLOT(onMessagesSendMediaAnswer(qint64,const UpdatesType&)));
-    connect(prv->mFileHandler.data(), SIGNAL(messagesSendEncryptedFileAnswer(qint64,qint32,const EncryptedFile&)), SIGNAL(messagesSendEncryptedFileAnswer(qint64,qint32,const EncryptedFile&)));
+    connect(prv->mFileHandler.data(), &FileHandler::uploadSendFileAnswer, this, &Telegram::uploadSendFileAnswer);
+    connect(prv->mFileHandler.data(), &FileHandler::uploadGetFileAnswer, this, &Telegram::uploadGetFileAnswer);
+    connect(prv->mFileHandler.data(), &FileHandler::uploadCancelFileAnswer, this, &Telegram::uploadCancelFileAnswer);
+    connect(prv->mFileHandler.data(), &FileHandler::error, this, &Telegram::error);
+    connect(prv->mFileHandler.data(), &FileHandler::messagesSentMedia, this, &Telegram::onMessagesSendMediaAnswer);
+    connect(prv->mFileHandler.data(), &FileHandler::messagesSendEncryptedFileAnswer, this, &Telegram::messagesSendEncryptedFileAnswer);
 
     // At this point we should test the main session state and emit by hand signals of connected/disconnected
     // depending on the connection state of the session. This is so because first main session connection, if done,
@@ -666,22 +665,27 @@ qint64 Telegram::generateGAorB(SecretChat *secretChat) {
     return reqId;
 }
 
-void Telegram::onMessagesDhConfig(qint64 msgId, qint32 g, const QByteArray &p, qint32 version, const QByteArray &random) {
-    qCDebug(TG_LIB_SECRET) << "received new DH parameters g ="<< QString::number(g) << ",p =" << p.toBase64()
-                           << ",version =" << version;
-    prv->mSecretState.setVersion(version);
-    prv->mSecretState.setG(g);
-    prv->mSecretState.setP(p);
+void Telegram::onMessagesGetDhConfigAnswer(qint64 msgId, const MessagesDhConfig &result, const QVariant &attachedData) {
 
-    if (prv->mCrypto->checkDHParams(prv->mSecretState.p(), g) < 0) {
+    qCDebug(TG_LIB_SECRET) << "received new DH parameters g ="<< result.g() << ",p =" << result.p().toBase64()
+                           << ",version =" << result.version();
+
+    prv->mSecretState.setVersion(result.version());
+    prv->mSecretState.setG(result.g());
+    prv->mSecretState.setP(result.p());
+
+    if (prv->mCrypto->checkDHParams(prv->mSecretState.p(), result.g()) < 0 &&
+        result.classType() == MessagesDhConfig::typeMessagesDhConfig) {
         qCCritical(TG_TELEGRAM) << "Diffie-Hellman config parameters are not valid";
-        return;
+
+    } else {
+        messagesDhConfigNotModified(msgId, result.random());
     }
 
-    onMessagesDhConfigNotModified(msgId, random);
+    TelegramCore::onMessagesGetDhConfigAnswer(msgId, result, attachedData);
 }
 
-void Telegram::onMessagesDhConfigNotModified(qint64 msgId, const QByteArray &random) {
+void Telegram::messagesDhConfigNotModified(qint64 msgId, const QByteArray &random) {
     qCDebug(TG_LIB_SECRET) << "processing DH parameters";
     SecretChat *secretChat = prv->mSecretState.chats().take(msgId);
     ASSERT(secretChat);
@@ -1064,19 +1068,41 @@ void Telegram::createSharedKey(SecretChat *secretChat, BIGNUM *p, QByteArray gAO
 }
 
 // error and internal managements
-void Telegram::onError(qint64 id, qint32 errorCode, const QString &errorText, const QString &functionName, const QVariant &attachedData) {
-    if(errorCode == 400) {
-        if(errorText == "ENCRYPTION_ID_INVALID" || /* We receive this when a chat has crashed */
-           errorText == "ENCRYPTION_ALREADY_DECLINED") { /* This is an already declined chat, remove it from DB */
-            this->onMessagesDiscardEncryptionResult(id, true);
+void Telegram::onError(qint64 id, qint32 errorCode, const QString &errorText, const QString &functionName, const QVariant &attachedData, bool &accepted) {
+    if (errorText.contains("_MIGRATE_"))
+    {
+        //prv->mLastRetryMessages << id;
+        qint32 newDc = errorText.mid(errorText.lastIndexOf("_") + 1).toInt();
+        qWarning() << "migrated to dc" << newDc;
+        prv->mSettings->setWorkingDcNum(newDc);
+        prv->mSettings->writeAuthFile();
+        DC *dc = prv->mDcProvider->getDc(newDc);
+        mApi->changeMainSessionToDc(dc);
+        accepted = true;
+    }
+    else
+    if(errorCode == 400)
+    {
+        if(errorText == "ENCRYPTION_ALREADY_DECLINED") { /* This is an already declined chat, remove it from DB */
+            onMessagesDiscardEncryptionAnswer(id, true, attachedData);
             return;
         }
     }
-    else if (errorCode == 401) {
-        onAuthLogOutAnswer(id, false, attachedData);
+    else
+    if (errorCode == 401)
+    {
+        if(errorText == "SESSION_PASSWORD_NEEDED" || errorText == "AUTH_KEY_UNREGISTERED")
+            qDebug() << errorText; // Nothing to do
+        else
+            onAuthLogOutAnswer(id, false, attachedData);
+    }
+    else
+    if(functionName == "onUploadGetFileError")
+    {
+        onUploadGetFileError(id, errorCode, errorText, attachedData);
     }
 
-    Q_EMIT error(id, errorCode, errorText, functionName);
+TelegramCore::onError(id, errorCode, errorText, functionName, attachedData, accepted);
 }
 
 void Telegram::onErrorRetry(qint64 id, qint32 errorCode, const QString &errorText) {
@@ -1108,12 +1134,11 @@ void Telegram::onImportContactsDcChanged() {
 }
 
 
-void Telegram::onUserAuthorized(qint64, qint32 expires, const User &) {
+void Telegram::authorizeUser(qint64, const User &) {
     // change state of current dc
     qint32 workingDcNum = prv->mSettings->workingDcNum();
     DC *dc = prv->mDcProvider->getDc(workingDcNum);
     dc->setState(DC::userSignedIn);
-    dc->setExpires(expires);
     QList<DC *> dcsList = prv->mDcProvider->getDcs();
     // save the settings here, after user auth ready in current dc
     prv->mSettings->setDcsList(dcsList);
@@ -1135,11 +1160,97 @@ void Telegram::onContactsImportContactsAnswer() {
 
 // not direct Responses
 
-void Telegram::onUpdatesDifference(qint64 msgId, const UpdatesDifference &result, const QVariant &attachedData) {
-    processDifferences(msgId, result.newMessages(), result.newEncryptedMessages(), result.otherUpdates(),
-        result.chats(), result.users(), result.state(),
-        (result.classType() == UpdatesDifference::typeUpdatesDifferenceSlice));
-    TelegramCore::onUpdatesGetDifferenceAnswer(msgId, result, attachedData);
+void Telegram::onAuthSendCodeAnswer(qint64 msgId, const AuthSentCode &result, const QVariant &attachedData) {
+    prv->m_phoneCodeHash = result.phoneCodeHash();
+    TelegramCore::onAuthSendCodeAnswer(msgId, result, attachedData);
+}
+
+void Telegram::onAuthSignUpAnswer(qint64 msgId, const AuthAuthorization &result, const QVariant &attachedData)
+{
+    authorizeUser(msgId, result.user());
+    TelegramCore::onAuthSignUpAnswer(msgId, result, attachedData);
+}
+
+void Telegram::onAuthSignInAnswer(qint64 msgId, const AuthAuthorization &result, const QVariant &attachedData)
+{
+    authorizeUser(msgId, result.user());
+    TelegramCore::onAuthSignInAnswer(msgId, result, attachedData);
+}
+
+void Telegram::onAuthCheckPasswordAnswer(qint64 msgId, const AuthAuthorization &result, const QVariant &attachedData)
+{
+    authorizeUser(msgId, result.user());
+    TelegramCore::onAuthCheckPasswordAnswer(msgId, result, attachedData);
+}
+
+//void Telegram::onAuthImportBotAuthorizationAnswer(qint64 msgId, const AuthAuthorization &result, const QVariant &attachedData)
+//{
+//    authorizeUser(msgId, result.user());
+//    TelegramCore::onAuthImportBotAuthorizationAnswer(msgId, result, attachedData);
+//}
+
+void Telegram::onUpdatesGetDifferenceAnswer(qint64 id, const UpdatesDifference &result, const QVariant &attachedData) {
+    processDifferences(id, result.newMessages(), result.newEncryptedMessages(), result.otherUpdates(),
+                       result.chats(), result.users(), result.state(),
+                       (result.classType() == UpdatesDifference::typeUpdatesDifferenceSlice));
+    TelegramCore::onUpdatesGetDifferenceAnswer(id, result, attachedData);
+}
+
+void Telegram::onMessagesAcceptEncryptionAnswer(qint64 msgId, const EncryptedChat &result, const QVariant &attachedData)
+{
+    qCDebug(TG_LIB_SECRET) << "Joined to secret chat" << result.id() << "with peer" << result.adminId();
+    SecretChat *secretChat = prv->mSecretState.chats().value(result.id());
+    secretChat->setState(SecretChat::Accepted);
+    prv->mSecretState.save();
+    Q_EMIT messagesEncryptedChatCreated(result.id(), result.date(), result.adminId(), result.accessHash());
+
+    //notify peer about our layer
+    InputEncryptedChat inputEncryptedChat;
+    inputEncryptedChat.setChatId(result.id());
+    inputEncryptedChat.setAccessHash(secretChat->accessHash());
+
+    prv->mEncrypter->setSecretChat(secretChat);
+    qint64 randomId;
+    Utils::randomBytes(&randomId, 8);
+
+    DecryptedMessageAction action(DecryptedMessageAction::typeDecryptedMessageActionNotifyLayerSecret17);
+    action.setLayer(CoreTypes::typeLayerVersion);
+
+    DecryptedMessage decryptedMessage(DecryptedMessage::typeDecryptedMessageServiceSecret17);
+    decryptedMessage.setRandomId(randomId);
+    decryptedMessage.setAction(action);
+
+    QByteArray data = prv->mEncrypter->generateEncryptedData(decryptedMessage);
+    TelegramCore::messagesSendEncryptedService(inputEncryptedChat, randomId, data);
+
+    secretChat->increaseOutSeqNo();
+    secretChat->appendToSequence(randomId);
+    prv->mSecretState.save();
+
+    qCDebug(TG_LIB_SECRET) << "Notified our layer:" << CoreTypes::typeLayerVersion;
+    TelegramCore::onMessagesAcceptEncryptionAnswer(msgId, result, attachedData);
+}
+
+void Telegram::onMessagesDiscardEncryptionAnswer(qint64 msgId, bool result, const QVariant &attachedData)
+{
+    SecretChat *secretChat = prv->mSecretState.chats().take(msgId);
+    if(!secretChat) {
+        onMessagesDiscardEncryptionError(msgId, -1, "LIBQTELEGRAM_SECRETCHAT_ERROR", attachedData);
+        return;
+    }
+
+    qint32 chatId = secretChat->chatId();
+    if (result) {
+        prv->mSecretState.chats().remove(chatId);
+        prv->mSecretState.save();
+        qCDebug(TG_LIB_SECRET) << "Discarded secret chat" << chatId;
+        delete secretChat;
+        secretChat = 0;
+        TelegramCore::onMessagesDiscardEncryptionAnswer(msgId, result, attachedData);
+    } else {
+        qCWarning(TG_LIB_SECRET) << "Could not discard secret chat with id" << chatId;
+        onMessagesDiscardEncryptionError(msgId, -1, "LIBQTELEGRAM_SECRETCHAT_ERROR", attachedData);
+    }
 }
 
 void Telegram::processDifferences(qint64 id, const QList<Message> &messages, const QList<EncryptedMessage> &newEncryptedMessages, const QList<Update> &otherUpdates, const QList<Chat> &chats, const QList<User> &users, const UpdatesState &state, bool isIntermediateState) {
@@ -1160,7 +1271,6 @@ void Telegram::processDifferences(qint64 id, const QList<Message> &messages, con
 
     Q_EMIT updatesGetDifferenceAnswer(id, messages, secretChatMessages, otherUpdates, chats, users, state, isIntermediateState);
 }
-
 // Requests
 
 qint64 Telegram::authCheckPhone() {
