@@ -344,25 +344,25 @@ void DcProvider::onTransferSessionReady(DC *) {
     Session *session = qobject_cast<Session *>(sender());
     mTransferSessions.append(session);
     if (--mPendingTransferSessions == 0) {
-        connect(mApi, SIGNAL(authExportedAuthorization(qint64,qint32,const QByteArray&)), this, SLOT(onAuthExportedAuthorization(qint64,qint32,const QByteArray&)));
-        connect(mApi, SIGNAL(authImportedAuthorization(qint64,qint32,const User&)), this, SLOT(onAuthImportedAuthorization(qint64,qint32,const User&)));
+        connect(mApi, &TelegramApi::authExportAuthorizationAnswer, this, &DcProvider::onAuthExportedAuthorization);
+        connect(mApi, &TelegramApi::authImportAuthorizationAnswer, this, &DcProvider::onAuthImportedAuthorization);
         mApi->authExportAuthorization(mTransferSessions.first()->dc()->id());
     }
 }
 
-void DcProvider::onAuthExportedAuthorization(qint64, qint32 ourId, const QByteArray &bytes) {
+void DcProvider::onAuthExportedAuthorization(qint64, const AuthExportedAuthorization &result) {
     // Set ourId into settings (It doesn't matter if set before)
-    mSettings->setOurId(ourId);
+    mSettings->setOurId(result.id());
     // Change api dc to first in the transfer dcs list
     mApi->setMainSession(mTransferSessions.first());
     // Execute import in this dc
-    mApi->authImportAuthorization(ourId, bytes);
+    mApi->authImportAuthorization(result.id(), result.bytes());
 }
 
-void DcProvider::onAuthImportedAuthorization(qint64, qint32 expires, const User &) {
+void DcProvider::onAuthImportedAuthorization(qint64, const AuthAuthorization &) {
     Session *session = mTransferSessions.takeFirst();
     DC *authorizedDc = session->dc();
-    authorizedDc->setExpires(expires);
+    authorizedDc->setExpires(0);
     authorizedDc->setState(DC::userSignedIn);
     session->release();
     mApi->setMainSession(mWorkingDcSession);
