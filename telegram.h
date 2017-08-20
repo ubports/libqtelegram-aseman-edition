@@ -250,6 +250,7 @@ Q_SIGNALS:
     void uploadCancelFileAnswer(qint64 fileId, bool cancelled);
     void uploadSendFileAnswer(qint64 fileId, qint32 partId, qint32 uploaded, qint32 totalSize);
 
+
     // Updates
     void updatesTooLong();
     void updateShortMessage(qint32 id, qint32 userId, const QString &message, qint32 pts, qint32 pts_count, qint32 date, qint32 fwd_from_id, qint32 fwd_date, qint32 reply_to_msg_id, bool unread, bool out);
@@ -306,7 +307,7 @@ protected:
     void onMessagesDiscardEncryptionAnswer(qint64 msgId, bool result, const QVariant &attachedData);
 
 private Q_SLOTS:
-    void onError(qint64 id, qint32 errorCode, const QString &errorText, const QString &functionName, const QVariant &attachedData);
+    void onError(qint64 id, qint32 errorCode, const QString &errorText, const QString &functionName, const QVariant &attachedData, bool &accepted);
     void onDcProviderReady();
     void onAuthLoggedIn();
     void onErrorRetry(qint64 id, qint32 errorCode, const QString &errorText);

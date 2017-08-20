@@ -325,16 +325,16 @@ void Telegram::onDcProviderReady() {
     connect(mApi, SIGNAL(mainSessionDcChanged(DC*)), this, SLOT(onAuthCheckPhoneDcChanged()));
     connect(mApi, SIGNAL(mainSessionDcChanged(DC*)), this, SLOT(onHelpGetInviteTextDcChanged()));
     connect(mApi, SIGNAL(mainSessionDcChanged(DC*)), this, SLOT(onImportContactsDcChanged()));
-    connect(mApi, SIGNAL(mainSessionReady()), this, SIGNAL(connected()));
-    connect(mApi, SIGNAL(mainSessionClosed()), this, SIGNAL(disconnected()));
+    connect(mApi, &TelegramApi::mainSessionReady, this, &Telegram::connected);
+    connect(mApi, &TelegramApi::mainSessionClosed, this, &Telegram::disconnected);
 
     prv->mFileHandler = FileHandler::Ptr(new FileHandler(this, mApi, prv->mCrypto, prv->mSettings, *prv->mDcProvider, prv->mSecretState));
-    connect(prv->mFileHandler.data(), SIGNAL(uploadSendFileAnswer(qint64,qint32,qint32,qint32)), SIGNAL(uploadSendFileAnswer(qint64,qint32,qint32,qint32)));
-    connect(prv->mFileHandler.data(), SIGNAL(uploadGetFileAnswer(qint64,const StorageFileType&,qint32,const QByteArray&,qint32,qint32,qint32)), SIGNAL(uploadGetFileAnswer(qint64,const StorageFileType&,qint32,const QByteArray&,qint32,qint32,qint32)));
-    connect(prv->mFileHandler.data(), SIGNAL(uploadCancelFileAnswer(qint64,bool)), SIGNAL(uploadCancelFileAnswer(qint64,bool)));
-    connect(prv->mFileHandler.data(), SIGNAL(error(qint64,qint32,const QString&)), SIGNAL(error(qint64,qint32,const QString&)));
-    connect(prv->mFileHandler.data(), SIGNAL(messagesSentMedia(qint64,const UpdatesType&, const QVariant&)), SLOT(onMessagesSendMediaAnswer(qint64,const UpdatesType&)));
-    connect(prv->mFileHandler.data(), SIGNAL(messagesSendEncryptedFileAnswer(qint64,qint32,const EncryptedFile&)), SIGNAL(messagesSendEncryptedFileAnswer(qint64,qint32,const EncryptedFile&)));
+    connect(prv->mFileHandler.data(), &FileHandler::uploadSendFileAnswer, this, &Telegram::uploadSendFileAnswer);
+    connect(prv->mFileHandler.data(), &FileHandler::uploadGetFileAnswer, this, &Telegram::uploadGetFileAnswer);
+    connect(prv->mFileHandler.data(), &FileHandler::uploadCancelFileAnswer, this, &Telegram::uploadCancelFileAnswer);
+    connect(prv->mFileHandler.data(), &FileHandler::error, this, &Telegram::error);
+    connect(prv->mFileHandler.data(), &FileHandler::messagesSentMedia, this, &Telegram::onMessagesSendMediaAnswer);
+    connect(prv->mFileHandler.data(), &FileHandler::messagesSendEncryptedFileAnswer, this, &Telegram::messagesSendEncryptedFileAnswer);
 
     // At this point we should test the main session state and emit by hand signals of connected/disconnected
     // depending on the connection state of the session. This is so because first main session connection, if done,
@@ -1068,19 +1068,41 @@ void Telegram::createSharedKey(SecretChat *secretChat, BIGNUM *p, QByteArray gAO
 }
 
 // error and internal managements
-void Telegram::onError(qint64 id, qint32 errorCode, const QString &errorText, const QString &functionName, const QVariant &attachedData) {
-    if(errorCode == 400) {
-        if(errorText == "ENCRYPTION_ID_INVALID" || /* We receive this when a chat has crashed */
-           errorText == "ENCRYPTION_ALREADY_DECLINED") { /* This is an already declined chat, remove it from DB */
-            this->onMessagesDiscardEncryptionResult(id, true);
+void Telegram::onError(qint64 id, qint32 errorCode, const QString &errorText, const QString &functionName, const QVariant &attachedData, bool &accepted) {
+    if (errorText.contains("_MIGRATE_"))
+    {
+        //prv->mLastRetryMessages << id;
+        qint32 newDc = errorText.mid(errorText.lastIndexOf("_") + 1).toInt();
+        qWarning() << "migrated to dc" << newDc;
+        prv->mSettings->setWorkingDcNum(newDc);
+        prv->mSettings->writeAuthFile();
+        DC *dc = prv->mDcProvider->getDc(newDc);
+        mApi->changeMainSessionToDc(dc);
+        accepted = true;
+    }
+    else
+    if(errorCode == 400)
+    {
+        if(errorText == "ENCRYPTION_ALREADY_DECLINED") { /* This is an already declined chat, remove it from DB */
+            onMessagesDiscardEncryptionAnswer(id, true, attachedData);
             return;
         }
     }
-    else if (errorCode == 401) {
-        onAuthLogOutAnswer(id, false, attachedData);
+    else
+    if (errorCode == 401)
+    {
+        if(errorText == "SESSION_PASSWORD_NEEDED" || errorText == "AUTH_KEY_UNREGISTERED")
+            qDebug() << errorText; // Nothing to do
+        else
+            onAuthLogOutAnswer(id, false, attachedData);
+    }
+    else
+    if(functionName == "onUploadGetFileError")
+    {
+        onUploadGetFileError(id, errorCode, errorText, attachedData);
     }
 
-    Q_EMIT error(id, errorCode, errorText, functionName);
+TelegramCore::onError(id, errorCode, errorText, functionName, attachedData, accepted);
 }
 
 void Telegram::onErrorRetry(qint64 id, qint32 errorCode, const QString &errorText) {

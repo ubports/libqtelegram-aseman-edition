@@ -411,7 +411,7 @@ void FileHandler::onUploadGetFileError(qint64 msgId, qint32 errorCode, const QSt
         }
 
     } else {
-        Q_EMIT error(msgId, errorCode, errorText);
+        Q_EMIT error(msgId, errorCode, errorText, __FUNCTION__);
     }
 }
 
