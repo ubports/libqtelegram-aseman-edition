@@ -34,24 +34,30 @@ DC::DC(qint32 dcNum) :
 
 void DC::addEndpoint(QString ipAddress, qint32 port)
 {
+    endpointsLock.lock();
+    for (int i=0; i < endpoints.length(); ++i)
+    {
+        if (endpoints[i].host() == ipAddress && endpoints[i].port() == port)
+        {
+            endpointsLock.unlock();
+            return;
+        }
+    }
     endpoints.append(Endpoint(ipAddress, port));
+    endpointsLock.unlock();
+    qWarning() << "DC: " << m_id << ", added Endpoint: " << ipAddress << ":" << port;
 }
 
-bool DC::hasEndpoint(QString ipAddress, qint32 port)
+void DC::deleteEndpoints()
 {
-    QList::iterator end = endpoints.end();
-    for (QList::iterator endpoint = endpoints.begin(); endpoints != end; ++endpoints)
-    {
-        if (((*endpoint)->host == ipAddress) && ((*endpoint)->port == port))
-            return true;
-    }
-    return false;
+    endpointsLock.lock();
+    endpoints.clear();
+    endpointsLock.unlock();
 }
-Endpoint DC::nextEndpoint()
+
+void DC::advanceEndpoint()
 {
-    Endpoint empty_result = Endpoint();
-    if (endpoints.length() == 0)
-        return empty_result;
+    endpointsLock.lock();
     if (endpoints.length() >= m_Endpoint)
     {
         m_Endpoint++;
@@ -61,5 +67,15 @@ Endpoint DC::nextEndpoint()
        m_Endpoint=1;
 
     }
+    endpointsLock.unlock();
+}
+
+Endpoint DC::currentEndpoint()
+{
+    endpointsLock.lock();
+    Endpoint empty_result = Endpoint();
+    if (endpoints.length() == 0)
+        return empty_result;
     return endpoints[m_Endpoint -1];
+    endpointsLock.unlock();
 }

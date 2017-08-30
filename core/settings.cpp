@@ -228,10 +228,15 @@ void Settings::writeAuthFile() {
         QString ar = pre + QString::number(i) + "/";
 
         map[ar + ST_DC_NUM] = m_dcsList[i]->id();
-        Endpoint firstEP = m_dcsList[i]->nextEndpoint();
-        map[ar + ST_HOST] = firstEP.host();
-        map[ar + ST_PORT] = firstEP.port();
-        map[ar + ST_IPV6] = m_dcsList[i]->ipv6();
+        QList<Endpoint> endpoints = m_dcsList[i]->getEndpoints();
+
+        map[ar + "epnum"] = endpoints.count();
+        for( int j=0; j<endpoints.count(); ++j )
+        {
+            QString epPrefix = ar + "ep" + QString::number(j) + "/";
+            map[epPrefix + ST_HOST] = endpoints[j].host();
+            map[epPrefix + ST_PORT] = endpoints[j].port();
+        }
         map[ar + ST_MEDIA] = m_dcsList[i]->mediaOnly();
         map[ar + ST_DC_STATE] = m_dcsList[i]->state();
 
@@ -243,6 +248,9 @@ void Settings::writeAuthFile() {
         map[ar + ST_SERVER_SALT] = m_dcsList[i]->serverSalt();
         map[ar + ST_EXPIRES] = m_dcsList[i]->expires();
     }
+    qWarning() << "Write auth file:";
+    for(auto e : map.keys())
+        qWarning() << e << ": " << map.value(e);
 
     if(!_telegram_settings_write_fnc(m_baseConfigDirectory, m_phoneNumber, map))
         telegram_settings_write_fnc(m_baseConfigDirectory, m_phoneNumber, map);
@@ -273,9 +281,18 @@ void Settings::readAuthFile() {
 
         qint32 dcNum = map.value(ar+ST_DC_NUM).toInt();
         DC* dc = new DC(dcNum);
-        dc->setHost(map.value(ar+ST_HOST).toString());
-        dc->setPort(map.value(ar+ST_PORT, 0).toInt());
-        dc->setIpv6(map.value(ar+ST_IPV6).toBool());
+        int endpointCount =  map.value(ar + "epnum", 0).toInt();
+        for( int j=0; j<endpointCount; ++j )
+        {
+            QString epPrefix = ar + "ep" + QString::number(j) + "/";
+            dc->addEndpoint(map.value(epPrefix + ST_HOST).toString(), map.value(epPrefix + ST_PORT, 0).toInt());
+        }
+        //Downwards compatible for < API31
+        QString oldEPHost = map.value(ar+ST_HOST).toString();
+        qint32 oldEPPort = map.value(ar+ST_PORT, 0).toInt();
+        if (!oldEPHost.isEmpty() && oldEPPort!=0)
+            dc->addEndpoint(oldEPHost, oldEPPort);
+
         dc->setMediaOnly(map.value(ar+ST_MEDIA).toBool());
         dc->setState((DC::DcState)map.value(ar+ST_DC_STATE, DC::init).toInt());
         dc->setAuthKeyId(map.value(ar+ST_AUTH_KEY_ID, 0).toLongLong());
@@ -287,7 +304,7 @@ void Settings::readAuthFile() {
         dc->setExpires(map.value(ar+ST_EXPIRES).toInt());
 
         qCDebug(TG_CORE_SETTINGS) << "DC | id:" << dc->id() << ", state:" << dc->state() <<
-                    ", host:" << dc->host() << ", port:" << dc->port() <<
+                    ", endpoint count:" << endpointCount <<
                     ", expires:" << dc->expires() << ", authKeyId:" << dc->authKeyId() <<
                     ", serverSalt:" << dc->serverSalt();
 

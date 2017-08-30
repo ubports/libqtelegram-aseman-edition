@@ -168,6 +168,7 @@ void DcProvider::onDcAuthDisconnected() {
 }
 
 void DcProvider::processDcReady(DC *dc) {
+    mDcsLock.lock();
     // create api object if dc is workingDc, and get configuration
     if ((!mApi) && (dc->id() == mSettings->workingDcNum())) {
         Session *session = new Session(dc, mSettings, mCrypto, this);
@@ -177,6 +178,8 @@ void DcProvider::processDcReady(DC *dc) {
         session->connectToServer();
     } else if (--mPendingDcs == 0) { // if all dcs are authorized, emit provider ready signal
         // save the settings here, after all dcs are ready
+        for(auto dc : mDcs.values())
+            qWarning() << "DC " << dc->id() << ": key hash " << dc->serverSalt();
         mSettings->setDcsList(mDcs.values());
         mSettings->writeAuthFile();
 
@@ -199,6 +202,7 @@ void DcProvider::processDcReady(DC *dc) {
         }
 
     }
+    mDcsLock.unlock();
 }
 
 void DcProvider::onApiError() {
@@ -267,43 +271,50 @@ void DcProvider::onConfigReceived(qint64 msgId, const Config &config, const QVar
     mConfigReceived = true;
 
     const QList<DcOption> &dcOptions = config.dcOptions();
+    QList<qint32> dcIndex = QList<qint32>();
 
+    //We start at -1 to reduce the amount of pending DCs by one. The first DC where we got the config from is already processed
+    mPendingDcs = -1;
     Q_FOREACH (DcOption dcOption, dcOptions) {
-        mPendingDcs++;
-
+        if (dcIndex.indexOf(dcOption.id())==-1)
+        {
+            dcIndex.append(dcOption.id());
+            mPendingDcs++;
+        }
     }
 
-    mPendingDcs -=1; //all the received options but the default one, yet used
-
-
     Q_FOREACH (DcOption dcOption, dcOptions) {
-        qCDebug(TG_CORE_DCPROVIDER) << "dcOption | id =" << dcOption.id() << ", ipAddress =" << dcOption.ipAddress() <<
+        qCWarning(TG_CORE_DCPROVIDER) << "dcOption | id =" << dcOption.id() << ", ipAddress =" << dcOption.ipAddress() <<
                     ", port =" << dcOption.port() << ", hostname =" << dcOption.ipAddress();
         // for every new DC or not authenticated DC, insert into m_dcs and authenticate
         DC *dc = mDcs.value(dcOption.id());
 
         // check if dc is not null or if received host and port are not equals than settings ones
-        if ((!dc) || (dc->state() < DC::authKeyCreated)) {
-            // if not exists dc or host and port different, create a new dc object for this dcId and add it to m_dcs map
+        if (!dc) {
+            // if the DC entry does not exist or no auth key is created create a new dc object for this dcId and add it to m_dcs map
             dc = new DC(dcOption.id());
             mDcs.insert(dcOption.id(), dc);
         }
 
-        if (!dc->hasEndpoint(dcOption.ipAddress(), dcOption.port()))
-            dc->addEndpoint(dcOption.ipAddress(), dcOption.port());
-        // let's see if needed to create shared key for it
-        // In any other case, the host and port have been retrieved from auth file settings and the DC object is already created
-        if (dc->state() < DC::authKeyCreated) {
-            // create a dc authenticator based in dc info
-            DCAuth *dcAuth = new DCAuth(dc, mSettings, mCrypto, this);
-            mDcAuths.insert(dcOption.id(), dcAuth);
-            connect(dcAuth, SIGNAL(fatalError()), this, SLOT(logOut()));
-            connect(dcAuth, SIGNAL(fatalError()), this, SIGNAL(fatalError()));
-            connect(dcAuth, SIGNAL(dcReady(DC*)), this, SLOT(onDcReady(DC*)));
-            dcAuth->createAuthKey();
-        } else if (dcOption.id() != config.thisDc()) {
-            // if authorized and not working dc emit dcReady signal directly
-            onDcReady(dc);
+        dc->addEndpoint(dcOption.ipAddress(), dcOption.port());
+        qint32 currentDc = dcIndex.indexOf(dcOption.id());
+        if (currentDc>-1)
+        {
+            dcIndex.removeAt(currentDc);
+            // let's see if needed to create shared key for it
+            // In any other case, the host and port have been retrieved from auth file settings and the DC object is already created
+            if (dc->state() < DC::authKeyCreated) {
+                // create a dc authenticator based in dc info
+                DCAuth *dcAuth = new DCAuth(dc, mSettings, mCrypto, this);
+                mDcAuths.insert(dcOption.id(), dcAuth);
+                connect(dcAuth, SIGNAL(fatalError()), this, SLOT(logOut()));
+                connect(dcAuth, SIGNAL(fatalError()), this, SIGNAL(fatalError()));
+                connect(dcAuth, SIGNAL(dcReady(DC*)), this, SLOT(onDcReady(DC*)));
+                dcAuth->createAuthKey();
+            } else if (dcOption.id() != config.thisDc()) {
+                // if authorized and not working dc emit dcReady signal directly
+                onDcReady(dc);
+            }
         }
     }
 

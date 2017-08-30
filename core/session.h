@@ -159,6 +159,7 @@ private Q_SLOTS:
     void resendQuery(Query *q);
     void onDisconnected();
     void ack(qint64 msgId);
+    void onError(QAbstractSocket::SocketError error);
 };
 
 #endif // SESSION_H

@@ -62,7 +62,9 @@ private:
     void processDcReady(DC *dc);
     void clean();
 
+    QMutex mDcsLock;
     QMap<qint32, DC *> mDcs;
+    QMutex mDcAuthsLock;
     QMap<qint32, DCAuth *> mDcAuths;
     Settings *mSettings;
     CryptoUtils *mCrypto;
