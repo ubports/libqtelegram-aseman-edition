@@ -216,25 +216,33 @@ void Telegram::init(qint32 timeout) {
     connect(prv->mDcProvider, SIGNAL(error(qint64,qint32,const QString&)), this, SIGNAL(error(qint64,qint32,const QString&)));
 
     prv->mSecretState = SecretState(prv->mSettings);
+    prv->mSecretState.load();
+
     prv->mEncrypter = new Encrypter(prv->mSettings);
     prv->mDecrypter = new Decrypter(prv->mSettings);
 
     connect(prv->mDecrypter, &Decrypter::sequenceNumberGap,
             this, &Telegram::onSequenceNumberGap);
 
-    prv->mSecretState.load();
     prv->mDcProvider->initialize();
 
     prv->initTimeout = timeout;
     prv->initTimerId = startTimer(prv->initTimeout);
 }
 
-Telegram::~Telegram() {
-    if(prv->mEncrypter) delete prv->mEncrypter;
-    if(prv->mDecrypter) delete prv->mDecrypter;
-    if(prv->mDcProvider) delete prv->mDcProvider;
-    if(prv->mCrypto) delete prv->mCrypto;
-    if(prv->mSettings) delete prv->mSettings;
+Telegram::~Telegram()
+{
+    prv->mSecretState.save();
+    if(prv->mEncrypter)
+        delete prv->mEncrypter;
+    if(prv->mDecrypter)
+        delete prv->mDecrypter;
+    if(prv->mDcProvider)
+        delete prv->mDcProvider;
+    if(prv->mCrypto)
+        delete prv->mCrypto;
+    if(prv->mSettings)
+        delete prv->mSettings;
     delete prv;
 }
 
@@ -500,6 +508,7 @@ qint64 Telegram::messagesDiscardEncryptedChat(qint32 chatId) {
     qint64 requestId = prv->mApi->messagesDiscardEncryption(chatId);
     // insert another entry related to this request for deleting chat only when response is ok
     prv->mSecretState.chats().insert(requestId, secretChat);
+    prv->mSecretState.save();
     return requestId;
 }
 
@@ -743,6 +752,7 @@ qint64 Telegram::generateGAorB(SecretChat *secretChat) {
     qint64 reqId = prv->mApi->messagesGetDhConfig(prv->mSecretState.version(), DH_CONFIG_SERVER_RANDOM_LENGTH);
     // store in secret chats map related to this request id, temporally
     prv->mSecretState.chats().insert(reqId, secretChat);
+    prv->mSecretState.save();
     return reqId;
 }
 
@@ -752,7 +762,7 @@ void Telegram::onMessagesDhConfig(qint64 msgId, qint32 g, const QByteArray &p, q
     prv->mSecretState.setVersion(version);
     prv->mSecretState.setG(g);
     prv->mSecretState.setP(p);
-
+    prv->mSecretState.save();
     if (prv->mCrypto->checkDHParams(prv->mSecretState.p(), g) < 0) {
         qCCritical(TG_TELEGRAM) << "Diffie-Hellman config parameters are not valid";
         return;
@@ -764,6 +774,7 @@ void Telegram::onMessagesDhConfig(qint64 msgId, qint32 g, const QByteArray &p, q
 void Telegram::onMessagesDhConfigNotModified(qint64 msgId, const QByteArray &random) {
     qCDebug(TG_LIB_SECRET) << "processing DH parameters";
     SecretChat *secretChat = prv->mSecretState.chats().take(msgId);
+    prv->mSecretState.save();
     ASSERT(secretChat);
     // create secret a number by taking server random (and generating a client random also to have more entrophy)
     secretChat->createMyKey(random);
@@ -790,6 +801,7 @@ void Telegram::onMessagesDhConfigNotModified(qint64 msgId, const QByteArray &ran
         Utils::randomBytes(&randomId, 4);
         secretChat->setChatId(randomId);
         prv->mSecretState.chats().insert(randomId, secretChat);
+        prv->mSecretState.save();
         qCDebug(TG_LIB_SECRET) << "Requesting encryption for chatId" << secretChat->chatId();
         prv->mApi->messagesRequestEncryption(secretChat->requestedUser(), randomId, gAOrB);
         break;
@@ -850,6 +862,7 @@ void Telegram::onMessagesAcceptEncryptionEncryptedChat(qint64, const EncryptedCh
 
 void Telegram::onMessagesDiscardEncryptionResult(qint64 requestId, bool ok) {
     SecretChat *secretChat = prv->mSecretState.chats().take(requestId);
+    prv->mSecretState.save();
     ASSERT(secretChat);
     qint32 chatId = secretChat->chatId();
     if (ok) {
@@ -889,6 +902,8 @@ void Telegram::timerEvent(QTimerEvent *e)
         if(!prv->mApi)
 	{
             qWarning() << "Timeout error initializing. Retrying...";
+            if(prv->initTimeout <= 30000)
+                prv->initTimeout *= 2;
             init(prv->initTimeout);
 	}
     }
@@ -996,6 +1011,7 @@ void Telegram::processSecretChatUpdate(const Update &update) {
             secretChat->setState(SecretChat::Requested);
 
             prv->mSecretState.chats().insert(chatId, secretChat);
+            prv->mSecretState.save();
             Q_EMIT messagesEncryptedChatRequested(chatId, date, adminId, accessHash);
             break;
         }
@@ -1666,9 +1682,6 @@ qint64 Telegram::messagesSendVideo(const InputPeer &peer, qint64 randomId, const
     inputMedia.setW(width);
     inputMedia.setH(height);
     inputMedia.setMimeType(mimeType);
-    if (!thumbnailBytes.isEmpty()) {
-        inputMedia.setClassType(InputMedia::typeInputMediaUploadedThumbVideo);
-    }
     FileOperation *op = new FileOperation(FileOperation::sendMedia);
     op->setInputPeer(peer);
     op->setInputMedia(inputMedia);
@@ -1683,9 +1696,6 @@ qint64 Telegram::messagesSendVideo(const InputPeer &peer, qint64 randomId, const
     inputMedia.setW(width);
     inputMedia.setH(height);
     inputMedia.setMimeType(QMimeDatabase().mimeTypeForFile(QFileInfo(filePath)).name());
-    if (thumbnailFilePath.length() > 0) {
-        inputMedia.setClassType(InputMedia::typeInputMediaUploadedThumbVideo);
-    }
     FileOperation *op = new FileOperation(FileOperation::sendMedia);
     op->setInputPeer(peer);
     op->setInputMedia(inputMedia);
@@ -1718,7 +1728,7 @@ qint64 Telegram::messagesSendAudio(const InputPeer &peer, qint64 randomId, const
     return uploadSendFile(*op, inputMedia.classType(), filePath);
 }
 
-qint64 Telegram::messagesSendDocument(const InputPeer &peer, qint64 randomId, const QByteArray &bytes, const QString &fileName, const QString &mimeType, const QByteArray &thumbnailBytes, const QString &thumbnailName, const QList<DocumentAttribute> &extraAttributes, qint32 replyToMsgId) {
+qint64 Telegram::messagesSendDocument(const InputPeer &peer, qint64 randomId, const QByteArray &bytes, const QString &fileName, const QString &mimeType, const QByteArray &thumbnailBytes, const QString &thumbnailName, const QString &caption, const QList<DocumentAttribute> &extraAttributes, qint32 replyToMsgId) {
     DocumentAttribute fileAttr(DocumentAttribute::typeDocumentAttributeFilename);
     fileAttr.setFileName(fileName);
 
@@ -1729,6 +1739,7 @@ qint64 Telegram::messagesSendDocument(const InputPeer &peer, qint64 randomId, co
     InputMedia inputMedia(InputMedia::typeInputMediaUploadedDocument);
     inputMedia.setAttributes(attributes);
     inputMedia.setMimeType(mimeType);
+    inputMedia.setCaption(caption);
     if (!thumbnailBytes.isEmpty()) {
         inputMedia.setClassType(InputMedia::typeInputMediaUploadedThumbDocument);
     }
@@ -1740,7 +1751,7 @@ qint64 Telegram::messagesSendDocument(const InputPeer &peer, qint64 randomId, co
     return uploadSendFile(*op, inputMedia.classType(), fileName, bytes, thumbnailBytes, thumbnailName);
 }
 
-qint64 Telegram::messagesSendDocument(const InputPeer &peer, qint64 randomId, const QString &filePath, const QString &thumbnailFilePath, bool sendAsSticker, qint32 replyToMsgId) {
+qint64 Telegram::messagesSendDocument(const InputPeer &peer, qint64 randomId, const QString &filePath, const QString &thumbnailFilePath, const QString &caption, bool sendAsSticker, qint32 replyToMsgId) {
     const QMimeType t = QMimeDatabase().mimeTypeForFile(QFileInfo(filePath));
     QString mimeType = t.name();
 
@@ -1764,6 +1775,7 @@ qint64 Telegram::messagesSendDocument(const InputPeer &peer, qint64 randomId, co
     InputMedia inputMedia(InputMedia::typeInputMediaUploadedDocument);
     inputMedia.setMimeType(mimeType);
     inputMedia.setAttributes(attributes);
+    inputMedia.setCaption(caption);
     if (thumbnailFilePath.length() > 0) {
         inputMedia.setClassType(InputMedia::typeInputMediaUploadedThumbDocument);
     }
