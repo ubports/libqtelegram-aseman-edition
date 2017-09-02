@@ -18,6 +18,7 @@ public:
         typeInvokeWithLayer = 0xda9b0d0d,
         typeInvokeWithoutUpdates = 0xbf9459b7,
         typeNull = 0x56730bcc,
+        typeVector = 0x1cb5c415,
         typeLayerVersion = 36
     };
 };

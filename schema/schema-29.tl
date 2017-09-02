@@ -4,6 +4,7 @@ boolFalse#bc799737 = Bool;
 boolTrue#997275b5 = Bool;
 error#c4b9f9bb code:int text:string = Error;
 null#56730bcc = Null;
+vector#1cb5c415 {t:Type} # [ t ] = Vector t;
 
 ---types---
 
