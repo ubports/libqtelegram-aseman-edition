@@ -1,8 +1,12 @@
----types---
+---coretypes---
+
 boolFalse#bc799737 = Bool;
 boolTrue#997275b5 = Bool;
 error#c4b9f9bb code:int text:string = Error;
 null#56730bcc = Null;
+
+---types---
+
 inputPeerEmpty#7f3b18ea = InputPeer;
 inputPeerSelf#7da07ec9 = InputPeer;
 inputPeerContact#1023dbe8 user_id:int = InputPeer;
@@ -80,6 +84,37 @@ messageActionChatEditPhoto#7fcb13a8 photo:Photo = MessageAction;
 messageActionChatDeletePhoto#95e3fbef = MessageAction;
 messageActionChatAddUser#5e3cfc4b user_id:int = MessageAction;
 messageActionChatDeleteUser#b2ae9b0c user_id:int = MessageAction;
+
+decryptedMessage_Secret8#1f814f1f random_id:long random_bytes:bytes message:string media:DecryptedMessageMedia = DecryptedMessage;
+decryptedMessageService_Secret8#aa48327d random_id:long random_bytes:bytes action:DecryptedMessageAction = DecryptedMessage;
+decryptedMessageMediaEmpty_Secret8#89f5c4a = DecryptedMessageMedia;
+decryptedMessageMediaPhoto_Secret8#32798a8c thumb:bytes thumb_w:int thumb_h:int w:int h:int size:int key:bytes iv:bytes = DecryptedMessageMedia;
+decryptedMessageMediaVideo_Secret8#4cee6ef3 thumb:bytes thumb_w:int thumb_h:int duration:int w:int h:int size:int key:bytes iv:bytes = DecryptedMessageMedia;
+decryptedMessageMediaGeoPoint_Secret8#35480a59 lat:double long:double = DecryptedMessageMedia;
+decryptedMessageMediaContact_Secret8#588a0a97 phone_number:string first_name:string last_name:string user_id:int = DecryptedMessageMedia;
+decryptedMessageActionSetMessageTTL_Secret8#a1733aec ttl_seconds:int = DecryptedMessageAction;
+decryptedMessageMediaDocument_Secret8#b095434b thumb:bytes thumb_w:int thumb_h:int file_name:string mime_type:string size:int key:bytes iv:bytes = DecryptedMessageMedia;
+decryptedMessageMediaAudio_Secret8#6080758f duration:int size:int key:bytes iv:bytes = DecryptedMessageMedia;
+decryptedMessageActionReadMessages_Secret8#c4f40be random_ids:Vector<long> = DecryptedMessageAction;
+decryptedMessageActionDeleteMessages_Secret8#65614304 random_ids:Vector<long> = DecryptedMessageAction;
+decryptedMessageActionScreenshotMessages_Secret8#8ac1f475 random_ids:Vector<long> = DecryptedMessageAction;
+decryptedMessageActionFlushHistory_Secret8#6719e45c = DecryptedMessageAction;
+decryptedMessage_Secret17#204d3878 random_id:long ttl:int message:string media:DecryptedMessageMedia = DecryptedMessage;
+decryptedMessageService_Secret17#73164160 random_id:long action:DecryptedMessageAction = DecryptedMessage;
+decryptedMessageMediaVideo_Secret17#524a415d thumb:bytes thumb_w:int thumb_h:int duration:int mime_type:string w:int h:int size:int key:bytes iv:bytes = DecryptedMessageMedia;
+decryptedMessageMediaAudio_Secret17#57e0a9cb duration:int mime_type:string size:int key:bytes iv:bytes = DecryptedMessageMedia;
+decryptedMessageLayer_Secret17#1be31789 random_bytes:bytes layer:int in_seq_no:int out_seq_no:int message:DecryptedMessage = DecryptedMessageLayer;
+decryptedMessageActionResend_Secret17#511110b0 start_seq_no:int end_seq_no:int = DecryptedMessageAction;
+decryptedMessageActionNotifyLayer_Secret17#f3048883 layer:int = DecryptedMessageAction;
+decryptedMessageActionTyping_Secret17#ccb27641 action:SendMessageAction = DecryptedMessageAction;
+decryptedMessageActionRequestKey_Secret20#f3c9611b exchange_id:long g_a:bytes = DecryptedMessageAction;
+decryptedMessageActionAcceptKey_Secret20#6fe1735b exchange_id:long g_b:bytes key_fingerprint:long = DecryptedMessageAction;
+decryptedMessageActionAbortKey_Secret20#dd05ec6b exchange_id:long = DecryptedMessageAction;
+decryptedMessageActionCommitKey_Secret20#ec2e0b9b exchange_id:long key_fingerprint:long = DecryptedMessageAction;
+decryptedMessageActionNoop_Secret20#a82fdd63 = DecryptedMessageAction;
+decryptedMessageMediaExternalDocument_Secret23#fa95b0dd id:long access_hash:long date:int mime_type:string size:int thumb:PhotoSize dc_id:int attributes:Vector<DocumentAttribute> = DecryptedMessageMedia;
+secretChatMessage#187dd9f4 chat_id:int ttl:int date:int decryptedMessage:DecryptedMessage attachment:EncryptedFile = SecretChatMessage
+
 dialog#c1dd804a peer:Peer top_message:int read_inbox_max_id:int unread_count:int notify_settings:PeerNotifySettings = Dialog;
 photoEmpty#2331b22d id:long = Photo;
 photo#c3838076 id:long access_hash:long user_id:int date:int geo:GeoPoint sizes:Vector<PhotoSize> = Photo;
