@@ -631,16 +631,6 @@ qint64 Telegram::messagesGetAllStickers(const QString &hash) {
     return mApi->messagesGetAllStickers(hash);
 }
 
-qint64 Telegram::messagesGetStickerSet(const InputStickerSet &stickerset) {
-    CHECK_API;
-    return mApi->messagesGetStickerSet(stickerset);
-}
-
-qint64 Telegram::messagesInstallStickerSet(const InputStickerSet &stickerset) {
-    CHECK_API;
-    return mApi->messagesInstallStickerSet(stickerset);
-}
-
 qint64 Telegram::messagesUninstallStickerSet(const InputStickerSet &stickerset) {
     CHECK_API;
     return mApi->messagesUninstallStickerSet(stickerset);
@@ -1545,11 +1535,6 @@ qint64 Telegram::contactsUnblock(const InputUser &user) {
 qint64 Telegram::contactsGetBlocked(qint32 offset, qint32 limit) {
     CHECK_API;
     return mApi->contactsGetBlocked(offset, limit);
-}
-
-qint64 Telegram::messagesSendMessage(const InputPeer &peer, qint64 randomId, const QString &message, int replyToMsgId) {
-    CHECK_API;
-    return mApi->messagesSendMessage(peer, replyToMsgId, message, randomId, ReplyMarkup());
 }
 
 qint64 Telegram::contactsGetContacts() {
