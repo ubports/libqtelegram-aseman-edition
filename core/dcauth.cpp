@@ -20,7 +20,7 @@
  */
 
 #include "dcauth.h"
-
+#include "connection.h"
 #include <openssl/sha.h>
 #include "util/utils.h"
 #include "util/tlvalues.h"
@@ -39,6 +39,7 @@ DCAuth::DCAuth(DC *dc, Settings *settings, CryptoUtils *crypto, QObject *parent)
     mSettings(settings),
     mCrypto(crypto),
     m_dc(dc) {
+        connect(this, &Connection::connectionError, this, &DCAuth::onError);
 }
 
 DCAuth::~DCAuth() {
@@ -376,11 +377,12 @@ void DCAuth::rpcSendPacket(OutboundPkt &packet) {
 }
 
 void DCAuth::onError(QAbstractSocket::SocketError error) {
-    Q_UNUSED(error);
-    m_dc->advanceEndpoint();
-    QString newHost = m_dc->currentEndpoint().host();
-    qint32 newPort = m_dc->currentEndpoint().port();
-    setHost(newHost);
-    setPort(newPort);
-    qCWarning(TG_CORE_DCAUTH) << "Error in the tcp socket, retrying endpoint: " << newHost << ":" << newPort;
+    if (error <= QAbstractSocket::NetworkError) {
+        m_dc->advanceEndpoint();
+        QString newHost = m_dc->currentEndpoint().host();
+        qint32 newPort = m_dc->currentEndpoint().port();
+        setHost(newHost);
+        setPort(newPort);
+        qCWarning(TG_CORE_DCAUTH) << "Error " << error << " in tcp socket, retrying endpoint: " << newHost << ":" << newPort;
+    }
 }

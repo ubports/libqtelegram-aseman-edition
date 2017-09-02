@@ -42,6 +42,7 @@ public:
 
 Q_SIGNALS:
     void fatalError();
+    void connectionError(QAbstractSocket::SocketError error);
 
 public Q_SLOTS:
     void connectToServer();

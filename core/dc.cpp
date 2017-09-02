@@ -58,7 +58,7 @@ void DC::deleteEndpoints()
 void DC::advanceEndpoint()
 {
     endpointsLock.lock();
-    if (endpoints.length() >= m_Endpoint)
+    if (endpoints.length() > m_Endpoint)
     {
         m_Endpoint++;
     }
@@ -72,10 +72,8 @@ void DC::advanceEndpoint()
 
 Endpoint DC::currentEndpoint()
 {
-    endpointsLock.lock();
     Endpoint empty_result = Endpoint();
     if (endpoints.length() == 0)
         return empty_result;
     return endpoints[m_Endpoint -1];
-    endpointsLock.unlock();
 }

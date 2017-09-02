@@ -20,6 +20,7 @@
  */
 
 #include "session.h"
+#include "connection.h"
 #include <openssl/rand.h>
 #include <openssl/sha.h>
 #include <QDateTime>
@@ -52,7 +53,7 @@ Session::Session(DC *dc, Settings *settings, CryptoUtils *crypto, QObject *paren
     qCDebug(TG_CORE_SESSION) << "created session with id" << QString::number(m_sessionId, 16);
 
     connect(this, SIGNAL(disconnected()), SLOT(onDisconnected()));
-    connect(this, SIGNAL(error()), this, SLOT(onError()));
+    connect(this, &Connection::connectionError, this, &Session::onError);
 }
 
 Session::~Session() {
@@ -672,12 +673,12 @@ void Session::sendAcks(const QList<qint64> &msgIds) {
 }
 
 void Session::onError(QAbstractSocket::SocketError error) {
-    Q_UNUSED(error);
-    m_dc->advanceEndpoint();
-    QString newHost = m_dc->currentEndpoint().host();
-    qint32 newPort = m_dc->currentEndpoint().port();
-    setHost(newHost);
-    setPort(newPort);
-    qCWarning(TG_CORE_SESSION) << "Error in the tcp socket, retrying endpoint: " << newHost << ":" << newPort;
-
+    if (error <= QAbstractSocket::NetworkError) {
+        m_dc->advanceEndpoint();
+        QString newHost = m_dc->currentEndpoint().host();
+        qint32 newPort = m_dc->currentEndpoint().port();
+        setHost(newHost);
+        setPort(newPort);
+        qCWarning(TG_CORE_SESSION) << "Error " << error << " in tcp socket, retrying endpoint: " << newHost << ":" << newPort;
+    }
 }
