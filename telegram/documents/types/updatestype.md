@@ -8,6 +8,7 @@
 * [typeUpdateShort](#updatestypetypeupdateshort)
 * [typeUpdatesCombined](#updatestypetypeupdatescombined)
 * [typeUpdates](#updatestypetypeupdates)
+* [typeUpdateShortSentMessage](#updatestypetypeupdateshortsentmessage)
 
 ## UpdatesType::typeUpdatesTooLong
 
@@ -25,7 +26,7 @@ updatesTooLong#e317af7e = Updates;
 #### Schema:
 
 ```c++
-updateShortMessage#ed5c2127 flags:# id:int user_id:int message:string pts:int pts_count:int date:int fwd_from_id:flags.2?int fwd_date:flags.2?int reply_to_msg_id:flags.3?int = Updates;
+updateShortMessage#3f32d858 flags:# id:int user_id:int message:string pts:int pts_count:int date:int fwd_from_id:flags.2?int fwd_date:flags.2?int reply_to_msg_id:flags.3?int entities:flags.7?Vector<MessageEntity> = Updates;
 ```
 
 #### Parameters:
@@ -41,13 +42,14 @@ updateShortMessage#ed5c2127 flags:# id:int user_id:int message:string pts:int pt
 |fwdFromId|qint32|
 |fwdDate|qint32|
 |replyToMsgId|qint32|
+|entities|QList&lt;[MessageEntity](messageentity.md)&gt;|
 
 ## UpdatesType::typeUpdateShortChatMessage
 
 #### Schema:
 
 ```c++
-updateShortChatMessage#52238b3c flags:# id:int from_id:int chat_id:int message:string pts:int pts_count:int date:int fwd_from_id:flags.2?int fwd_date:flags.2?int reply_to_msg_id:flags.3?int = Updates;
+updateShortChatMessage#f9409b3d flags:# id:int from_id:int chat_id:int message:string pts:int pts_count:int date:int fwd_from_id:flags.2?int fwd_date:flags.2?int reply_to_msg_id:flags.3?int entities:flags.7?Vector<MessageEntity> = Updates;
 ```
 
 #### Parameters:
@@ -64,6 +66,7 @@ updateShortChatMessage#52238b3c flags:# id:int from_id:int chat_id:int message:s
 |fwdFromId|qint32|
 |fwdDate|qint32|
 |replyToMsgId|qint32|
+|entities|QList&lt;[MessageEntity](messageentity.md)&gt;|
 
 ## UpdatesType::typeUpdateShort
 
@@ -116,4 +119,23 @@ updates#74ae4240 updates:Vector<Update> users:Vector<User> chats:Vector<Chat> da
 |chats|QList&lt;[Chat](chat.md)&gt;|
 |date|qint32|
 |seq|qint32|
+
+## UpdatesType::typeUpdateShortSentMessage
+
+#### Schema:
+
+```c++
+updateShortSentMessage#11f1331c flags:# id:int pts:int pts_count:int date:int media:flags.9?MessageMedia entities:flags.7?Vector<MessageEntity> = Updates;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|id|qint32|
+|pts|qint32|
+|ptsCount|qint32|
+|date|qint32|
+|media|[MessageMedia](messagemedia.md)|
+|entities|QList&lt;[MessageEntity](messageentity.md)&gt;|
 

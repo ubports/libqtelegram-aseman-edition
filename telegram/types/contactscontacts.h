@@ -23,11 +23,11 @@ class LIBQTELEGRAMSHARED_EXPORT ContactsContacts : public TelegramTypeObject
 {
 public:
     enum ContactsContactsClassType {
-        typeContactsContactsNotModified = 0xb74ba9d2,
-        typeContactsContacts = 0x6f8b8cb2
+        typeContactsContacts = 0x6f8b8cb2,
+        typeContactsContactsNotModified = 0xb74ba9d2
     };
 
-    ContactsContacts(ContactsContactsClassType classType = typeContactsContactsNotModified, InboundPkt *in = 0);
+    ContactsContacts(ContactsContactsClassType classType = typeContactsContacts, InboundPkt *in = 0);
     ContactsContacts(InboundPkt *in);
     ContactsContacts(const Null&);
     virtual ~ContactsContacts();
@@ -72,14 +72,14 @@ inline ContactsContacts::ContactsContacts(ContactsContactsClassType classType, I
 }
 
 inline ContactsContacts::ContactsContacts(InboundPkt *in) :
-    m_classType(typeContactsContactsNotModified)
+    m_classType(typeContactsContacts)
 {
     fetch(in);
 }
 
 inline ContactsContacts::ContactsContacts(const Null &null) :
     TelegramTypeObject(null),
-    m_classType(typeContactsContactsNotModified)
+    m_classType(typeContactsContacts)
 {
 }
 
@@ -120,12 +120,6 @@ inline bool ContactsContacts::fetch(InboundPkt *in) {
     LQTG_FETCH_LOG;
     int x = in->fetchInt();
     switch(x) {
-    case typeContactsContactsNotModified: {
-        m_classType = static_cast<ContactsContactsClassType>(x);
-        return true;
-    }
-        break;
-    
     case typeContactsContacts: {
         if(in->fetchInt() != (qint32)CoreTypes::typeVector) return false;
         qint32 m_contacts_length = in->fetchInt();
@@ -148,6 +142,12 @@ inline bool ContactsContacts::fetch(InboundPkt *in) {
     }
         break;
     
+    case typeContactsContactsNotModified: {
+        m_classType = static_cast<ContactsContactsClassType>(x);
+        return true;
+    }
+        break;
+    
     default:
         LQTG_FETCH_ASSERT;
         return false;
@@ -157,11 +157,6 @@ inline bool ContactsContacts::fetch(InboundPkt *in) {
 inline bool ContactsContacts::push(OutboundPkt *out) const {
     out->appendInt(m_classType);
     switch(m_classType) {
-    case typeContactsContactsNotModified: {
-        return true;
-    }
-        break;
-    
     case typeContactsContacts: {
         out->appendInt(CoreTypes::typeVector);
         out->appendInt(m_contacts.count());
@@ -177,6 +172,11 @@ inline bool ContactsContacts::push(OutboundPkt *out) const {
     }
         break;
     
+    case typeContactsContactsNotModified: {
+        return true;
+    }
+        break;
+    
     default:
         return false;
     }
@@ -185,12 +185,6 @@ inline bool ContactsContacts::push(OutboundPkt *out) const {
 inline QMap<QString, QVariant> ContactsContacts::toMap() const {
     QMap<QString, QVariant> result;
     switch(static_cast<int>(m_classType)) {
-    case typeContactsContactsNotModified: {
-        result["classType"] = "ContactsContacts::typeContactsContactsNotModified";
-        return result;
-    }
-        break;
-    
     case typeContactsContacts: {
         result["classType"] = "ContactsContacts::typeContactsContacts";
         QList<QVariant> _contacts;
@@ -205,6 +199,12 @@ inline QMap<QString, QVariant> ContactsContacts::toMap() const {
     }
         break;
     
+    case typeContactsContactsNotModified: {
+        result["classType"] = "ContactsContacts::typeContactsContactsNotModified";
+        return result;
+    }
+        break;
+    
     default:
         return result;
     }
@@ -212,10 +212,6 @@ inline QMap<QString, QVariant> ContactsContacts::toMap() const {
 
 inline ContactsContacts ContactsContacts::fromMap(const QMap<QString, QVariant> &map) {
     ContactsContacts result;
-    if(map.value("classType").toString() == "ContactsContacts::typeContactsContactsNotModified") {
-        result.setClassType(typeContactsContactsNotModified);
-        return result;
-    }
     if(map.value("classType").toString() == "ContactsContacts::typeContactsContacts") {
         result.setClassType(typeContactsContacts);
         QList<QVariant> map_contacts = map["contacts"].toList();
@@ -228,6 +224,10 @@ inline ContactsContacts ContactsContacts::fromMap(const QMap<QString, QVariant> 
         Q_FOREACH(const QVariant &var, map_users)
             _users << User::fromMap(var.toMap());
         result.setUsers(_users);
+        return result;
+    }
+    if(map.value("classType").toString() == "ContactsContacts::typeContactsContactsNotModified") {
+        result.setClassType(typeContactsContactsNotModified);
         return result;
     }
     return result;
@@ -243,12 +243,12 @@ inline QByteArray ContactsContacts::getHash(QCryptographicHash::Algorithm alg) c
 inline QDataStream &operator<<(QDataStream &stream, const ContactsContacts &item) {
     stream << static_cast<uint>(item.classType());
     switch(item.classType()) {
-    case ContactsContacts::typeContactsContactsNotModified:
-        
-        break;
     case ContactsContacts::typeContactsContacts:
         stream << item.contacts();
         stream << item.users();
+        break;
+    case ContactsContacts::typeContactsContactsNotModified:
+        
         break;
     }
     return stream;
@@ -259,10 +259,6 @@ inline QDataStream &operator>>(QDataStream &stream, ContactsContacts &item) {
     stream >> type;
     item.setClassType(static_cast<ContactsContacts::ContactsContactsClassType>(type));
     switch(type) {
-    case ContactsContacts::typeContactsContactsNotModified: {
-        
-    }
-        break;
     case ContactsContacts::typeContactsContacts: {
         QList<Contact> m_contacts;
         stream >> m_contacts;
@@ -270,6 +266,10 @@ inline QDataStream &operator>>(QDataStream &stream, ContactsContacts &item) {
         QList<User> m_users;
         stream >> m_users;
         item.setUsers(m_users);
+    }
+        break;
+    case ContactsContacts::typeContactsContactsNotModified: {
+        
     }
         break;
     }

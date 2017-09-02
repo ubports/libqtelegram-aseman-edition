@@ -14,9 +14,7 @@ class LIBQTELEGRAMSHARED_EXPORT MessagesAllStickersObject : public TelegramTypeQ
 {
     Q_OBJECT
     Q_ENUMS(MessagesAllStickersClassType)
-    Q_PROPERTY(QList<Document> documents READ documents WRITE setDocuments NOTIFY documentsChanged)
     Q_PROPERTY(QString hash READ hash WRITE setHash NOTIFY hashChanged)
-    Q_PROPERTY(QList<StickerPack> packs READ packs WRITE setPacks NOTIFY packsChanged)
     Q_PROPERTY(QList<StickerSet> sets READ sets WRITE setSets NOTIFY setsChanged)
     Q_PROPERTY(MessagesAllStickers core READ core WRITE setCore NOTIFY coreChanged)
     Q_PROPERTY(quint32 classType READ classType WRITE setClassType NOTIFY classTypeChanged)
@@ -31,14 +29,8 @@ public:
     MessagesAllStickersObject(QObject *parent = 0);
     virtual ~MessagesAllStickersObject();
 
-    void setDocuments(const QList<Document> &documents);
-    QList<Document> documents() const;
-
     void setHash(const QString &hash);
     QString hash() const;
-
-    void setPacks(const QList<StickerPack> &packs);
-    QList<StickerPack> packs() const;
 
     void setSets(const QList<StickerSet> &sets);
     QList<StickerSet> sets() const;
@@ -55,9 +47,7 @@ public:
 Q_SIGNALS:
     void coreChanged();
     void classTypeChanged();
-    void documentsChanged();
     void hashChanged();
-    void packsChanged();
     void setsChanged();
 
 private Q_SLOTS:
@@ -81,17 +71,6 @@ inline MessagesAllStickersObject::MessagesAllStickersObject(QObject *parent) :
 inline MessagesAllStickersObject::~MessagesAllStickersObject() {
 }
 
-inline void MessagesAllStickersObject::setDocuments(const QList<Document> &documents) {
-    if(m_core.documents() == documents) return;
-    m_core.setDocuments(documents);
-    Q_EMIT documentsChanged();
-    Q_EMIT coreChanged();
-}
-
-inline QList<Document> MessagesAllStickersObject::documents() const {
-    return m_core.documents();
-}
-
 inline void MessagesAllStickersObject::setHash(const QString &hash) {
     if(m_core.hash() == hash) return;
     m_core.setHash(hash);
@@ -101,17 +80,6 @@ inline void MessagesAllStickersObject::setHash(const QString &hash) {
 
 inline QString MessagesAllStickersObject::hash() const {
     return m_core.hash();
-}
-
-inline void MessagesAllStickersObject::setPacks(const QList<StickerPack> &packs) {
-    if(m_core.packs() == packs) return;
-    m_core.setPacks(packs);
-    Q_EMIT packsChanged();
-    Q_EMIT coreChanged();
-}
-
-inline QList<StickerPack> MessagesAllStickersObject::packs() const {
-    return m_core.packs();
 }
 
 inline void MessagesAllStickersObject::setSets(const QList<StickerSet> &sets) {
@@ -129,9 +97,7 @@ inline MessagesAllStickersObject &MessagesAllStickersObject::operator =(const Me
     if(m_core == b) return *this;
     m_core = b;
 
-    Q_EMIT documentsChanged();
     Q_EMIT hashChanged();
-    Q_EMIT packsChanged();
     Q_EMIT setsChanged();
     Q_EMIT coreChanged();
     return *this;

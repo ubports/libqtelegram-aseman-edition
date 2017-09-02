@@ -71,7 +71,7 @@ documentAttributeVideo#5910cccb duration:int w:int h:int = DocumentAttribute;
 #### Schema:
 
 ```c++
-documentAttributeAudio#51448e5 duration:int = DocumentAttribute;
+documentAttributeAudio#ded218e0 duration:int title:string performer:string = DocumentAttribute;
 ```
 
 #### Parameters:
@@ -79,6 +79,8 @@ documentAttributeAudio#51448e5 duration:int = DocumentAttribute;
 |Name|Type|
 |----|----|
 |duration|qint32|
+|title|QString|
+|performer|QString|
 
 ## DocumentAttribute::typeDocumentAttributeFilename
 

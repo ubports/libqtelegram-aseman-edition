@@ -9,6 +9,7 @@
 #include "telegram/types/updatestype.h"
 
 #include <QPointer>
+#include "messagemediaobject.h"
 #include "updateobject.h"
 
 class LIBQTELEGRAMSHARED_EXPORT UpdatesTypeObject : public TelegramTypeQObject
@@ -18,11 +19,13 @@ class LIBQTELEGRAMSHARED_EXPORT UpdatesTypeObject : public TelegramTypeQObject
     Q_PROPERTY(qint32 chatId READ chatId WRITE setChatId NOTIFY chatIdChanged)
     Q_PROPERTY(QList<Chat> chats READ chats WRITE setChats NOTIFY chatsChanged)
     Q_PROPERTY(qint32 date READ date WRITE setDate NOTIFY dateChanged)
+    Q_PROPERTY(QList<MessageEntity> entities READ entities WRITE setEntities NOTIFY entitiesChanged)
     Q_PROPERTY(qint32 flags READ flags WRITE setFlags NOTIFY flagsChanged)
     Q_PROPERTY(qint32 fromId READ fromId WRITE setFromId NOTIFY fromIdChanged)
     Q_PROPERTY(qint32 fwdDate READ fwdDate WRITE setFwdDate NOTIFY fwdDateChanged)
     Q_PROPERTY(qint32 fwdFromId READ fwdFromId WRITE setFwdFromId NOTIFY fwdFromIdChanged)
     Q_PROPERTY(qint32 id READ id WRITE setId NOTIFY idChanged)
+    Q_PROPERTY(MessageMediaObject* media READ media WRITE setMedia NOTIFY mediaChanged)
     Q_PROPERTY(QString message READ message WRITE setMessage NOTIFY messageChanged)
     Q_PROPERTY(qint32 pts READ pts WRITE setPts NOTIFY ptsChanged)
     Q_PROPERTY(qint32 ptsCount READ ptsCount WRITE setPtsCount NOTIFY ptsCountChanged)
@@ -43,7 +46,8 @@ public:
         TypeUpdateShortChatMessage,
         TypeUpdateShort,
         TypeUpdatesCombined,
-        TypeUpdates
+        TypeUpdates,
+        TypeUpdateShortSentMessage
     };
 
     UpdatesTypeObject(const UpdatesType &core, QObject *parent = 0);
@@ -59,6 +63,9 @@ public:
     void setDate(qint32 date);
     qint32 date() const;
 
+    void setEntities(const QList<MessageEntity> &entities);
+    QList<MessageEntity> entities() const;
+
     void setFlags(qint32 flags);
     qint32 flags() const;
 
@@ -73,6 +80,9 @@ public:
 
     void setId(qint32 id);
     qint32 id() const;
+
+    void setMedia(MessageMediaObject* media);
+    MessageMediaObject* media() const;
 
     void setMessage(const QString &message);
     QString message() const;
@@ -119,11 +129,13 @@ Q_SIGNALS:
     void chatIdChanged();
     void chatsChanged();
     void dateChanged();
+    void entitiesChanged();
     void flagsChanged();
     void fromIdChanged();
     void fwdDateChanged();
     void fwdFromIdChanged();
     void idChanged();
+    void mediaChanged();
     void messageChanged();
     void ptsChanged();
     void ptsCountChanged();
@@ -136,27 +148,35 @@ Q_SIGNALS:
     void usersChanged();
 
 private Q_SLOTS:
+    void coreMediaChanged();
     void coreUpdateChanged();
 
 private:
+    QPointer<MessageMediaObject> m_media;
     QPointer<UpdateObject> m_update;
     UpdatesType m_core;
 };
 
 inline UpdatesTypeObject::UpdatesTypeObject(const UpdatesType &core, QObject *parent) :
     TelegramTypeQObject(parent),
+    m_media(0),
     m_update(0),
     m_core(core)
 {
+    m_media = new MessageMediaObject(m_core.media(), this);
+    connect(m_media.data(), &MessageMediaObject::coreChanged, this, &UpdatesTypeObject::coreMediaChanged);
     m_update = new UpdateObject(m_core.update(), this);
     connect(m_update.data(), &UpdateObject::coreChanged, this, &UpdatesTypeObject::coreUpdateChanged);
 }
 
 inline UpdatesTypeObject::UpdatesTypeObject(QObject *parent) :
     TelegramTypeQObject(parent),
+    m_media(0),
     m_update(0),
     m_core()
 {
+    m_media = new MessageMediaObject(m_core.media(), this);
+    connect(m_media.data(), &MessageMediaObject::coreChanged, this, &UpdatesTypeObject::coreMediaChanged);
     m_update = new UpdateObject(m_core.update(), this);
     connect(m_update.data(), &UpdateObject::coreChanged, this, &UpdatesTypeObject::coreUpdateChanged);
 }
@@ -195,6 +215,17 @@ inline void UpdatesTypeObject::setDate(qint32 date) {
 
 inline qint32 UpdatesTypeObject::date() const {
     return m_core.date();
+}
+
+inline void UpdatesTypeObject::setEntities(const QList<MessageEntity> &entities) {
+    if(m_core.entities() == entities) return;
+    m_core.setEntities(entities);
+    Q_EMIT entitiesChanged();
+    Q_EMIT coreChanged();
+}
+
+inline QList<MessageEntity> UpdatesTypeObject::entities() const {
+    return m_core.entities();
 }
 
 inline void UpdatesTypeObject::setFlags(qint32 flags) {
@@ -250,6 +281,23 @@ inline void UpdatesTypeObject::setId(qint32 id) {
 
 inline qint32 UpdatesTypeObject::id() const {
     return m_core.id();
+}
+
+inline void UpdatesTypeObject::setMedia(MessageMediaObject* media) {
+    if(m_media == media) return;
+    if(m_media) delete m_media;
+    m_media = media;
+    if(m_media) {
+        m_media->setParent(this);
+        m_core.setMedia(m_media->core());
+        connect(m_media.data(), &MessageMediaObject::coreChanged, this, &UpdatesTypeObject::coreMediaChanged);
+    }
+    Q_EMIT mediaChanged();
+    Q_EMIT coreChanged();
+}
+
+inline MessageMediaObject*  UpdatesTypeObject::media() const {
+    return m_media;
 }
 
 inline void UpdatesTypeObject::setMessage(const QString &message) {
@@ -371,16 +419,19 @@ inline QList<User> UpdatesTypeObject::users() const {
 inline UpdatesTypeObject &UpdatesTypeObject::operator =(const UpdatesType &b) {
     if(m_core == b) return *this;
     m_core = b;
+    m_media->setCore(b.media());
     m_update->setCore(b.update());
 
     Q_EMIT chatIdChanged();
     Q_EMIT chatsChanged();
     Q_EMIT dateChanged();
+    Q_EMIT entitiesChanged();
     Q_EMIT flagsChanged();
     Q_EMIT fromIdChanged();
     Q_EMIT fwdDateChanged();
     Q_EMIT fwdFromIdChanged();
     Q_EMIT idChanged();
+    Q_EMIT mediaChanged();
     Q_EMIT messageChanged();
     Q_EMIT ptsChanged();
     Q_EMIT ptsCountChanged();
@@ -420,6 +471,9 @@ inline void UpdatesTypeObject::setClassType(quint32 classType) {
     case TypeUpdates:
         result = UpdatesType::typeUpdates;
         break;
+    case TypeUpdateShortSentMessage:
+        result = UpdatesType::typeUpdateShortSentMessage;
+        break;
     default:
         result = UpdatesType::typeUpdatesTooLong;
         break;
@@ -452,6 +506,9 @@ inline quint32 UpdatesTypeObject::classType() const {
     case UpdatesType::typeUpdates:
         result = TypeUpdates;
         break;
+    case UpdatesType::typeUpdateShortSentMessage:
+        result = TypeUpdateShortSentMessage;
+        break;
     default:
         result = TypeUpdatesTooLong;
         break;
@@ -466,6 +523,13 @@ inline void UpdatesTypeObject::setCore(const UpdatesType &core) {
 
 inline UpdatesType UpdatesTypeObject::core() const {
     return m_core;
+}
+
+inline void UpdatesTypeObject::coreMediaChanged() {
+    if(m_core.media() == m_media->core()) return;
+    m_core.setMedia(m_media->core());
+    Q_EMIT mediaChanged();
+    Q_EMIT coreChanged();
 }
 
 inline void UpdatesTypeObject::coreUpdateChanged() {

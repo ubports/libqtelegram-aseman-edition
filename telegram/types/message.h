@@ -17,6 +17,8 @@
 
 #include "messageaction.h"
 #include <QtGlobal>
+#include <QList>
+#include "messageentity.h"
 #include "messagemedia.h"
 #include <QString>
 #include "replymarkup.h"
@@ -27,7 +29,7 @@ class LIBQTELEGRAMSHARED_EXPORT Message : public TelegramTypeObject
 public:
     enum MessageClassType {
         typeMessageEmpty = 0x83e5de54,
-        typeMessage = 0xc3060325,
+        typeMessage = 0x2bebfa86,
         typeMessageService = 0x1d86f70e
     };
 
@@ -41,6 +43,9 @@ public:
 
     void setDate(qint32 date);
     qint32 date() const;
+
+    void setEntities(const QList<MessageEntity> &entities);
+    QList<MessageEntity> entities() const;
 
     void setFlags(qint32 flags);
     qint32 flags() const;
@@ -91,6 +96,7 @@ public:
 private:
     MessageAction m_action;
     qint32 m_date;
+    QList<MessageEntity> m_entities;
     qint32 m_flags;
     qint32 m_fromId;
     qint32 m_fwdDate;
@@ -165,6 +171,14 @@ inline void Message::setDate(qint32 date) {
 
 inline qint32 Message::date() const {
     return m_date;
+}
+
+inline void Message::setEntities(const QList<MessageEntity> &entities) {
+    m_entities = entities;
+}
+
+inline QList<MessageEntity> Message::entities() const {
+    return m_entities;
 }
 
 inline void Message::setFlags(qint32 flags) {
@@ -251,6 +265,7 @@ inline bool Message::operator ==(const Message &b) const {
     return m_classType == b.m_classType &&
            m_action == b.m_action &&
            m_date == b.m_date &&
+           m_entities == b.m_entities &&
            m_flags == b.m_flags &&
            m_fromId == b.m_fromId &&
            m_fwdDate == b.m_fwdDate &&
@@ -298,9 +313,23 @@ inline bool Message::fetch(InboundPkt *in) {
         }
         m_date = in->fetchInt();
         m_message = in->fetchQString();
-        m_media.fetch(in);
+        if(m_flags & 1<<9) {
+            m_media.fetch(in);
+        }
         if(m_flags & 1<<6) {
             m_replyMarkup.fetch(in);
+        }
+        if(m_flags & 1<<7) {
+            if(in->fetchInt() != (qint32)CoreTypes::typeVector) return false;
+            qint32 m_entities_length = in->fetchInt();
+            m_entities.clear();
+            for (qint32 i = 0; i < m_entities_length; i++) {
+                MessageEntity type;
+                if(m_flags & 1<<7) {
+                type.fetch(in);
+            }
+                m_entities.append(type);
+            }
         }
         m_classType = static_cast<MessageClassType>(x);
         return true;
@@ -346,6 +375,11 @@ inline bool Message::push(OutboundPkt *out) const {
         out->appendQString(m_message);
         m_media.push(out);
         m_replyMarkup.push(out);
+        out->appendInt(CoreTypes::typeVector);
+        out->appendInt(m_entities.count());
+        for (qint32 i = 0; i < m_entities.count(); i++) {
+            m_entities[i].push(out);
+        }
         return true;
     }
         break;
@@ -388,6 +422,10 @@ inline QMap<QString, QVariant> Message::toMap() const {
         result["message"] = QVariant::fromValue<QString>(message());
         result["media"] = m_media.toMap();
         result["replyMarkup"] = m_replyMarkup.toMap();
+        QList<QVariant> _entities;
+        Q_FOREACH(const MessageEntity &m__type, m_entities)
+            _entities << m__type.toMap();
+        result["entities"] = _entities;
         return result;
     }
         break;
@@ -428,6 +466,11 @@ inline Message Message::fromMap(const QMap<QString, QVariant> &map) {
         result.setMessage( map.value("message").value<QString>() );
         result.setMedia( MessageMedia::fromMap(map.value("media").toMap()) );
         result.setReplyMarkup( ReplyMarkup::fromMap(map.value("replyMarkup").toMap()) );
+        QList<QVariant> map_entities = map["entities"].toList();
+        QList<MessageEntity> _entities;
+        Q_FOREACH(const QVariant &var, map_entities)
+            _entities << MessageEntity::fromMap(var.toMap());
+        result.setEntities(_entities);
         return result;
     }
     if(map.value("classType").toString() == "Message::typeMessageService") {
@@ -468,6 +511,7 @@ inline QDataStream &operator<<(QDataStream &stream, const Message &item) {
         stream << item.message();
         stream << item.media();
         stream << item.replyMarkup();
+        stream << item.entities();
         break;
     case Message::typeMessageService:
         stream << item.flags();
@@ -526,6 +570,9 @@ inline QDataStream &operator>>(QDataStream &stream, Message &item) {
         ReplyMarkup m_reply_markup;
         stream >> m_reply_markup;
         item.setReplyMarkup(m_reply_markup);
+        QList<MessageEntity> m_entities;
+        stream >> m_entities;
+        item.setEntities(m_entities);
     }
         break;
     case Message::typeMessageService: {

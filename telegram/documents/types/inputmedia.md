@@ -93,7 +93,7 @@ inputMediaContact#a6e45987 phone_number:string first_name:string last_name:strin
 #### Schema:
 
 ```c++
-inputMediaUploadedVideo#e13fd4bc file:InputFile duration:int w:int h:int caption:string = InputMedia;
+inputMediaUploadedVideo#82713fdf file:InputFile duration:int w:int h:int mime_type:string caption:string = InputMedia;
 ```
 
 #### Parameters:
@@ -104,6 +104,7 @@ inputMediaUploadedVideo#e13fd4bc file:InputFile duration:int w:int h:int caption
 |duration|qint32|
 |w|qint32|
 |h|qint32|
+|mimeType|QString|
 |caption|QString|
 
 ## InputMedia::typeInputMediaUploadedThumbVideo
@@ -111,7 +112,7 @@ inputMediaUploadedVideo#e13fd4bc file:InputFile duration:int w:int h:int caption
 #### Schema:
 
 ```c++
-inputMediaUploadedThumbVideo#96fb97dc file:InputFile thumb:InputFile duration:int w:int h:int caption:string = InputMedia;
+inputMediaUploadedThumbVideo#7780ddf9 file:InputFile thumb:InputFile duration:int w:int h:int mime_type:string caption:string = InputMedia;
 ```
 
 #### Parameters:
@@ -123,6 +124,7 @@ inputMediaUploadedThumbVideo#96fb97dc file:InputFile thumb:InputFile duration:in
 |duration|qint32|
 |w|qint32|
 |h|qint32|
+|mimeType|QString|
 |caption|QString|
 
 ## InputMedia::typeInputMediaVideo

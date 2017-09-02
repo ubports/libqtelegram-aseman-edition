@@ -40,7 +40,7 @@ webPagePending#c586da1c id:long date:int = WebPage;
 #### Schema:
 
 ```c++
-webPage#a31ea0b5 flags:# id:long url:string display_url:string type:flags.0?string site_name:flags.1?string title:flags.2?string description:flags.3?string photo:flags.4?Photo embed_url:flags.5?string embed_type:flags.5?string embed_width:flags.6?int embed_height:flags.6?int duration:flags.7?int author:flags.8?string = WebPage;
+webPage#ca820ed7 flags:# id:long url:string display_url:string type:flags.0?string site_name:flags.1?string title:flags.2?string description:flags.3?string photo:flags.4?Photo embed_url:flags.5?string embed_type:flags.5?string embed_width:flags.6?int embed_height:flags.6?int duration:flags.7?int author:flags.8?string document:flags.9?Document = WebPage;
 ```
 
 #### Parameters:
@@ -61,4 +61,5 @@ webPage#a31ea0b5 flags:# id:long url:string display_url:string type:flags.0?stri
 |embedHeight|qint32|
 |duration|qint32|
 |author|QString|
+|document|[Document](document.md)|
 

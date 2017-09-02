@@ -24,9 +24,8 @@ public:
     enum InputPeerClassType {
         TypeInputPeerEmpty,
         TypeInputPeerSelf,
-        TypeInputPeerContact,
-        TypeInputPeerForeign,
-        TypeInputPeerChat
+        TypeInputPeerChat,
+        TypeInputPeerUser
     };
 
     InputPeerObject(const InputPeer &core, QObject *parent = 0);
@@ -136,14 +135,11 @@ inline void InputPeerObject::setClassType(quint32 classType) {
     case TypeInputPeerSelf:
         result = InputPeer::typeInputPeerSelf;
         break;
-    case TypeInputPeerContact:
-        result = InputPeer::typeInputPeerContact;
-        break;
-    case TypeInputPeerForeign:
-        result = InputPeer::typeInputPeerForeign;
-        break;
     case TypeInputPeerChat:
         result = InputPeer::typeInputPeerChat;
+        break;
+    case TypeInputPeerUser:
+        result = InputPeer::typeInputPeerUser;
         break;
     default:
         result = InputPeer::typeInputPeerEmpty;
@@ -165,14 +161,11 @@ inline quint32 InputPeerObject::classType() const {
     case InputPeer::typeInputPeerSelf:
         result = TypeInputPeerSelf;
         break;
-    case InputPeer::typeInputPeerContact:
-        result = TypeInputPeerContact;
-        break;
-    case InputPeer::typeInputPeerForeign:
-        result = TypeInputPeerForeign;
-        break;
     case InputPeer::typeInputPeerChat:
         result = TypeInputPeerChat;
+        break;
+    case InputPeer::typeInputPeerUser:
+        result = TypeInputPeerUser;
         break;
     default:
         result = TypeInputPeerEmpty;

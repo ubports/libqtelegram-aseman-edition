@@ -22,7 +22,7 @@ class LIBQTELEGRAMSHARED_EXPORT StickerSet : public TelegramTypeObject
 {
 public:
     enum StickerSetClassType {
-        typeStickerSet = 0xa7a43b17
+        typeStickerSet = 0xcd303b41
     };
 
     StickerSet(StickerSetClassType classType = typeStickerSet, InboundPkt *in = 0);
@@ -32,6 +32,15 @@ public:
 
     void setAccessHash(qint64 accessHash);
     qint64 accessHash() const;
+
+    void setCount(qint32 count);
+    qint32 count() const;
+
+    void setFlags(qint32 flags);
+    qint32 flags() const;
+
+    void setHash(qint32 hash);
+    qint32 hash() const;
 
     void setId(qint64 id);
     qint64 id() const;
@@ -60,6 +69,9 @@ public:
 
 private:
     qint64 m_accessHash;
+    qint32 m_count;
+    qint32 m_flags;
+    qint32 m_hash;
     qint64 m_id;
     QString m_shortName;
     QString m_title;
@@ -73,6 +85,9 @@ QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, StickerSe
 
 inline StickerSet::StickerSet(StickerSetClassType classType, InboundPkt *in) :
     m_accessHash(0),
+    m_count(0),
+    m_flags(0),
+    m_hash(0),
     m_id(0),
     m_classType(classType)
 {
@@ -81,6 +96,9 @@ inline StickerSet::StickerSet(StickerSetClassType classType, InboundPkt *in) :
 
 inline StickerSet::StickerSet(InboundPkt *in) :
     m_accessHash(0),
+    m_count(0),
+    m_flags(0),
+    m_hash(0),
     m_id(0),
     m_classType(typeStickerSet)
 {
@@ -90,6 +108,9 @@ inline StickerSet::StickerSet(InboundPkt *in) :
 inline StickerSet::StickerSet(const Null &null) :
     TelegramTypeObject(null),
     m_accessHash(0),
+    m_count(0),
+    m_flags(0),
+    m_hash(0),
     m_id(0),
     m_classType(typeStickerSet)
 {
@@ -104,6 +125,30 @@ inline void StickerSet::setAccessHash(qint64 accessHash) {
 
 inline qint64 StickerSet::accessHash() const {
     return m_accessHash;
+}
+
+inline void StickerSet::setCount(qint32 count) {
+    m_count = count;
+}
+
+inline qint32 StickerSet::count() const {
+    return m_count;
+}
+
+inline void StickerSet::setFlags(qint32 flags) {
+    m_flags = flags;
+}
+
+inline qint32 StickerSet::flags() const {
+    return m_flags;
+}
+
+inline void StickerSet::setHash(qint32 hash) {
+    m_hash = hash;
+}
+
+inline qint32 StickerSet::hash() const {
+    return m_hash;
 }
 
 inline void StickerSet::setId(qint64 id) {
@@ -133,6 +178,9 @@ inline QString StickerSet::title() const {
 inline bool StickerSet::operator ==(const StickerSet &b) const {
     return m_classType == b.m_classType &&
            m_accessHash == b.m_accessHash &&
+           m_count == b.m_count &&
+           m_flags == b.m_flags &&
+           m_hash == b.m_hash &&
            m_id == b.m_id &&
            m_shortName == b.m_shortName &&
            m_title == b.m_title;
@@ -151,10 +199,13 @@ inline bool StickerSet::fetch(InboundPkt *in) {
     int x = in->fetchInt();
     switch(x) {
     case typeStickerSet: {
+        m_flags = in->fetchInt();
         m_id = in->fetchLong();
         m_accessHash = in->fetchLong();
         m_title = in->fetchQString();
         m_shortName = in->fetchQString();
+        m_count = in->fetchInt();
+        m_hash = in->fetchInt();
         m_classType = static_cast<StickerSetClassType>(x);
         return true;
     }
@@ -170,10 +221,13 @@ inline bool StickerSet::push(OutboundPkt *out) const {
     out->appendInt(m_classType);
     switch(m_classType) {
     case typeStickerSet: {
+        out->appendInt(m_flags);
         out->appendLong(m_id);
         out->appendLong(m_accessHash);
         out->appendQString(m_title);
         out->appendQString(m_shortName);
+        out->appendInt(m_count);
+        out->appendInt(m_hash);
         return true;
     }
         break;
@@ -192,6 +246,8 @@ inline QMap<QString, QVariant> StickerSet::toMap() const {
         result["accessHash"] = QVariant::fromValue<qint64>(accessHash());
         result["title"] = QVariant::fromValue<QString>(title());
         result["shortName"] = QVariant::fromValue<QString>(shortName());
+        result["count"] = QVariant::fromValue<qint32>(count());
+        result["hash"] = QVariant::fromValue<qint32>(hash());
         return result;
     }
         break;
@@ -209,6 +265,8 @@ inline StickerSet StickerSet::fromMap(const QMap<QString, QVariant> &map) {
         result.setAccessHash( map.value("accessHash").value<qint64>() );
         result.setTitle( map.value("title").value<QString>() );
         result.setShortName( map.value("shortName").value<QString>() );
+        result.setCount( map.value("count").value<qint32>() );
+        result.setHash( map.value("hash").value<qint32>() );
         return result;
     }
     return result;
@@ -225,10 +283,13 @@ inline QDataStream &operator<<(QDataStream &stream, const StickerSet &item) {
     stream << static_cast<uint>(item.classType());
     switch(item.classType()) {
     case StickerSet::typeStickerSet:
+        stream << item.flags();
         stream << item.id();
         stream << item.accessHash();
         stream << item.title();
         stream << item.shortName();
+        stream << item.count();
+        stream << item.hash();
         break;
     }
     return stream;
@@ -240,6 +301,9 @@ inline QDataStream &operator>>(QDataStream &stream, StickerSet &item) {
     item.setClassType(static_cast<StickerSet::StickerSetClassType>(type));
     switch(type) {
     case StickerSet::typeStickerSet: {
+        qint32 m_flags;
+        stream >> m_flags;
+        item.setFlags(m_flags);
         qint64 m_id;
         stream >> m_id;
         item.setId(m_id);
@@ -252,6 +316,12 @@ inline QDataStream &operator>>(QDataStream &stream, StickerSet &item) {
         QString m_short_name;
         stream >> m_short_name;
         item.setShortName(m_short_name);
+        qint32 m_count;
+        stream >> m_count;
+        item.setCount(m_count);
+        qint32 m_hash;
+        stream >> m_hash;
+        item.setHash(m_hash);
     }
         break;
     }

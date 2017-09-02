@@ -7,7 +7,6 @@
 #include "account.h"
 #include "auth.h"
 #include "contacts.h"
-#include "geochats.h"
 #include "help.h"
 #include "messages.h"
 #include "photos.h"

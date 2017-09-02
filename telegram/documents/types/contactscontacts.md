@@ -2,19 +2,8 @@
 
 ## Types
 
-* [typeContactsContactsNotModified](#contactscontactstypecontactscontactsnotmodified)
 * [typeContactsContacts](#contactscontactstypecontactscontacts)
-
-## ContactsContacts::typeContactsContactsNotModified
-
-#### Schema:
-
-```c++
-contacts.contactsNotModified#b74ba9d2 = contacts.Contacts;
-```
-
-#### Parameters:
-
+* [typeContactsContactsNotModified](#contactscontactstypecontactscontactsnotmodified)
 
 ## ContactsContacts::typeContactsContacts
 
@@ -30,4 +19,15 @@ contacts.contacts#6f8b8cb2 contacts:Vector<Contact> users:Vector<User> = contact
 |----|----|
 |contacts|QList&lt;[Contact](contact.md)&gt;|
 |users|QList&lt;[User](user.md)&gt;|
+
+## ContactsContacts::typeContactsContactsNotModified
+
+#### Schema:
+
+```c++
+contacts.contactsNotModified#b74ba9d2 = contacts.Contacts;
+```
+
+#### Parameters:
+
 

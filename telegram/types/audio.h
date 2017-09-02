@@ -23,7 +23,7 @@ class LIBQTELEGRAMSHARED_EXPORT Audio : public TelegramTypeObject
 public:
     enum AudioClassType {
         typeAudioEmpty = 0x586988d8,
-        typeAudio = 0xc7ac6496
+        typeAudio = 0xf9e35055
     };
 
     Audio(AudioClassType classType = typeAudioEmpty, InboundPkt *in = 0);
@@ -52,9 +52,6 @@ public:
     void setSize(qint32 size);
     qint32 size() const;
 
-    void setUserId(qint32 userId);
-    qint32 userId() const;
-
     void setClassType(AudioClassType classType);
     AudioClassType classType() const;
 
@@ -79,7 +76,6 @@ private:
     qint64 m_id;
     QString m_mimeType;
     qint32 m_size;
-    qint32 m_userId;
     AudioClassType m_classType;
 };
 
@@ -95,7 +91,6 @@ inline Audio::Audio(AudioClassType classType, InboundPkt *in) :
     m_duration(0),
     m_id(0),
     m_size(0),
-    m_userId(0),
     m_classType(classType)
 {
     if(in) fetch(in);
@@ -108,7 +103,6 @@ inline Audio::Audio(InboundPkt *in) :
     m_duration(0),
     m_id(0),
     m_size(0),
-    m_userId(0),
     m_classType(typeAudioEmpty)
 {
     fetch(in);
@@ -122,7 +116,6 @@ inline Audio::Audio(const Null &null) :
     m_duration(0),
     m_id(0),
     m_size(0),
-    m_userId(0),
     m_classType(typeAudioEmpty)
 {
 }
@@ -186,14 +179,6 @@ inline qint32 Audio::size() const {
     return m_size;
 }
 
-inline void Audio::setUserId(qint32 userId) {
-    m_userId = userId;
-}
-
-inline qint32 Audio::userId() const {
-    return m_userId;
-}
-
 inline bool Audio::operator ==(const Audio &b) const {
     return m_classType == b.m_classType &&
            m_accessHash == b.m_accessHash &&
@@ -202,8 +187,7 @@ inline bool Audio::operator ==(const Audio &b) const {
            m_duration == b.m_duration &&
            m_id == b.m_id &&
            m_mimeType == b.m_mimeType &&
-           m_size == b.m_size &&
-           m_userId == b.m_userId;
+           m_size == b.m_size;
 }
 
 inline void Audio::setClassType(Audio::AudioClassType classType) {
@@ -228,7 +212,6 @@ inline bool Audio::fetch(InboundPkt *in) {
     case typeAudio: {
         m_id = in->fetchLong();
         m_accessHash = in->fetchLong();
-        m_userId = in->fetchInt();
         m_date = in->fetchInt();
         m_duration = in->fetchInt();
         m_mimeType = in->fetchQString();
@@ -257,7 +240,6 @@ inline bool Audio::push(OutboundPkt *out) const {
     case typeAudio: {
         out->appendLong(m_id);
         out->appendLong(m_accessHash);
-        out->appendInt(m_userId);
         out->appendInt(m_date);
         out->appendInt(m_duration);
         out->appendQString(m_mimeType);
@@ -286,7 +268,6 @@ inline QMap<QString, QVariant> Audio::toMap() const {
         result["classType"] = "Audio::typeAudio";
         result["id"] = QVariant::fromValue<qint64>(id());
         result["accessHash"] = QVariant::fromValue<qint64>(accessHash());
-        result["userId"] = QVariant::fromValue<qint32>(userId());
         result["date"] = QVariant::fromValue<qint32>(date());
         result["duration"] = QVariant::fromValue<qint32>(duration());
         result["mimeType"] = QVariant::fromValue<QString>(mimeType());
@@ -312,7 +293,6 @@ inline Audio Audio::fromMap(const QMap<QString, QVariant> &map) {
         result.setClassType(typeAudio);
         result.setId( map.value("id").value<qint64>() );
         result.setAccessHash( map.value("accessHash").value<qint64>() );
-        result.setUserId( map.value("userId").value<qint32>() );
         result.setDate( map.value("date").value<qint32>() );
         result.setDuration( map.value("duration").value<qint32>() );
         result.setMimeType( map.value("mimeType").value<QString>() );
@@ -339,7 +319,6 @@ inline QDataStream &operator<<(QDataStream &stream, const Audio &item) {
     case Audio::typeAudio:
         stream << item.id();
         stream << item.accessHash();
-        stream << item.userId();
         stream << item.date();
         stream << item.duration();
         stream << item.mimeType();
@@ -368,9 +347,6 @@ inline QDataStream &operator>>(QDataStream &stream, Audio &item) {
         qint64 m_access_hash;
         stream >> m_access_hash;
         item.setAccessHash(m_access_hash);
-        qint32 m_user_id;
-        stream >> m_user_id;
-        item.setUserId(m_user_id);
         qint32 m_date;
         stream >> m_date;
         item.setDate(m_date);

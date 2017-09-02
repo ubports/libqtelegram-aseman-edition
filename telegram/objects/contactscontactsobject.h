@@ -21,8 +21,8 @@ class LIBQTELEGRAMSHARED_EXPORT ContactsContactsObject : public TelegramTypeQObj
 
 public:
     enum ContactsContactsClassType {
-        TypeContactsContactsNotModified,
-        TypeContactsContacts
+        TypeContactsContacts,
+        TypeContactsContactsNotModified
     };
 
     ContactsContactsObject(const ContactsContacts &core, QObject *parent = 0);
@@ -110,14 +110,14 @@ inline bool ContactsContactsObject::operator ==(const ContactsContacts &b) const
 inline void ContactsContactsObject::setClassType(quint32 classType) {
     ContactsContacts::ContactsContactsClassType result;
     switch(classType) {
-    case TypeContactsContactsNotModified:
-        result = ContactsContacts::typeContactsContactsNotModified;
-        break;
     case TypeContactsContacts:
         result = ContactsContacts::typeContactsContacts;
         break;
-    default:
+    case TypeContactsContactsNotModified:
         result = ContactsContacts::typeContactsContactsNotModified;
+        break;
+    default:
+        result = ContactsContacts::typeContactsContacts;
         break;
     }
 
@@ -130,14 +130,14 @@ inline void ContactsContactsObject::setClassType(quint32 classType) {
 inline quint32 ContactsContactsObject::classType() const {
     int result;
     switch(static_cast<qint64>(m_core.classType())) {
-    case ContactsContacts::typeContactsContactsNotModified:
-        result = TypeContactsContactsNotModified;
-        break;
     case ContactsContacts::typeContactsContacts:
         result = TypeContactsContacts;
         break;
-    default:
+    case ContactsContacts::typeContactsContactsNotModified:
         result = TypeContactsContactsNotModified;
+        break;
+    default:
+        result = TypeContactsContacts;
         break;
     }
 

@@ -14,3 +14,5 @@
 
 * **Get support** - [TelegramCore::helpGetSupport](methods/getsupport.md)
 
+* **Get app changelog** - [TelegramCore::helpGetAppChangelog](methods/getappchangelog.md)
+

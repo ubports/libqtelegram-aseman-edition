@@ -17,6 +17,7 @@
 
 #include <QString>
 #include <QtGlobal>
+#include "document.h"
 #include "photo.h"
 
 class LIBQTELEGRAMSHARED_EXPORT WebPage : public TelegramTypeObject
@@ -25,7 +26,7 @@ public:
     enum WebPageClassType {
         typeWebPageEmpty = 0xeb1477e8,
         typeWebPagePending = 0xc586da1c,
-        typeWebPage = 0xa31ea0b5
+        typeWebPage = 0xca820ed7
     };
 
     WebPage(WebPageClassType classType = typeWebPageEmpty, InboundPkt *in = 0);
@@ -44,6 +45,9 @@ public:
 
     void setDisplayUrl(const QString &displayUrl);
     QString displayUrl() const;
+
+    void setDocument(const Document &document);
+    Document document() const;
 
     void setDuration(qint32 duration);
     qint32 duration() const;
@@ -102,6 +106,7 @@ private:
     qint32 m_date;
     QString m_description;
     QString m_displayUrl;
+    Document m_document;
     qint32 m_duration;
     qint32 m_embedHeight;
     QString m_embedType;
@@ -191,6 +196,14 @@ inline void WebPage::setDisplayUrl(const QString &displayUrl) {
 
 inline QString WebPage::displayUrl() const {
     return m_displayUrl;
+}
+
+inline void WebPage::setDocument(const Document &document) {
+    m_document = document;
+}
+
+inline Document WebPage::document() const {
+    return m_document;
 }
 
 inline void WebPage::setDuration(qint32 duration) {
@@ -295,6 +308,7 @@ inline bool WebPage::operator ==(const WebPage &b) const {
            m_date == b.m_date &&
            m_description == b.m_description &&
            m_displayUrl == b.m_displayUrl &&
+           m_document == b.m_document &&
            m_duration == b.m_duration &&
            m_embedHeight == b.m_embedHeight &&
            m_embedType == b.m_embedType &&
@@ -374,6 +388,9 @@ inline bool WebPage::fetch(InboundPkt *in) {
         if(m_flags & 1<<8) {
             m_author = in->fetchQString();
         }
+        if(m_flags & 1<<9) {
+            m_document.fetch(in);
+        }
         m_classType = static_cast<WebPageClassType>(x);
         return true;
     }
@@ -417,6 +434,7 @@ inline bool WebPage::push(OutboundPkt *out) const {
         out->appendInt(m_embedHeight);
         out->appendInt(m_duration);
         out->appendQString(m_author);
+        m_document.push(out);
         return true;
     }
         break;
@@ -460,6 +478,7 @@ inline QMap<QString, QVariant> WebPage::toMap() const {
         result["embedHeight"] = QVariant::fromValue<qint32>(embedHeight());
         result["duration"] = QVariant::fromValue<qint32>(duration());
         result["author"] = QVariant::fromValue<QString>(author());
+        result["document"] = m_document.toMap();
         return result;
     }
         break;
@@ -498,6 +517,7 @@ inline WebPage WebPage::fromMap(const QMap<QString, QVariant> &map) {
         result.setEmbedHeight( map.value("embedHeight").value<qint32>() );
         result.setDuration( map.value("duration").value<qint32>() );
         result.setAuthor( map.value("author").value<QString>() );
+        result.setDocument( Document::fromMap(map.value("document").toMap()) );
         return result;
     }
     return result;
@@ -536,6 +556,7 @@ inline QDataStream &operator<<(QDataStream &stream, const WebPage &item) {
         stream << item.embedHeight();
         stream << item.duration();
         stream << item.author();
+        stream << item.document();
         break;
     }
     return stream;
@@ -607,6 +628,9 @@ inline QDataStream &operator>>(QDataStream &stream, WebPage &item) {
         QString m_author;
         stream >> m_author;
         item.setAuthor(m_author);
+        Document m_document;
+        stream >> m_document;
+        item.setDocument(m_document);
     }
         break;
     }

@@ -16,13 +16,13 @@
 #include <QString>
 #include "telegram/types/contactsimportedcontacts.h"
 #include "telegram/types/inputcontact.h"
-#include "telegram/types/contactssuggested.h"
+#include "telegram/types/contactsfound.h"
 #include <QtGlobal>
 #include "telegram/types/contactslink.h"
 #include "telegram/types/inputuser.h"
 #include "telegram/types/contactsblocked.h"
 #include "telegram/types/user.h"
-#include "telegram/types/contactsfound.h"
+#include "telegram/types/contactssuggested.h"
 
 namespace Tg {
 namespace Functions {
@@ -34,7 +34,7 @@ public:
         fncContactsGetStatuses = 0xc4a353ee,
         fncContactsGetContacts = 0x22c6aa08,
         fncContactsImportContacts = 0xda30b32d,
-        fncContactsGetSuggested = 0xcd773428,
+        fncContactsSearch = 0x11f812d8,
         fncContactsDeleteContact = 0x8e953744,
         fncContactsDeleteContacts = 0x59ab389e,
         fncContactsBlock = 0x332b49fc,
@@ -42,8 +42,8 @@ public:
         fncContactsGetBlocked = 0xf57c350f,
         fncContactsExportCard = 0x84e53737,
         fncContactsImportCard = 0x4fe196fe,
-        fncContactsSearch = 0x11f812d8,
-        fncContactsResolveUsername = 0xbf0131c
+        fncContactsResolveUsername = 0xbf0131c,
+        fncContactsGetSuggested = 0xcd773428
     };
 
     Contacts();
@@ -58,8 +58,8 @@ public:
     static bool importContacts(OutboundPkt *out, const QList<InputContact> &contacts, bool replace);
     static ContactsImportedContacts importContactsResult(InboundPkt *in);
 
-    static bool getSuggested(OutboundPkt *out, qint32 limit);
-    static ContactsSuggested getSuggestedResult(InboundPkt *in);
+    static bool search(OutboundPkt *out, const QString &q, qint32 limit);
+    static ContactsFound searchResult(InboundPkt *in);
 
     static bool deleteContact(OutboundPkt *out, const InputUser &id);
     static ContactsLink deleteContactResult(InboundPkt *in);
@@ -82,11 +82,11 @@ public:
     static bool importCard(OutboundPkt *out, const QList<qint32> &exportCard);
     static User importCardResult(InboundPkt *in);
 
-    static bool search(OutboundPkt *out, const QString &q, qint32 limit);
-    static ContactsFound searchResult(InboundPkt *in);
-
     static bool resolveUsername(OutboundPkt *out, const QString &username);
     static User resolveUsernameResult(InboundPkt *in);
+
+    static bool getSuggested(OutboundPkt *out, qint32 limit);
+    static ContactsSuggested getSuggestedResult(InboundPkt *in);
 
 };
 
@@ -144,14 +144,15 @@ inline ContactsImportedContacts Functions::Contacts::importContactsResult(Inboun
     return result;
 }
 
-inline bool Functions::Contacts::getSuggested(OutboundPkt *out, qint32 limit) {
-    out->appendInt(fncContactsGetSuggested);
+inline bool Functions::Contacts::search(OutboundPkt *out, const QString &q, qint32 limit) {
+    out->appendInt(fncContactsSearch);
+    out->appendQString(q);
     out->appendInt(limit);
     return true;
 }
 
-inline ContactsSuggested Functions::Contacts::getSuggestedResult(InboundPkt *in) {
-    ContactsSuggested result;
+inline ContactsFound Functions::Contacts::searchResult(InboundPkt *in) {
+    ContactsFound result;
     if(!result.fetch(in)) return result;
     return result;
 }
@@ -255,19 +256,6 @@ inline User Functions::Contacts::importCardResult(InboundPkt *in) {
     return result;
 }
 
-inline bool Functions::Contacts::search(OutboundPkt *out, const QString &q, qint32 limit) {
-    out->appendInt(fncContactsSearch);
-    out->appendQString(q);
-    out->appendInt(limit);
-    return true;
-}
-
-inline ContactsFound Functions::Contacts::searchResult(InboundPkt *in) {
-    ContactsFound result;
-    if(!result.fetch(in)) return result;
-    return result;
-}
-
 inline bool Functions::Contacts::resolveUsername(OutboundPkt *out, const QString &username) {
     out->appendInt(fncContactsResolveUsername);
     out->appendQString(username);
@@ -276,6 +264,18 @@ inline bool Functions::Contacts::resolveUsername(OutboundPkt *out, const QString
 
 inline User Functions::Contacts::resolveUsernameResult(InboundPkt *in) {
     User result;
+    if(!result.fetch(in)) return result;
+    return result;
+}
+
+inline bool Functions::Contacts::getSuggested(OutboundPkt *out, qint32 limit) {
+    out->appendInt(fncContactsGetSuggested);
+    out->appendInt(limit);
+    return true;
+}
+
+inline ContactsSuggested Functions::Contacts::getSuggestedResult(InboundPkt *in) {
+    ContactsSuggested result;
     if(!result.fetch(in)) return result;
     return result;
 }

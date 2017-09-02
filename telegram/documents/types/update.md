@@ -14,7 +14,6 @@
 * [typeUpdateContactRegistered](#updatetypeupdatecontactregistered)
 * [typeUpdateContactLink](#updatetypeupdatecontactlink)
 * [typeUpdateNewAuthorization](#updatetypeupdatenewauthorization)
-* [typeUpdateNewGeoChatMessage](#updatetypeupdatenewgeochatmessage)
 * [typeUpdateNewEncryptedMessage](#updatetypeupdatenewencryptedmessage)
 * [typeUpdateEncryptedChatTyping](#updatetypeupdateencryptedchattyping)
 * [typeUpdateEncryption](#updatetypeupdateencryption)
@@ -220,20 +219,6 @@ updateNewAuthorization#8f06529a auth_key_id:long date:int device:string location
 |date|qint32|
 |device|QString|
 |location|QString|
-
-## Update::typeUpdateNewGeoChatMessage
-
-#### Schema:
-
-```c++
-updateNewGeoChatMessage#5a68e3f7 message:GeoChatMessage = Update;
-```
-
-#### Parameters:
-
-|Name|Type|
-|----|----|
-|message|[GeoChatMessage](geochatmessage.md)|
 
 ## Update::typeUpdateNewEncryptedMessage
 

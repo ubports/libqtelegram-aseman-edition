@@ -16,6 +16,7 @@
 #include <QDataStream>
 
 #include <QtGlobal>
+#include <QString>
 #include "photosize.h"
 
 class LIBQTELEGRAMSHARED_EXPORT Video : public TelegramTypeObject
@@ -23,7 +24,7 @@ class LIBQTELEGRAMSHARED_EXPORT Video : public TelegramTypeObject
 public:
     enum VideoClassType {
         typeVideoEmpty = 0xc10658a8,
-        typeVideo = 0xee9f4a4d
+        typeVideo = 0xf72887d3
     };
 
     Video(VideoClassType classType = typeVideoEmpty, InboundPkt *in = 0);
@@ -49,14 +50,14 @@ public:
     void setId(qint64 id);
     qint64 id() const;
 
+    void setMimeType(const QString &mimeType);
+    QString mimeType() const;
+
     void setSize(qint32 size);
     qint32 size() const;
 
     void setThumb(const PhotoSize &thumb);
     PhotoSize thumb() const;
-
-    void setUserId(qint32 userId);
-    qint32 userId() const;
 
     void setW(qint32 w);
     qint32 w() const;
@@ -84,9 +85,9 @@ private:
     qint32 m_duration;
     qint32 m_h;
     qint64 m_id;
+    QString m_mimeType;
     qint32 m_size;
     PhotoSize m_thumb;
-    qint32 m_userId;
     qint32 m_w;
     VideoClassType m_classType;
 };
@@ -104,7 +105,6 @@ inline Video::Video(VideoClassType classType, InboundPkt *in) :
     m_h(0),
     m_id(0),
     m_size(0),
-    m_userId(0),
     m_w(0),
     m_classType(classType)
 {
@@ -119,7 +119,6 @@ inline Video::Video(InboundPkt *in) :
     m_h(0),
     m_id(0),
     m_size(0),
-    m_userId(0),
     m_w(0),
     m_classType(typeVideoEmpty)
 {
@@ -135,7 +134,6 @@ inline Video::Video(const Null &null) :
     m_h(0),
     m_id(0),
     m_size(0),
-    m_userId(0),
     m_w(0),
     m_classType(typeVideoEmpty)
 {
@@ -192,6 +190,14 @@ inline qint64 Video::id() const {
     return m_id;
 }
 
+inline void Video::setMimeType(const QString &mimeType) {
+    m_mimeType = mimeType;
+}
+
+inline QString Video::mimeType() const {
+    return m_mimeType;
+}
+
 inline void Video::setSize(qint32 size) {
     m_size = size;
 }
@@ -206,14 +212,6 @@ inline void Video::setThumb(const PhotoSize &thumb) {
 
 inline PhotoSize Video::thumb() const {
     return m_thumb;
-}
-
-inline void Video::setUserId(qint32 userId) {
-    m_userId = userId;
-}
-
-inline qint32 Video::userId() const {
-    return m_userId;
 }
 
 inline void Video::setW(qint32 w) {
@@ -232,9 +230,9 @@ inline bool Video::operator ==(const Video &b) const {
            m_duration == b.m_duration &&
            m_h == b.m_h &&
            m_id == b.m_id &&
+           m_mimeType == b.m_mimeType &&
            m_size == b.m_size &&
            m_thumb == b.m_thumb &&
-           m_userId == b.m_userId &&
            m_w == b.m_w;
 }
 
@@ -260,9 +258,9 @@ inline bool Video::fetch(InboundPkt *in) {
     case typeVideo: {
         m_id = in->fetchLong();
         m_accessHash = in->fetchLong();
-        m_userId = in->fetchInt();
         m_date = in->fetchInt();
         m_duration = in->fetchInt();
+        m_mimeType = in->fetchQString();
         m_size = in->fetchInt();
         m_thumb.fetch(in);
         m_dcId = in->fetchInt();
@@ -291,9 +289,9 @@ inline bool Video::push(OutboundPkt *out) const {
     case typeVideo: {
         out->appendLong(m_id);
         out->appendLong(m_accessHash);
-        out->appendInt(m_userId);
         out->appendInt(m_date);
         out->appendInt(m_duration);
+        out->appendQString(m_mimeType);
         out->appendInt(m_size);
         m_thumb.push(out);
         out->appendInt(m_dcId);
@@ -322,9 +320,9 @@ inline QMap<QString, QVariant> Video::toMap() const {
         result["classType"] = "Video::typeVideo";
         result["id"] = QVariant::fromValue<qint64>(id());
         result["accessHash"] = QVariant::fromValue<qint64>(accessHash());
-        result["userId"] = QVariant::fromValue<qint32>(userId());
         result["date"] = QVariant::fromValue<qint32>(date());
         result["duration"] = QVariant::fromValue<qint32>(duration());
+        result["mimeType"] = QVariant::fromValue<QString>(mimeType());
         result["size"] = QVariant::fromValue<qint32>(size());
         result["thumb"] = m_thumb.toMap();
         result["dcId"] = QVariant::fromValue<qint32>(dcId());
@@ -350,9 +348,9 @@ inline Video Video::fromMap(const QMap<QString, QVariant> &map) {
         result.setClassType(typeVideo);
         result.setId( map.value("id").value<qint64>() );
         result.setAccessHash( map.value("accessHash").value<qint64>() );
-        result.setUserId( map.value("userId").value<qint32>() );
         result.setDate( map.value("date").value<qint32>() );
         result.setDuration( map.value("duration").value<qint32>() );
+        result.setMimeType( map.value("mimeType").value<QString>() );
         result.setSize( map.value("size").value<qint32>() );
         result.setThumb( PhotoSize::fromMap(map.value("thumb").toMap()) );
         result.setDcId( map.value("dcId").value<qint32>() );
@@ -379,9 +377,9 @@ inline QDataStream &operator<<(QDataStream &stream, const Video &item) {
     case Video::typeVideo:
         stream << item.id();
         stream << item.accessHash();
-        stream << item.userId();
         stream << item.date();
         stream << item.duration();
+        stream << item.mimeType();
         stream << item.size();
         stream << item.thumb();
         stream << item.dcId();
@@ -410,15 +408,15 @@ inline QDataStream &operator>>(QDataStream &stream, Video &item) {
         qint64 m_access_hash;
         stream >> m_access_hash;
         item.setAccessHash(m_access_hash);
-        qint32 m_user_id;
-        stream >> m_user_id;
-        item.setUserId(m_user_id);
         qint32 m_date;
         stream >> m_date;
         item.setDate(m_date);
         qint32 m_duration;
         stream >> m_duration;
         item.setDuration(m_duration);
+        QString m_mime_type;
+        stream >> m_mime_type;
+        item.setMimeType(m_mime_type);
         qint32 m_size;
         stream >> m_size;
         item.setSize(m_size);

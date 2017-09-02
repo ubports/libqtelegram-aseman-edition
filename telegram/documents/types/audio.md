@@ -24,7 +24,7 @@ audioEmpty#586988d8 id:long = Audio;
 #### Schema:
 
 ```c++
-audio#c7ac6496 id:long access_hash:long user_id:int date:int duration:int mime_type:string size:int dc_id:int = Audio;
+audio#f9e35055 id:long access_hash:long date:int duration:int mime_type:string size:int dc_id:int = Audio;
 ```
 
 #### Parameters:
@@ -33,7 +33,6 @@ audio#c7ac6496 id:long access_hash:long user_id:int date:int duration:int mime_t
 |----|----|
 |id|qint64|
 |accessHash|qint64|
-|userId|qint32|
 |date|qint32|
 |duration|qint32|
 |mimeType|QString|

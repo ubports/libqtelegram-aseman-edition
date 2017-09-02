@@ -16,7 +16,6 @@
 #include <QDataStream>
 
 #include <QtGlobal>
-#include "geopoint.h"
 #include <QList>
 #include "photosize.h"
 
@@ -25,7 +24,7 @@ class LIBQTELEGRAMSHARED_EXPORT Photo : public TelegramTypeObject
 public:
     enum PhotoClassType {
         typePhotoEmpty = 0x2331b22d,
-        typePhoto = 0xc3838076
+        typePhoto = 0xcded42fe
     };
 
     Photo(PhotoClassType classType = typePhotoEmpty, InboundPkt *in = 0);
@@ -39,17 +38,11 @@ public:
     void setDate(qint32 date);
     qint32 date() const;
 
-    void setGeo(const GeoPoint &geo);
-    GeoPoint geo() const;
-
     void setId(qint64 id);
     qint64 id() const;
 
     void setSizes(const QList<PhotoSize> &sizes);
     QList<PhotoSize> sizes() const;
-
-    void setUserId(qint32 userId);
-    qint32 userId() const;
 
     void setClassType(PhotoClassType classType);
     PhotoClassType classType() const;
@@ -70,10 +63,8 @@ public:
 private:
     qint64 m_accessHash;
     qint32 m_date;
-    GeoPoint m_geo;
     qint64 m_id;
     QList<PhotoSize> m_sizes;
-    qint32 m_userId;
     PhotoClassType m_classType;
 };
 
@@ -86,7 +77,6 @@ inline Photo::Photo(PhotoClassType classType, InboundPkt *in) :
     m_accessHash(0),
     m_date(0),
     m_id(0),
-    m_userId(0),
     m_classType(classType)
 {
     if(in) fetch(in);
@@ -96,7 +86,6 @@ inline Photo::Photo(InboundPkt *in) :
     m_accessHash(0),
     m_date(0),
     m_id(0),
-    m_userId(0),
     m_classType(typePhotoEmpty)
 {
     fetch(in);
@@ -107,7 +96,6 @@ inline Photo::Photo(const Null &null) :
     m_accessHash(0),
     m_date(0),
     m_id(0),
-    m_userId(0),
     m_classType(typePhotoEmpty)
 {
 }
@@ -131,14 +119,6 @@ inline qint32 Photo::date() const {
     return m_date;
 }
 
-inline void Photo::setGeo(const GeoPoint &geo) {
-    m_geo = geo;
-}
-
-inline GeoPoint Photo::geo() const {
-    return m_geo;
-}
-
 inline void Photo::setId(qint64 id) {
     m_id = id;
 }
@@ -155,22 +135,12 @@ inline QList<PhotoSize> Photo::sizes() const {
     return m_sizes;
 }
 
-inline void Photo::setUserId(qint32 userId) {
-    m_userId = userId;
-}
-
-inline qint32 Photo::userId() const {
-    return m_userId;
-}
-
 inline bool Photo::operator ==(const Photo &b) const {
     return m_classType == b.m_classType &&
            m_accessHash == b.m_accessHash &&
            m_date == b.m_date &&
-           m_geo == b.m_geo &&
            m_id == b.m_id &&
-           m_sizes == b.m_sizes &&
-           m_userId == b.m_userId;
+           m_sizes == b.m_sizes;
 }
 
 inline void Photo::setClassType(Photo::PhotoClassType classType) {
@@ -195,9 +165,7 @@ inline bool Photo::fetch(InboundPkt *in) {
     case typePhoto: {
         m_id = in->fetchLong();
         m_accessHash = in->fetchLong();
-        m_userId = in->fetchInt();
         m_date = in->fetchInt();
-        m_geo.fetch(in);
         if(in->fetchInt() != (qint32)CoreTypes::typeVector) return false;
         qint32 m_sizes_length = in->fetchInt();
         m_sizes.clear();
@@ -229,9 +197,7 @@ inline bool Photo::push(OutboundPkt *out) const {
     case typePhoto: {
         out->appendLong(m_id);
         out->appendLong(m_accessHash);
-        out->appendInt(m_userId);
         out->appendInt(m_date);
-        m_geo.push(out);
         out->appendInt(CoreTypes::typeVector);
         out->appendInt(m_sizes.count());
         for (qint32 i = 0; i < m_sizes.count(); i++) {
@@ -260,9 +226,7 @@ inline QMap<QString, QVariant> Photo::toMap() const {
         result["classType"] = "Photo::typePhoto";
         result["id"] = QVariant::fromValue<qint64>(id());
         result["accessHash"] = QVariant::fromValue<qint64>(accessHash());
-        result["userId"] = QVariant::fromValue<qint32>(userId());
         result["date"] = QVariant::fromValue<qint32>(date());
-        result["geo"] = m_geo.toMap();
         QList<QVariant> _sizes;
         Q_FOREACH(const PhotoSize &m__type, m_sizes)
             _sizes << m__type.toMap();
@@ -287,9 +251,7 @@ inline Photo Photo::fromMap(const QMap<QString, QVariant> &map) {
         result.setClassType(typePhoto);
         result.setId( map.value("id").value<qint64>() );
         result.setAccessHash( map.value("accessHash").value<qint64>() );
-        result.setUserId( map.value("userId").value<qint32>() );
         result.setDate( map.value("date").value<qint32>() );
-        result.setGeo( GeoPoint::fromMap(map.value("geo").toMap()) );
         QList<QVariant> map_sizes = map["sizes"].toList();
         QList<PhotoSize> _sizes;
         Q_FOREACH(const QVariant &var, map_sizes)
@@ -316,9 +278,7 @@ inline QDataStream &operator<<(QDataStream &stream, const Photo &item) {
     case Photo::typePhoto:
         stream << item.id();
         stream << item.accessHash();
-        stream << item.userId();
         stream << item.date();
-        stream << item.geo();
         stream << item.sizes();
         break;
     }
@@ -343,15 +303,9 @@ inline QDataStream &operator>>(QDataStream &stream, Photo &item) {
         qint64 m_access_hash;
         stream >> m_access_hash;
         item.setAccessHash(m_access_hash);
-        qint32 m_user_id;
-        stream >> m_user_id;
-        item.setUserId(m_user_id);
         qint32 m_date;
         stream >> m_date;
         item.setDate(m_date);
-        GeoPoint m_geo;
-        stream >> m_geo;
-        item.setGeo(m_geo);
         QList<PhotoSize> m_sizes;
         stream >> m_sizes;
         item.setSizes(m_sizes);

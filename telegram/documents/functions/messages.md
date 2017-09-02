@@ -2,8 +2,6 @@
 
 ## Methods:
 
-* **Start bot** - [TelegramCore::messagesStartBot](methods/startbot.md)
-
 * **Get messages** - [TelegramCore::messagesGetMessages](methods/getmessages.md)
 
 * **Get dialogs** - [TelegramCore::messagesGetDialogs](methods/getdialogs.md)
@@ -44,8 +42,6 @@
 
 * **Forward message** - [TelegramCore::messagesForwardMessage](methods/forwardmessage.md)
 
-* **Send broadcast** - [TelegramCore::messagesSendBroadcast](methods/sendbroadcast.md)
-
 * **Get dh config** - [TelegramCore::messagesGetDhConfig](methods/getdhconfig.md)
 
 * **Request encryption** - [TelegramCore::messagesRequestEncryption](methods/requestencryption.md)
@@ -72,6 +68,8 @@
 
 * **Get all stickers** - [TelegramCore::messagesGetAllStickers](methods/getallstickers.md)
 
+* **Send broadcast** - [TelegramCore::messagesSendBroadcast](methods/sendbroadcast.md)
+
 * **Get web page preview** - [TelegramCore::messagesGetWebPagePreview](methods/getwebpagepreview.md)
 
 * **Export chat invite** - [TelegramCore::messagesExportChatInvite](methods/exportchatinvite.md)
@@ -85,4 +83,6 @@
 * **Install sticker set** - [TelegramCore::messagesInstallStickerSet](methods/installstickerset.md)
 
 * **Uninstall sticker set** - [TelegramCore::messagesUninstallStickerSet](methods/uninstallstickerset.md)
+
+* **Start bot** - [TelegramCore::messagesStartBot](methods/startbot.md)
 

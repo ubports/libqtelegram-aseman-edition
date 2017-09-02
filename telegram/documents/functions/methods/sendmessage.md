@@ -7,7 +7,7 @@ TelegramCore::messagesSendMessage
 ## Schema:
 
 ```c++
-messages.sendMessage#fc55e6b5 flags:# peer:InputPeer reply_to_msg_id:flags.0?int message:string random_id:long reply_markup:flags.2?ReplyMarkup = messages.SentMessage;
+messages.sendMessage#fa88427a flags:# peer:InputPeer reply_to_msg_id:flags.0?int message:string random_id:long reply_markup:flags.2?ReplyMarkup entities:flags.3?Vector<MessageEntity> = Updates;
 ```
 ## Parameters:
 
@@ -18,7 +18,8 @@ messages.sendMessage#fc55e6b5 flags:# peer:InputPeer reply_to_msg_id:flags.0?int
 |message|QString||
 |randomId|qint64||
 |replyMarkup|[ReplyMarkup](../../types/replymarkup.md)||
-|callBack|Callback&lt;[MessagesSentMessage](../../types/messagessentmessage.md)&gt;|0|
+|entities|QList&lt;[MessageEntity](../../types/messageentity.md)&gt;||
+|callBack|Callback&lt;[UpdatesType](../../types/updatestype.md)&gt;|0|
 |timeout|qint32|TelegramCore::timeOut()|
 
 ## Callback Result:
@@ -26,13 +27,13 @@ messages.sendMessage#fc55e6b5 flags:# peer:InputPeer reply_to_msg_id:flags.0?int
 |Name|Type|
 |----|----|
 |msgId|qint64|
-|result|[MessagesSentMessage](../../types/messagessentmessage.md)|
+|result|[UpdatesType](../../types/updatestype.md)|
 |error|TelegramCore::CallbackError|
 
 ## Signals:
 
 ```c++
-sendMessageAnswer(qint64 msgId, const MessagesSentMessage & result)
+sendMessageAnswer(qint64 msgId, const UpdatesType & result)
 ```
 ```c++
 sendMessageError(qint64 msgId, qint32 errorCode, const QString &errorText)
@@ -41,7 +42,7 @@ sendMessageError(qint64 msgId, qint32 errorCode, const QString &errorText)
 ## Events:
 
 ```c++
-onSendMessageAnswer(qint64 msgId, const MessagesSentMessage & result)
+onSendMessageAnswer(qint64 msgId, const UpdatesType & result)
 ```
 ```c++
 onSendMessageError(qint64 msgId, qint32 errorCode, const QString &errorText)
@@ -54,7 +55,7 @@ onSendMessageError(qint64 msgId, qint32 errorCode, const QString &errorText)
 ## Examples:
 
 ```c++
-tg->sendMessage(peer, reply_to_msg_id, message, random_id, reply_markup, [=](TG_SEND_MESSAGE_CALLBACK){
+tg->sendMessage(peer, reply_to_msg_id, message, random_id, reply_markup, entities, [=](TG_SEND_MESSAGE_CALLBACK){
     ...
 }, 30000);
 ```

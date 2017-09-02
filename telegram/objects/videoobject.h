@@ -21,9 +21,9 @@ class LIBQTELEGRAMSHARED_EXPORT VideoObject : public TelegramTypeQObject
     Q_PROPERTY(qint32 duration READ duration WRITE setDuration NOTIFY durationChanged)
     Q_PROPERTY(qint32 h READ h WRITE setH NOTIFY hChanged)
     Q_PROPERTY(qint64 id READ id WRITE setId NOTIFY idChanged)
+    Q_PROPERTY(QString mimeType READ mimeType WRITE setMimeType NOTIFY mimeTypeChanged)
     Q_PROPERTY(qint32 size READ size WRITE setSize NOTIFY sizeChanged)
     Q_PROPERTY(PhotoSizeObject* thumb READ thumb WRITE setThumb NOTIFY thumbChanged)
-    Q_PROPERTY(qint32 userId READ userId WRITE setUserId NOTIFY userIdChanged)
     Q_PROPERTY(qint32 w READ w WRITE setW NOTIFY wChanged)
     Q_PROPERTY(Video core READ core WRITE setCore NOTIFY coreChanged)
     Q_PROPERTY(quint32 classType READ classType WRITE setClassType NOTIFY classTypeChanged)
@@ -56,14 +56,14 @@ public:
     void setId(qint64 id);
     qint64 id() const;
 
+    void setMimeType(const QString &mimeType);
+    QString mimeType() const;
+
     void setSize(qint32 size);
     qint32 size() const;
 
     void setThumb(PhotoSizeObject* thumb);
     PhotoSizeObject* thumb() const;
-
-    void setUserId(qint32 userId);
-    qint32 userId() const;
 
     void setW(qint32 w);
     qint32 w() const;
@@ -86,9 +86,9 @@ Q_SIGNALS:
     void durationChanged();
     void hChanged();
     void idChanged();
+    void mimeTypeChanged();
     void sizeChanged();
     void thumbChanged();
-    void userIdChanged();
     void wChanged();
 
 private Q_SLOTS:
@@ -186,6 +186,17 @@ inline qint64 VideoObject::id() const {
     return m_core.id();
 }
 
+inline void VideoObject::setMimeType(const QString &mimeType) {
+    if(m_core.mimeType() == mimeType) return;
+    m_core.setMimeType(mimeType);
+    Q_EMIT mimeTypeChanged();
+    Q_EMIT coreChanged();
+}
+
+inline QString VideoObject::mimeType() const {
+    return m_core.mimeType();
+}
+
 inline void VideoObject::setSize(qint32 size) {
     if(m_core.size() == size) return;
     m_core.setSize(size);
@@ -214,17 +225,6 @@ inline PhotoSizeObject*  VideoObject::thumb() const {
     return m_thumb;
 }
 
-inline void VideoObject::setUserId(qint32 userId) {
-    if(m_core.userId() == userId) return;
-    m_core.setUserId(userId);
-    Q_EMIT userIdChanged();
-    Q_EMIT coreChanged();
-}
-
-inline qint32 VideoObject::userId() const {
-    return m_core.userId();
-}
-
 inline void VideoObject::setW(qint32 w) {
     if(m_core.w() == w) return;
     m_core.setW(w);
@@ -247,9 +247,9 @@ inline VideoObject &VideoObject::operator =(const Video &b) {
     Q_EMIT durationChanged();
     Q_EMIT hChanged();
     Q_EMIT idChanged();
+    Q_EMIT mimeTypeChanged();
     Q_EMIT sizeChanged();
     Q_EMIT thumbChanged();
-    Q_EMIT userIdChanged();
     Q_EMIT wChanged();
     Q_EMIT coreChanged();
     return *this;

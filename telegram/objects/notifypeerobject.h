@@ -21,10 +21,10 @@ class LIBQTELEGRAMSHARED_EXPORT NotifyPeerObject : public TelegramTypeQObject
 
 public:
     enum NotifyPeerClassType {
-        TypeNotifyPeer,
-        TypeNotifyUsers,
+        TypeNotifyAll,
         TypeNotifyChats,
-        TypeNotifyAll
+        TypeNotifyPeer,
+        TypeNotifyUsers
     };
 
     NotifyPeerObject(const NotifyPeer &core, QObject *parent = 0);
@@ -111,20 +111,20 @@ inline bool NotifyPeerObject::operator ==(const NotifyPeer &b) const {
 inline void NotifyPeerObject::setClassType(quint32 classType) {
     NotifyPeer::NotifyPeerClassType result;
     switch(classType) {
+    case TypeNotifyAll:
+        result = NotifyPeer::typeNotifyAll;
+        break;
+    case TypeNotifyChats:
+        result = NotifyPeer::typeNotifyChats;
+        break;
     case TypeNotifyPeer:
         result = NotifyPeer::typeNotifyPeer;
         break;
     case TypeNotifyUsers:
         result = NotifyPeer::typeNotifyUsers;
         break;
-    case TypeNotifyChats:
-        result = NotifyPeer::typeNotifyChats;
-        break;
-    case TypeNotifyAll:
-        result = NotifyPeer::typeNotifyAll;
-        break;
     default:
-        result = NotifyPeer::typeNotifyPeer;
+        result = NotifyPeer::typeNotifyAll;
         break;
     }
 
@@ -137,20 +137,20 @@ inline void NotifyPeerObject::setClassType(quint32 classType) {
 inline quint32 NotifyPeerObject::classType() const {
     int result;
     switch(static_cast<qint64>(m_core.classType())) {
+    case NotifyPeer::typeNotifyAll:
+        result = TypeNotifyAll;
+        break;
+    case NotifyPeer::typeNotifyChats:
+        result = TypeNotifyChats;
+        break;
     case NotifyPeer::typeNotifyPeer:
         result = TypeNotifyPeer;
         break;
     case NotifyPeer::typeNotifyUsers:
         result = TypeNotifyUsers;
         break;
-    case NotifyPeer::typeNotifyChats:
-        result = TypeNotifyChats;
-        break;
-    case NotifyPeer::typeNotifyAll:
-        result = TypeNotifyAll;
-        break;
     default:
-        result = TypeNotifyPeer;
+        result = TypeNotifyAll;
         break;
     }
 

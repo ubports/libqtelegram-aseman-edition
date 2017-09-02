@@ -25,7 +25,7 @@ messageEmpty#83e5de54 id:int = Message;
 #### Schema:
 
 ```c++
-message#c3060325 flags:# id:int from_id:int to_id:Peer fwd_from_id:flags.2?int fwd_date:flags.2?int reply_to_msg_id:flags.3?int date:int message:string media:MessageMedia reply_markup:flags.6?ReplyMarkup = Message;
+message#2bebfa86 flags:# id:int from_id:int to_id:Peer fwd_from_id:flags.2?int fwd_date:flags.2?int reply_to_msg_id:flags.3?int date:int message:string media:flags.9?MessageMedia reply_markup:flags.6?ReplyMarkup entities:flags.7?Vector<MessageEntity> = Message;
 ```
 
 #### Parameters:
@@ -42,6 +42,7 @@ message#c3060325 flags:# id:int from_id:int to_id:Peer fwd_from_id:flags.2?int f
 |message|QString|
 |media|[MessageMedia](messagemedia.md)|
 |replyMarkup|[ReplyMarkup](replymarkup.md)|
+|entities|QList&lt;[MessageEntity](messageentity.md)&gt;|
 
 ## Message::typeMessageService
 

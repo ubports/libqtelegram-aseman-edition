@@ -21,13 +21,13 @@ class LIBQTELEGRAMSHARED_EXPORT NotifyPeer : public TelegramTypeObject
 {
 public:
     enum NotifyPeerClassType {
-        typeNotifyPeer = 0x9fd40bd8,
-        typeNotifyUsers = 0xb4c83b4c,
+        typeNotifyAll = 0x74d07c60,
         typeNotifyChats = 0xc007cec3,
-        typeNotifyAll = 0x74d07c60
+        typeNotifyPeer = 0x9fd40bd8,
+        typeNotifyUsers = 0xb4c83b4c
     };
 
-    NotifyPeer(NotifyPeerClassType classType = typeNotifyPeer, InboundPkt *in = 0);
+    NotifyPeer(NotifyPeerClassType classType = typeNotifyAll, InboundPkt *in = 0);
     NotifyPeer(InboundPkt *in);
     NotifyPeer(const Null&);
     virtual ~NotifyPeer();
@@ -68,14 +68,14 @@ inline NotifyPeer::NotifyPeer(NotifyPeerClassType classType, InboundPkt *in) :
 }
 
 inline NotifyPeer::NotifyPeer(InboundPkt *in) :
-    m_classType(typeNotifyPeer)
+    m_classType(typeNotifyAll)
 {
     fetch(in);
 }
 
 inline NotifyPeer::NotifyPeer(const Null &null) :
     TelegramTypeObject(null),
-    m_classType(typeNotifyPeer)
+    m_classType(typeNotifyAll)
 {
 }
 
@@ -107,14 +107,7 @@ inline bool NotifyPeer::fetch(InboundPkt *in) {
     LQTG_FETCH_LOG;
     int x = in->fetchInt();
     switch(x) {
-    case typeNotifyPeer: {
-        m_peer.fetch(in);
-        m_classType = static_cast<NotifyPeerClassType>(x);
-        return true;
-    }
-        break;
-    
-    case typeNotifyUsers: {
+    case typeNotifyAll: {
         m_classType = static_cast<NotifyPeerClassType>(x);
         return true;
     }
@@ -126,7 +119,14 @@ inline bool NotifyPeer::fetch(InboundPkt *in) {
     }
         break;
     
-    case typeNotifyAll: {
+    case typeNotifyPeer: {
+        m_peer.fetch(in);
+        m_classType = static_cast<NotifyPeerClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeNotifyUsers: {
         m_classType = static_cast<NotifyPeerClassType>(x);
         return true;
     }
@@ -141,13 +141,7 @@ inline bool NotifyPeer::fetch(InboundPkt *in) {
 inline bool NotifyPeer::push(OutboundPkt *out) const {
     out->appendInt(m_classType);
     switch(m_classType) {
-    case typeNotifyPeer: {
-        m_peer.push(out);
-        return true;
-    }
-        break;
-    
-    case typeNotifyUsers: {
+    case typeNotifyAll: {
         return true;
     }
         break;
@@ -157,7 +151,13 @@ inline bool NotifyPeer::push(OutboundPkt *out) const {
     }
         break;
     
-    case typeNotifyAll: {
+    case typeNotifyPeer: {
+        m_peer.push(out);
+        return true;
+    }
+        break;
+    
+    case typeNotifyUsers: {
         return true;
     }
         break;
@@ -170,6 +170,18 @@ inline bool NotifyPeer::push(OutboundPkt *out) const {
 inline QMap<QString, QVariant> NotifyPeer::toMap() const {
     QMap<QString, QVariant> result;
     switch(static_cast<int>(m_classType)) {
+    case typeNotifyAll: {
+        result["classType"] = "NotifyPeer::typeNotifyAll";
+        return result;
+    }
+        break;
+    
+    case typeNotifyChats: {
+        result["classType"] = "NotifyPeer::typeNotifyChats";
+        return result;
+    }
+        break;
+    
     case typeNotifyPeer: {
         result["classType"] = "NotifyPeer::typeNotifyPeer";
         result["peer"] = m_peer.toMap();
@@ -183,18 +195,6 @@ inline QMap<QString, QVariant> NotifyPeer::toMap() const {
     }
         break;
     
-    case typeNotifyChats: {
-        result["classType"] = "NotifyPeer::typeNotifyChats";
-        return result;
-    }
-        break;
-    
-    case typeNotifyAll: {
-        result["classType"] = "NotifyPeer::typeNotifyAll";
-        return result;
-    }
-        break;
-    
     default:
         return result;
     }
@@ -202,6 +202,14 @@ inline QMap<QString, QVariant> NotifyPeer::toMap() const {
 
 inline NotifyPeer NotifyPeer::fromMap(const QMap<QString, QVariant> &map) {
     NotifyPeer result;
+    if(map.value("classType").toString() == "NotifyPeer::typeNotifyAll") {
+        result.setClassType(typeNotifyAll);
+        return result;
+    }
+    if(map.value("classType").toString() == "NotifyPeer::typeNotifyChats") {
+        result.setClassType(typeNotifyChats);
+        return result;
+    }
     if(map.value("classType").toString() == "NotifyPeer::typeNotifyPeer") {
         result.setClassType(typeNotifyPeer);
         result.setPeer( Peer::fromMap(map.value("peer").toMap()) );
@@ -209,14 +217,6 @@ inline NotifyPeer NotifyPeer::fromMap(const QMap<QString, QVariant> &map) {
     }
     if(map.value("classType").toString() == "NotifyPeer::typeNotifyUsers") {
         result.setClassType(typeNotifyUsers);
-        return result;
-    }
-    if(map.value("classType").toString() == "NotifyPeer::typeNotifyChats") {
-        result.setClassType(typeNotifyChats);
-        return result;
-    }
-    if(map.value("classType").toString() == "NotifyPeer::typeNotifyAll") {
-        result.setClassType(typeNotifyAll);
         return result;
     }
     return result;
@@ -232,16 +232,16 @@ inline QByteArray NotifyPeer::getHash(QCryptographicHash::Algorithm alg) const {
 inline QDataStream &operator<<(QDataStream &stream, const NotifyPeer &item) {
     stream << static_cast<uint>(item.classType());
     switch(item.classType()) {
-    case NotifyPeer::typeNotifyPeer:
-        stream << item.peer();
-        break;
-    case NotifyPeer::typeNotifyUsers:
+    case NotifyPeer::typeNotifyAll:
         
         break;
     case NotifyPeer::typeNotifyChats:
         
         break;
-    case NotifyPeer::typeNotifyAll:
+    case NotifyPeer::typeNotifyPeer:
+        stream << item.peer();
+        break;
+    case NotifyPeer::typeNotifyUsers:
         
         break;
     }
@@ -253,13 +253,7 @@ inline QDataStream &operator>>(QDataStream &stream, NotifyPeer &item) {
     stream >> type;
     item.setClassType(static_cast<NotifyPeer::NotifyPeerClassType>(type));
     switch(type) {
-    case NotifyPeer::typeNotifyPeer: {
-        Peer m_peer;
-        stream >> m_peer;
-        item.setPeer(m_peer);
-    }
-        break;
-    case NotifyPeer::typeNotifyUsers: {
+    case NotifyPeer::typeNotifyAll: {
         
     }
         break;
@@ -267,7 +261,13 @@ inline QDataStream &operator>>(QDataStream &stream, NotifyPeer &item) {
         
     }
         break;
-    case NotifyPeer::typeNotifyAll: {
+    case NotifyPeer::typeNotifyPeer: {
+        Peer m_peer;
+        stream >> m_peer;
+        item.setPeer(m_peer);
+    }
+        break;
+    case NotifyPeer::typeNotifyUsers: {
         
     }
         break;

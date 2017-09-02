@@ -8,7 +8,7 @@
 
 * **Import contacts** - [TelegramCore::contactsImportContacts](methods/importcontacts.md)
 
-* **Get suggested** - [TelegramCore::contactsGetSuggested](methods/getsuggested.md)
+* **Search** - [TelegramCore::contactsSearch](methods/search.md)
 
 * **Delete contact** - [TelegramCore::contactsDeleteContact](methods/deletecontact.md)
 
@@ -24,7 +24,7 @@
 
 * **Import card** - [TelegramCore::contactsImportCard](methods/importcard.md)
 
-* **Search** - [TelegramCore::contactsSearch](methods/search.md)
-
 * **Resolve username** - [TelegramCore::contactsResolveUsername](methods/resolveusername.md)
+
+* **Get suggested** - [TelegramCore::contactsGetSuggested](methods/getsuggested.md)
 

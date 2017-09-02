@@ -6,12 +6,12 @@
 * [typeStorageFileJpeg](#storagefiletypetypestoragefilejpeg)
 * [typeStorageFileGif](#storagefiletypetypestoragefilegif)
 * [typeStorageFilePng](#storagefiletypetypestoragefilepng)
-* [typeStorageFilePdf](#storagefiletypetypestoragefilepdf)
 * [typeStorageFileMp3](#storagefiletypetypestoragefilemp3)
 * [typeStorageFileMov](#storagefiletypetypestoragefilemov)
 * [typeStorageFilePartial](#storagefiletypetypestoragefilepartial)
 * [typeStorageFileMp4](#storagefiletypetypestoragefilemp4)
 * [typeStorageFileWebp](#storagefiletypetypestoragefilewebp)
+* [typeStorageFilePdf](#storagefiletypetypestoragefilepdf)
 
 ## StorageFileType::typeStorageFileUnknown
 
@@ -52,17 +52,6 @@ storage.fileGif#cae1aadf = storage.FileType;
 
 ```c++
 storage.filePng#a4f63c0 = storage.FileType;
-```
-
-#### Parameters:
-
-
-## StorageFileType::typeStorageFilePdf
-
-#### Schema:
-
-```c++
-storage.filePdf#ae1e508d = storage.FileType;
 ```
 
 #### Parameters:
@@ -118,6 +107,17 @@ storage.fileMp4#b3cea0e4 = storage.FileType;
 
 ```c++
 storage.fileWebp#1081464c = storage.FileType;
+```
+
+#### Parameters:
+
+
+## StorageFileType::typeStorageFilePdf
+
+#### Schema:
+
+```c++
+storage.filePdf#ae1e508d = storage.FileType;
 ```
 
 #### Parameters:

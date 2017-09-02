@@ -16,7 +16,6 @@ void qtelegramRegisterQmlTypes(const char *uri, int major, int minor) {
     qmlRegisterType<ChatObject>(uri, major, minor, "Chat");
     qmlRegisterType<ChatFullObject>(uri, major, minor, "ChatFull");
     qmlRegisterType<ChatInviteObject>(uri, major, minor, "ChatInvite");
-    qmlRegisterType<ChatLocatedObject>(uri, major, minor, "ChatLocated");
     qmlRegisterType<ChatParticipantObject>(uri, major, minor, "ChatParticipant");
     qmlRegisterType<ChatParticipantsObject>(uri, major, minor, "ChatParticipants");
     qmlRegisterType<ChatPhotoObject>(uri, major, minor, "ChatPhoto");
@@ -41,7 +40,6 @@ void qtelegramRegisterQmlTypes(const char *uri, int major, int minor) {
     qmlRegisterType<EncryptedMessageObject>(uri, major, minor, "EncryptedMessage");
     qmlRegisterType<ExportedChatInviteObject>(uri, major, minor, "ExportedChatInvite");
     qmlRegisterType<FileLocationObject>(uri, major, minor, "FileLocation");
-    qmlRegisterType<GeoChatMessageObject>(uri, major, minor, "GeoChatMessage");
     qmlRegisterType<GeoPointObject>(uri, major, minor, "GeoPoint");
     qmlRegisterType<ImportedContactObject>(uri, major, minor, "ImportedContact");
     qmlRegisterType<InputAppEventObject>(uri, major, minor, "InputAppEvent");
@@ -53,7 +51,6 @@ void qtelegramRegisterQmlTypes(const char *uri, int major, int minor) {
     qmlRegisterType<InputEncryptedFileObject>(uri, major, minor, "InputEncryptedFile");
     qmlRegisterType<InputFileObject>(uri, major, minor, "InputFile");
     qmlRegisterType<InputFileLocationObject>(uri, major, minor, "InputFileLocation");
-    qmlRegisterType<InputGeoChatObject>(uri, major, minor, "InputGeoChat");
     qmlRegisterType<InputGeoPointObject>(uri, major, minor, "InputGeoPoint");
     qmlRegisterType<InputMediaObject>(uri, major, minor, "InputMedia");
     qmlRegisterType<InputNotifyPeerObject>(uri, major, minor, "InputNotifyPeer");
@@ -71,6 +68,7 @@ void qtelegramRegisterQmlTypes(const char *uri, int major, int minor) {
     qmlRegisterType<KeyboardButtonRowObject>(uri, major, minor, "KeyboardButtonRow");
     qmlRegisterType<MessageObject>(uri, major, minor, "Message");
     qmlRegisterType<MessageActionObject>(uri, major, minor, "MessageAction");
+    qmlRegisterType<MessageEntityObject>(uri, major, minor, "MessageEntity");
     qmlRegisterType<MessageMediaObject>(uri, major, minor, "MessageMedia");
     qmlRegisterType<MessagesFilterObject>(uri, major, minor, "MessagesFilter");
     qmlRegisterType<NearestDcObject>(uri, major, minor, "NearestDc");
@@ -114,9 +112,7 @@ void qtelegramRegisterQmlTypes(const char *uri, int major, int minor) {
     qmlRegisterType<ContactsImportedContactsObject>(uri, major, minor, "ContactsImportedContacts");
     qmlRegisterType<ContactsLinkObject>(uri, major, minor, "ContactsLink");
     qmlRegisterType<ContactsSuggestedObject>(uri, major, minor, "ContactsSuggested");
-    qmlRegisterType<GeochatsLocatedObject>(uri, major, minor, "GeochatsLocated");
-    qmlRegisterType<GeochatsMessagesObject>(uri, major, minor, "GeochatsMessages");
-    qmlRegisterType<GeochatsStatedMessageObject>(uri, major, minor, "GeochatsStatedMessage");
+    qmlRegisterType<HelpAppChangelogObject>(uri, major, minor, "HelpAppChangelog");
     qmlRegisterType<HelpAppUpdateObject>(uri, major, minor, "HelpAppUpdate");
     qmlRegisterType<HelpInviteTextObject>(uri, major, minor, "HelpInviteText");
     qmlRegisterType<HelpSupportObject>(uri, major, minor, "HelpSupport");
@@ -127,10 +123,8 @@ void qtelegramRegisterQmlTypes(const char *uri, int major, int minor) {
     qmlRegisterType<MessagesChatsObject>(uri, major, minor, "MessagesChats");
     qmlRegisterType<MessagesDhConfigObject>(uri, major, minor, "MessagesDhConfig");
     qmlRegisterType<MessagesDialogsObject>(uri, major, minor, "MessagesDialogs");
-    qmlRegisterType<MessagesMessageObject>(uri, major, minor, "MessagesMessage");
     qmlRegisterType<MessagesMessagesObject>(uri, major, minor, "MessagesMessages");
     qmlRegisterType<MessagesSentEncryptedMessageObject>(uri, major, minor, "MessagesSentEncryptedMessage");
-    qmlRegisterType<MessagesSentMessageObject>(uri, major, minor, "MessagesSentMessage");
     qmlRegisterType<MessagesStickerSetObject>(uri, major, minor, "MessagesStickerSet");
     qmlRegisterType<MessagesStickersObject>(uri, major, minor, "MessagesStickers");
     qmlRegisterType<PhotosPhotoObject>(uri, major, minor, "PhotosPhoto");

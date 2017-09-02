@@ -23,8 +23,8 @@
 #include "telegram/types/inputprivacyrule.h"
 #include "telegram/types/accountdaysttl.h"
 #include "telegram/types/accountsentchangephonecode.h"
-#include "telegram/types/accountauthorizations.h"
 #include "telegram/types/accountpassword.h"
+#include "telegram/types/accountauthorizations.h"
 #include "telegram/types/accountpasswordsettings.h"
 #include <QByteArray>
 #include "telegram/types/accountpasswordinputsettings.h"
@@ -54,9 +54,9 @@ public:
         fncAccountSendChangePhoneCode = 0xa407a8f4,
         fncAccountChangePhone = 0x70c32edb,
         fncAccountUpdateDeviceLocked = 0x38df3532,
+        fncAccountGetPassword = 0x548a30f5,
         fncAccountGetAuthorizations = 0xe320c158,
         fncAccountResetAuthorization = 0xdf77f3bc,
-        fncAccountGetPassword = 0x548a30f5,
         fncAccountGetPasswordSettings = 0xbc8d11bb,
         fncAccountUpdatePasswordSettings = 0xfa7c4b86
     };
@@ -118,14 +118,14 @@ public:
     static bool updateDeviceLocked(OutboundPkt *out, qint32 period);
     static bool updateDeviceLockedResult(InboundPkt *in);
 
+    static bool getPassword(OutboundPkt *out);
+    static AccountPassword getPasswordResult(InboundPkt *in);
+
     static bool getAuthorizations(OutboundPkt *out);
     static AccountAuthorizations getAuthorizationsResult(InboundPkt *in);
 
     static bool resetAuthorization(OutboundPkt *out, qint64 hash);
     static bool resetAuthorizationResult(InboundPkt *in);
-
-    static bool getPassword(OutboundPkt *out);
-    static AccountPassword getPasswordResult(InboundPkt *in);
 
     static bool getPasswordSettings(OutboundPkt *out, const QByteArray &currentPasswordHash);
     static AccountPasswordSettings getPasswordSettingsResult(InboundPkt *in);
@@ -378,6 +378,17 @@ inline bool Functions::Account::updateDeviceLockedResult(InboundPkt *in) {
     return result;
 }
 
+inline bool Functions::Account::getPassword(OutboundPkt *out) {
+    out->appendInt(fncAccountGetPassword);
+    return true;
+}
+
+inline AccountPassword Functions::Account::getPasswordResult(InboundPkt *in) {
+    AccountPassword result;
+    if(!result.fetch(in)) return result;
+    return result;
+}
+
 inline bool Functions::Account::getAuthorizations(OutboundPkt *out) {
     out->appendInt(fncAccountGetAuthorizations);
     return true;
@@ -398,17 +409,6 @@ inline bool Functions::Account::resetAuthorization(OutboundPkt *out, qint64 hash
 inline bool Functions::Account::resetAuthorizationResult(InboundPkt *in) {
     bool result;
     result = in->fetchBool();
-    return result;
-}
-
-inline bool Functions::Account::getPassword(OutboundPkt *out) {
-    out->appendInt(fncAccountGetPassword);
-    return true;
-}
-
-inline AccountPassword Functions::Account::getPasswordResult(InboundPkt *in) {
-    AccountPassword result;
-    if(!result.fetch(in)) return result;
     return result;
 }
 

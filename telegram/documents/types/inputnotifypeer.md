@@ -6,7 +6,6 @@
 * [typeInputNotifyUsers](#inputnotifypeertypeinputnotifyusers)
 * [typeInputNotifyChats](#inputnotifypeertypeinputnotifychats)
 * [typeInputNotifyAll](#inputnotifypeertypeinputnotifyall)
-* [typeInputNotifyGeoChatPeer](#inputnotifypeertypeinputnotifygeochatpeer)
 
 ## InputNotifyPeer::typeInputNotifyPeer
 
@@ -54,18 +53,4 @@ inputNotifyAll#a429b886 = InputNotifyPeer;
 
 #### Parameters:
 
-
-## InputNotifyPeer::typeInputNotifyGeoChatPeer
-
-#### Schema:
-
-```c++
-inputNotifyGeoChatPeer#4d8ddec8 peer:InputGeoChat = InputNotifyPeer;
-```
-
-#### Parameters:
-
-|Name|Type|
-|----|----|
-|peer|[InputGeoChat](inputgeochat.md)|
 

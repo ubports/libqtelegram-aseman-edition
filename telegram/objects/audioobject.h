@@ -21,7 +21,6 @@ class LIBQTELEGRAMSHARED_EXPORT AudioObject : public TelegramTypeQObject
     Q_PROPERTY(qint64 id READ id WRITE setId NOTIFY idChanged)
     Q_PROPERTY(QString mimeType READ mimeType WRITE setMimeType NOTIFY mimeTypeChanged)
     Q_PROPERTY(qint32 size READ size WRITE setSize NOTIFY sizeChanged)
-    Q_PROPERTY(qint32 userId READ userId WRITE setUserId NOTIFY userIdChanged)
     Q_PROPERTY(Audio core READ core WRITE setCore NOTIFY coreChanged)
     Q_PROPERTY(quint32 classType READ classType WRITE setClassType NOTIFY classTypeChanged)
 
@@ -56,9 +55,6 @@ public:
     void setSize(qint32 size);
     qint32 size() const;
 
-    void setUserId(qint32 userId);
-    qint32 userId() const;
-
     void setClassType(quint32 classType);
     quint32 classType() const;
 
@@ -78,7 +74,6 @@ Q_SIGNALS:
     void idChanged();
     void mimeTypeChanged();
     void sizeChanged();
-    void userIdChanged();
 
 private Q_SLOTS:
 
@@ -178,17 +173,6 @@ inline qint32 AudioObject::size() const {
     return m_core.size();
 }
 
-inline void AudioObject::setUserId(qint32 userId) {
-    if(m_core.userId() == userId) return;
-    m_core.setUserId(userId);
-    Q_EMIT userIdChanged();
-    Q_EMIT coreChanged();
-}
-
-inline qint32 AudioObject::userId() const {
-    return m_core.userId();
-}
-
 inline AudioObject &AudioObject::operator =(const Audio &b) {
     if(m_core == b) return *this;
     m_core = b;
@@ -200,7 +184,6 @@ inline AudioObject &AudioObject::operator =(const Audio &b) {
     Q_EMIT idChanged();
     Q_EMIT mimeTypeChanged();
     Q_EMIT sizeChanged();
-    Q_EMIT userIdChanged();
     Q_EMIT coreChanged();
     return *this;
 }

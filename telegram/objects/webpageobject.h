@@ -9,6 +9,7 @@
 #include "telegram/types/webpage.h"
 
 #include <QPointer>
+#include "documentobject.h"
 #include "photoobject.h"
 
 class LIBQTELEGRAMSHARED_EXPORT WebPageObject : public TelegramTypeQObject
@@ -19,6 +20,7 @@ class LIBQTELEGRAMSHARED_EXPORT WebPageObject : public TelegramTypeQObject
     Q_PROPERTY(qint32 date READ date WRITE setDate NOTIFY dateChanged)
     Q_PROPERTY(QString description READ description WRITE setDescription NOTIFY descriptionChanged)
     Q_PROPERTY(QString displayUrl READ displayUrl WRITE setDisplayUrl NOTIFY displayUrlChanged)
+    Q_PROPERTY(DocumentObject* document READ document WRITE setDocument NOTIFY documentChanged)
     Q_PROPERTY(qint32 duration READ duration WRITE setDuration NOTIFY durationChanged)
     Q_PROPERTY(qint32 embedHeight READ embedHeight WRITE setEmbedHeight NOTIFY embedHeightChanged)
     Q_PROPERTY(QString embedType READ embedType WRITE setEmbedType NOTIFY embedTypeChanged)
@@ -56,6 +58,9 @@ public:
 
     void setDisplayUrl(const QString &displayUrl);
     QString displayUrl() const;
+
+    void setDocument(DocumentObject* document);
+    DocumentObject* document() const;
 
     void setDuration(qint32 duration);
     qint32 duration() const;
@@ -109,6 +114,7 @@ Q_SIGNALS:
     void dateChanged();
     void descriptionChanged();
     void displayUrlChanged();
+    void documentChanged();
     void durationChanged();
     void embedHeightChanged();
     void embedTypeChanged();
@@ -123,27 +129,35 @@ Q_SIGNALS:
     void urlChanged();
 
 private Q_SLOTS:
+    void coreDocumentChanged();
     void corePhotoChanged();
 
 private:
+    QPointer<DocumentObject> m_document;
     QPointer<PhotoObject> m_photo;
     WebPage m_core;
 };
 
 inline WebPageObject::WebPageObject(const WebPage &core, QObject *parent) :
     TelegramTypeQObject(parent),
+    m_document(0),
     m_photo(0),
     m_core(core)
 {
+    m_document = new DocumentObject(m_core.document(), this);
+    connect(m_document.data(), &DocumentObject::coreChanged, this, &WebPageObject::coreDocumentChanged);
     m_photo = new PhotoObject(m_core.photo(), this);
     connect(m_photo.data(), &PhotoObject::coreChanged, this, &WebPageObject::corePhotoChanged);
 }
 
 inline WebPageObject::WebPageObject(QObject *parent) :
     TelegramTypeQObject(parent),
+    m_document(0),
     m_photo(0),
     m_core()
 {
+    m_document = new DocumentObject(m_core.document(), this);
+    connect(m_document.data(), &DocumentObject::coreChanged, this, &WebPageObject::coreDocumentChanged);
     m_photo = new PhotoObject(m_core.photo(), this);
     connect(m_photo.data(), &PhotoObject::coreChanged, this, &WebPageObject::corePhotoChanged);
 }
@@ -193,6 +207,23 @@ inline void WebPageObject::setDisplayUrl(const QString &displayUrl) {
 
 inline QString WebPageObject::displayUrl() const {
     return m_core.displayUrl();
+}
+
+inline void WebPageObject::setDocument(DocumentObject* document) {
+    if(m_document == document) return;
+    if(m_document) delete m_document;
+    m_document = document;
+    if(m_document) {
+        m_document->setParent(this);
+        m_core.setDocument(m_document->core());
+        connect(m_document.data(), &DocumentObject::coreChanged, this, &WebPageObject::coreDocumentChanged);
+    }
+    Q_EMIT documentChanged();
+    Q_EMIT coreChanged();
+}
+
+inline DocumentObject*  WebPageObject::document() const {
+    return m_document;
 }
 
 inline void WebPageObject::setDuration(qint32 duration) {
@@ -336,12 +367,14 @@ inline QString WebPageObject::url() const {
 inline WebPageObject &WebPageObject::operator =(const WebPage &b) {
     if(m_core == b) return *this;
     m_core = b;
+    m_document->setCore(b.document());
     m_photo->setCore(b.photo());
 
     Q_EMIT authorChanged();
     Q_EMIT dateChanged();
     Q_EMIT descriptionChanged();
     Q_EMIT displayUrlChanged();
+    Q_EMIT documentChanged();
     Q_EMIT durationChanged();
     Q_EMIT embedHeightChanged();
     Q_EMIT embedTypeChanged();
@@ -411,6 +444,13 @@ inline void WebPageObject::setCore(const WebPage &core) {
 
 inline WebPage WebPageObject::core() const {
     return m_core;
+}
+
+inline void WebPageObject::coreDocumentChanged() {
+    if(m_core.document() == m_document->core()) return;
+    m_core.setDocument(m_document->core());
+    Q_EMIT documentChanged();
+    Q_EMIT coreChanged();
 }
 
 inline void WebPageObject::corePhotoChanged() {

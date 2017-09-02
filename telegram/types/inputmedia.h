@@ -35,8 +35,8 @@ public:
         typeInputMediaPhoto = 0xe9bfb4f3,
         typeInputMediaGeoPoint = 0xf9c44144,
         typeInputMediaContact = 0xa6e45987,
-        typeInputMediaUploadedVideo = 0xe13fd4bc,
-        typeInputMediaUploadedThumbVideo = 0x96fb97dc,
+        typeInputMediaUploadedVideo = 0x82713fdf,
+        typeInputMediaUploadedThumbVideo = 0x7780ddf9,
         typeInputMediaVideo = 0x936a4ebd,
         typeInputMediaUploadedAudio = 0x4e498cab,
         typeInputMediaAudio = 0x89938781,
@@ -425,6 +425,7 @@ inline bool InputMedia::fetch(InboundPkt *in) {
         m_duration = in->fetchInt();
         m_w = in->fetchInt();
         m_h = in->fetchInt();
+        m_mimeType = in->fetchQString();
         m_caption = in->fetchQString();
         m_classType = static_cast<InputMediaClassType>(x);
         return true;
@@ -437,6 +438,7 @@ inline bool InputMedia::fetch(InboundPkt *in) {
         m_duration = in->fetchInt();
         m_w = in->fetchInt();
         m_h = in->fetchInt();
+        m_mimeType = in->fetchQString();
         m_caption = in->fetchQString();
         m_classType = static_cast<InputMediaClassType>(x);
         return true;
@@ -565,6 +567,7 @@ inline bool InputMedia::push(OutboundPkt *out) const {
         out->appendInt(m_duration);
         out->appendInt(m_w);
         out->appendInt(m_h);
+        out->appendQString(m_mimeType);
         out->appendQString(m_caption);
         return true;
     }
@@ -576,6 +579,7 @@ inline bool InputMedia::push(OutboundPkt *out) const {
         out->appendInt(m_duration);
         out->appendInt(m_w);
         out->appendInt(m_h);
+        out->appendQString(m_mimeType);
         out->appendQString(m_caption);
         return true;
     }
@@ -695,6 +699,7 @@ inline QMap<QString, QVariant> InputMedia::toMap() const {
         result["duration"] = QVariant::fromValue<qint32>(duration());
         result["w"] = QVariant::fromValue<qint32>(w());
         result["h"] = QVariant::fromValue<qint32>(h());
+        result["mimeType"] = QVariant::fromValue<QString>(mimeType());
         result["caption"] = QVariant::fromValue<QString>(caption());
         return result;
     }
@@ -707,6 +712,7 @@ inline QMap<QString, QVariant> InputMedia::toMap() const {
         result["duration"] = QVariant::fromValue<qint32>(duration());
         result["w"] = QVariant::fromValue<qint32>(w());
         result["h"] = QVariant::fromValue<qint32>(h());
+        result["mimeType"] = QVariant::fromValue<QString>(mimeType());
         result["caption"] = QVariant::fromValue<QString>(caption());
         return result;
     }
@@ -820,6 +826,7 @@ inline InputMedia InputMedia::fromMap(const QMap<QString, QVariant> &map) {
         result.setDuration( map.value("duration").value<qint32>() );
         result.setW( map.value("w").value<qint32>() );
         result.setH( map.value("h").value<qint32>() );
+        result.setMimeType( map.value("mimeType").value<QString>() );
         result.setCaption( map.value("caption").value<QString>() );
         return result;
     }
@@ -830,6 +837,7 @@ inline InputMedia InputMedia::fromMap(const QMap<QString, QVariant> &map) {
         result.setDuration( map.value("duration").value<qint32>() );
         result.setW( map.value("w").value<qint32>() );
         result.setH( map.value("h").value<qint32>() );
+        result.setMimeType( map.value("mimeType").value<QString>() );
         result.setCaption( map.value("caption").value<QString>() );
         return result;
     }
@@ -925,6 +933,7 @@ inline QDataStream &operator<<(QDataStream &stream, const InputMedia &item) {
         stream << item.duration();
         stream << item.w();
         stream << item.h();
+        stream << item.mimeType();
         stream << item.caption();
         break;
     case InputMedia::typeInputMediaUploadedThumbVideo:
@@ -933,6 +942,7 @@ inline QDataStream &operator<<(QDataStream &stream, const InputMedia &item) {
         stream << item.duration();
         stream << item.w();
         stream << item.h();
+        stream << item.mimeType();
         stream << item.caption();
         break;
     case InputMedia::typeInputMediaVideo:
@@ -1030,6 +1040,9 @@ inline QDataStream &operator>>(QDataStream &stream, InputMedia &item) {
         qint32 m_h;
         stream >> m_h;
         item.setH(m_h);
+        QString m_mime_type;
+        stream >> m_mime_type;
+        item.setMimeType(m_mime_type);
         QString m_caption;
         stream >> m_caption;
         item.setCaption(m_caption);
@@ -1051,6 +1064,9 @@ inline QDataStream &operator>>(QDataStream &stream, InputMedia &item) {
         qint32 m_h;
         stream >> m_h;
         item.setH(m_h);
+        QString m_mime_type;
+        stream >> m_mime_type;
+        item.setMimeType(m_mime_type);
         QString m_caption;
         stream >> m_caption;
         item.setCaption(m_caption);

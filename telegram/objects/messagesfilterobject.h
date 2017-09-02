@@ -23,10 +23,11 @@ public:
         TypeInputMessagesFilterPhotos,
         TypeInputMessagesFilterVideo,
         TypeInputMessagesFilterPhotoVideo,
-        TypeInputMessagesFilterPhotoVideoDocuments,
-        TypeInputMessagesFilterDocument,
         TypeInputMessagesFilterAudio,
-        TypeInputMessagesFilterAudioDocuments
+        TypeInputMessagesFilterDocument,
+        TypeInputMessagesFilterPhotoVideoDocuments,
+        TypeInputMessagesFilterAudioDocuments,
+        TypeInputMessagesFilterUrl
     };
 
     MessagesFilterObject(const MessagesFilter &core, QObject *parent = 0);
@@ -94,17 +95,20 @@ inline void MessagesFilterObject::setClassType(quint32 classType) {
     case TypeInputMessagesFilterPhotoVideo:
         result = MessagesFilter::typeInputMessagesFilterPhotoVideo;
         break;
-    case TypeInputMessagesFilterPhotoVideoDocuments:
-        result = MessagesFilter::typeInputMessagesFilterPhotoVideoDocuments;
+    case TypeInputMessagesFilterAudio:
+        result = MessagesFilter::typeInputMessagesFilterAudio;
         break;
     case TypeInputMessagesFilterDocument:
         result = MessagesFilter::typeInputMessagesFilterDocument;
         break;
-    case TypeInputMessagesFilterAudio:
-        result = MessagesFilter::typeInputMessagesFilterAudio;
+    case TypeInputMessagesFilterPhotoVideoDocuments:
+        result = MessagesFilter::typeInputMessagesFilterPhotoVideoDocuments;
         break;
     case TypeInputMessagesFilterAudioDocuments:
         result = MessagesFilter::typeInputMessagesFilterAudioDocuments;
+        break;
+    case TypeInputMessagesFilterUrl:
+        result = MessagesFilter::typeInputMessagesFilterUrl;
         break;
     default:
         result = MessagesFilter::typeInputMessagesFilterEmpty;
@@ -132,17 +136,20 @@ inline quint32 MessagesFilterObject::classType() const {
     case MessagesFilter::typeInputMessagesFilterPhotoVideo:
         result = TypeInputMessagesFilterPhotoVideo;
         break;
-    case MessagesFilter::typeInputMessagesFilterPhotoVideoDocuments:
-        result = TypeInputMessagesFilterPhotoVideoDocuments;
+    case MessagesFilter::typeInputMessagesFilterAudio:
+        result = TypeInputMessagesFilterAudio;
         break;
     case MessagesFilter::typeInputMessagesFilterDocument:
         result = TypeInputMessagesFilterDocument;
         break;
-    case MessagesFilter::typeInputMessagesFilterAudio:
-        result = TypeInputMessagesFilterAudio;
+    case MessagesFilter::typeInputMessagesFilterPhotoVideoDocuments:
+        result = TypeInputMessagesFilterPhotoVideoDocuments;
         break;
     case MessagesFilter::typeInputMessagesFilterAudioDocuments:
         result = TypeInputMessagesFilterAudioDocuments;
+        break;
+    case MessagesFilter::typeInputMessagesFilterUrl:
+        result = TypeInputMessagesFilterUrl;
         break;
     default:
         result = TypeInputMessagesFilterEmpty;

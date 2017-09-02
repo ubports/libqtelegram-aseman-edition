@@ -7,7 +7,7 @@ TelegramCore::photosGetUserPhotos
 ## Schema:
 
 ```c++
-photos.getUserPhotos#b7ee553c user_id:InputUser offset:int max_id:int limit:int = photos.Photos;
+photos.getUserPhotos#91cd32a8 user_id:InputUser offset:int max_id:long limit:int = photos.Photos;
 ```
 ## Parameters:
 
@@ -15,7 +15,7 @@ photos.getUserPhotos#b7ee553c user_id:InputUser offset:int max_id:int limit:int 
 |----|----|-------|
 |userId|[InputUser](../../types/inputuser.md)||
 |offset|qint32||
-|maxId|qint32||
+|maxId|qint64||
 |limit|qint32||
 |callBack|Callback&lt;[PhotosPhotos](../../types/photosphotos.md)&gt;|0|
 |timeout|qint32|TelegramCore::timeOut()|

@@ -15,7 +15,6 @@ class LIBQTELEGRAMSHARED_EXPORT MessageActionObject : public TelegramTypeQObject
 {
     Q_OBJECT
     Q_ENUMS(MessageActionClassType)
-    Q_PROPERTY(QString address READ address WRITE setAddress NOTIFY addressChanged)
     Q_PROPERTY(qint32 inviterId READ inviterId WRITE setInviterId NOTIFY inviterIdChanged)
     Q_PROPERTY(PhotoObject* photo READ photo WRITE setPhoto NOTIFY photoChanged)
     Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY titleChanged)
@@ -33,17 +32,12 @@ public:
         TypeMessageActionChatDeletePhoto,
         TypeMessageActionChatAddUser,
         TypeMessageActionChatDeleteUser,
-        TypeMessageActionGeoChatCreate,
-        TypeMessageActionGeoChatCheckin,
         TypeMessageActionChatJoinedByLink
     };
 
     MessageActionObject(const MessageAction &core, QObject *parent = 0);
     MessageActionObject(QObject *parent = 0);
     virtual ~MessageActionObject();
-
-    void setAddress(const QString &address);
-    QString address() const;
 
     void setInviterId(qint32 inviterId);
     qint32 inviterId() const;
@@ -72,7 +66,6 @@ public:
 Q_SIGNALS:
     void coreChanged();
     void classTypeChanged();
-    void addressChanged();
     void inviterIdChanged();
     void photoChanged();
     void titleChanged();
@@ -106,17 +99,6 @@ inline MessageActionObject::MessageActionObject(QObject *parent) :
 }
 
 inline MessageActionObject::~MessageActionObject() {
-}
-
-inline void MessageActionObject::setAddress(const QString &address) {
-    if(m_core.address() == address) return;
-    m_core.setAddress(address);
-    Q_EMIT addressChanged();
-    Q_EMIT coreChanged();
-}
-
-inline QString MessageActionObject::address() const {
-    return m_core.address();
 }
 
 inline void MessageActionObject::setInviterId(qint32 inviterId) {
@@ -185,7 +167,6 @@ inline MessageActionObject &MessageActionObject::operator =(const MessageAction 
     m_core = b;
     m_photo->setCore(b.photo());
 
-    Q_EMIT addressChanged();
     Q_EMIT inviterIdChanged();
     Q_EMIT photoChanged();
     Q_EMIT titleChanged();
@@ -222,12 +203,6 @@ inline void MessageActionObject::setClassType(quint32 classType) {
         break;
     case TypeMessageActionChatDeleteUser:
         result = MessageAction::typeMessageActionChatDeleteUser;
-        break;
-    case TypeMessageActionGeoChatCreate:
-        result = MessageAction::typeMessageActionGeoChatCreate;
-        break;
-    case TypeMessageActionGeoChatCheckin:
-        result = MessageAction::typeMessageActionGeoChatCheckin;
         break;
     case TypeMessageActionChatJoinedByLink:
         result = MessageAction::typeMessageActionChatJoinedByLink;
@@ -266,12 +241,6 @@ inline quint32 MessageActionObject::classType() const {
         break;
     case MessageAction::typeMessageActionChatDeleteUser:
         result = TypeMessageActionChatDeleteUser;
-        break;
-    case MessageAction::typeMessageActionGeoChatCreate:
-        result = TypeMessageActionGeoChatCreate;
-        break;
-    case MessageAction::typeMessageActionGeoChatCheckin:
-        result = TypeMessageActionGeoChatCheckin;
         break;
     case MessageAction::typeMessageActionChatJoinedByLink:
         result = TypeMessageActionChatJoinedByLink;

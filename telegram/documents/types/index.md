@@ -16,8 +16,6 @@
 
 * [ChatInvite](chatinvite.md)
 
-* [ChatLocated](chatlocated.md)
-
 * [ChatParticipant](chatparticipant.md)
 
 * [ChatParticipants](chatparticipants.md)
@@ -66,8 +64,6 @@
 
 * [FileLocation](filelocation.md)
 
-* [GeoChatMessage](geochatmessage.md)
-
 * [GeoPoint](geopoint.md)
 
 * [ImportedContact](importedcontact.md)
@@ -89,8 +85,6 @@
 * [InputFile](inputfile.md)
 
 * [InputFileLocation](inputfilelocation.md)
-
-* [InputGeoChat](inputgeochat.md)
 
 * [InputGeoPoint](inputgeopoint.md)
 
@@ -125,6 +119,8 @@
 * [Message](message.md)
 
 * [MessageAction](messageaction.md)
+
+* [MessageEntity](messageentity.md)
 
 * [MessageMedia](messagemedia.md)
 
@@ -212,11 +208,7 @@
 
 * [ContactsSuggested](contactssuggested.md)
 
-* [GeochatsLocated](geochatslocated.md)
-
-* [GeochatsMessages](geochatsmessages.md)
-
-* [GeochatsStatedMessage](geochatsstatedmessage.md)
+* [HelpAppChangelog](helpappchangelog.md)
 
 * [HelpAppUpdate](helpappupdate.md)
 
@@ -238,13 +230,9 @@
 
 * [MessagesDialogs](messagesdialogs.md)
 
-* [MessagesMessage](messagesmessage.md)
-
 * [MessagesMessages](messagesmessages.md)
 
 * [MessagesSentEncryptedMessage](messagessentencryptedmessage.md)
-
-* [MessagesSentMessage](messagessentmessage.md)
 
 * [MessagesStickerSet](messagesstickerset.md)
 

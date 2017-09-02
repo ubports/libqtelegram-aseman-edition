@@ -15,7 +15,6 @@
 #include "privacykeyobject.h"
 #include "messagemediaobject.h"
 #include "encryptedmessageobject.h"
-#include "geochatmessageobject.h"
 #include "messageobject.h"
 #include "peernotifysettingsobject.h"
 #include "chatparticipantsobject.h"
@@ -48,7 +47,6 @@ class LIBQTELEGRAMSHARED_EXPORT UpdateObject : public TelegramTypeQObject
     Q_PROPERTY(qint32 maxId READ maxId WRITE setMaxId NOTIFY maxIdChanged)
     Q_PROPERTY(MessageMediaObject* media READ media WRITE setMedia NOTIFY mediaChanged)
     Q_PROPERTY(EncryptedMessageObject* messageEncrypted READ messageEncrypted WRITE setMessageEncrypted NOTIFY messageEncryptedChanged)
-    Q_PROPERTY(GeoChatMessageObject* messageGeoChat READ messageGeoChat WRITE setMessageGeoChat NOTIFY messageGeoChatChanged)
     Q_PROPERTY(MessageObject* message READ message WRITE setMessage NOTIFY messageChanged)
     Q_PROPERTY(QString messageString READ messageString WRITE setMessageString NOTIFY messageStringChanged)
     Q_PROPERTY(QList<qint32> messages READ messages WRITE setMessages NOTIFY messagesChanged)
@@ -89,7 +87,6 @@ public:
         TypeUpdateContactRegistered,
         TypeUpdateContactLink,
         TypeUpdateNewAuthorization,
-        TypeUpdateNewGeoChatMessage,
         TypeUpdateNewEncryptedMessage,
         TypeUpdateEncryptedChatTyping,
         TypeUpdateEncryption,
@@ -168,9 +165,6 @@ public:
 
     void setMessageEncrypted(EncryptedMessageObject* messageEncrypted);
     EncryptedMessageObject* messageEncrypted() const;
-
-    void setMessageGeoChat(GeoChatMessageObject* messageGeoChat);
-    GeoChatMessageObject* messageGeoChat() const;
 
     void setMessage(MessageObject* message);
     MessageObject* message() const;
@@ -272,7 +266,6 @@ Q_SIGNALS:
     void maxIdChanged();
     void mediaChanged();
     void messageEncryptedChanged();
-    void messageGeoChatChanged();
     void messageChanged();
     void messageStringChanged();
     void messagesChanged();
@@ -304,7 +297,6 @@ private Q_SLOTS:
     void coreKeyChanged();
     void coreMediaChanged();
     void coreMessageEncryptedChanged();
-    void coreMessageGeoChatChanged();
     void coreMessageChanged();
     void coreMyLinkChanged();
     void coreNotifySettingsChanged();
@@ -322,7 +314,6 @@ private:
     QPointer<PrivacyKeyObject> m_key;
     QPointer<MessageMediaObject> m_media;
     QPointer<EncryptedMessageObject> m_messageEncrypted;
-    QPointer<GeoChatMessageObject> m_messageGeoChat;
     QPointer<MessageObject> m_message;
     QPointer<ContactLinkObject> m_myLink;
     QPointer<PeerNotifySettingsObject> m_notifySettings;
@@ -343,7 +334,6 @@ inline UpdateObject::UpdateObject(const Update &core, QObject *parent) :
     m_key(0),
     m_media(0),
     m_messageEncrypted(0),
-    m_messageGeoChat(0),
     m_message(0),
     m_myLink(0),
     m_notifySettings(0),
@@ -367,8 +357,6 @@ inline UpdateObject::UpdateObject(const Update &core, QObject *parent) :
     connect(m_media.data(), &MessageMediaObject::coreChanged, this, &UpdateObject::coreMediaChanged);
     m_messageEncrypted = new EncryptedMessageObject(m_core.messageEncrypted(), this);
     connect(m_messageEncrypted.data(), &EncryptedMessageObject::coreChanged, this, &UpdateObject::coreMessageEncryptedChanged);
-    m_messageGeoChat = new GeoChatMessageObject(m_core.messageGeoChat(), this);
-    connect(m_messageGeoChat.data(), &GeoChatMessageObject::coreChanged, this, &UpdateObject::coreMessageGeoChatChanged);
     m_message = new MessageObject(m_core.message(), this);
     connect(m_message.data(), &MessageObject::coreChanged, this, &UpdateObject::coreMessageChanged);
     m_myLink = new ContactLinkObject(m_core.myLink(), this);
@@ -397,7 +385,6 @@ inline UpdateObject::UpdateObject(QObject *parent) :
     m_key(0),
     m_media(0),
     m_messageEncrypted(0),
-    m_messageGeoChat(0),
     m_message(0),
     m_myLink(0),
     m_notifySettings(0),
@@ -421,8 +408,6 @@ inline UpdateObject::UpdateObject(QObject *parent) :
     connect(m_media.data(), &MessageMediaObject::coreChanged, this, &UpdateObject::coreMediaChanged);
     m_messageEncrypted = new EncryptedMessageObject(m_core.messageEncrypted(), this);
     connect(m_messageEncrypted.data(), &EncryptedMessageObject::coreChanged, this, &UpdateObject::coreMessageEncryptedChanged);
-    m_messageGeoChat = new GeoChatMessageObject(m_core.messageGeoChat(), this);
-    connect(m_messageGeoChat.data(), &GeoChatMessageObject::coreChanged, this, &UpdateObject::coreMessageGeoChatChanged);
     m_message = new MessageObject(m_core.message(), this);
     connect(m_message.data(), &MessageObject::coreChanged, this, &UpdateObject::coreMessageChanged);
     m_myLink = new ContactLinkObject(m_core.myLink(), this);
@@ -689,23 +674,6 @@ inline void UpdateObject::setMessageEncrypted(EncryptedMessageObject* messageEnc
 
 inline EncryptedMessageObject*  UpdateObject::messageEncrypted() const {
     return m_messageEncrypted;
-}
-
-inline void UpdateObject::setMessageGeoChat(GeoChatMessageObject* messageGeoChat) {
-    if(m_messageGeoChat == messageGeoChat) return;
-    if(m_messageGeoChat) delete m_messageGeoChat;
-    m_messageGeoChat = messageGeoChat;
-    if(m_messageGeoChat) {
-        m_messageGeoChat->setParent(this);
-        m_core.setMessageGeoChat(m_messageGeoChat->core());
-        connect(m_messageGeoChat.data(), &GeoChatMessageObject::coreChanged, this, &UpdateObject::coreMessageGeoChatChanged);
-    }
-    Q_EMIT messageGeoChatChanged();
-    Q_EMIT coreChanged();
-}
-
-inline GeoChatMessageObject*  UpdateObject::messageGeoChat() const {
-    return m_messageGeoChat;
 }
 
 inline void UpdateObject::setMessage(MessageObject* message) {
@@ -1024,7 +992,6 @@ inline UpdateObject &UpdateObject::operator =(const Update &b) {
     m_key->setCore(b.key());
     m_media->setCore(b.media());
     m_messageEncrypted->setCore(b.messageEncrypted());
-    m_messageGeoChat->setCore(b.messageGeoChat());
     m_message->setCore(b.message());
     m_myLink->setCore(b.myLink());
     m_notifySettings->setCore(b.notifySettings());
@@ -1054,7 +1021,6 @@ inline UpdateObject &UpdateObject::operator =(const Update &b) {
     Q_EMIT maxIdChanged();
     Q_EMIT mediaChanged();
     Q_EMIT messageEncryptedChanged();
-    Q_EMIT messageGeoChatChanged();
     Q_EMIT messageChanged();
     Q_EMIT messageStringChanged();
     Q_EMIT messagesChanged();
@@ -1124,9 +1090,6 @@ inline void UpdateObject::setClassType(quint32 classType) {
         break;
     case TypeUpdateNewAuthorization:
         result = Update::typeUpdateNewAuthorization;
-        break;
-    case TypeUpdateNewGeoChatMessage:
-        result = Update::typeUpdateNewGeoChatMessage;
         break;
     case TypeUpdateNewEncryptedMessage:
         result = Update::typeUpdateNewEncryptedMessage;
@@ -1225,9 +1188,6 @@ inline quint32 UpdateObject::classType() const {
         break;
     case Update::typeUpdateNewAuthorization:
         result = TypeUpdateNewAuthorization;
-        break;
-    case Update::typeUpdateNewGeoChatMessage:
-        result = TypeUpdateNewGeoChatMessage;
         break;
     case Update::typeUpdateNewEncryptedMessage:
         result = TypeUpdateNewEncryptedMessage;
@@ -1332,13 +1292,6 @@ inline void UpdateObject::coreMessageEncryptedChanged() {
     if(m_core.messageEncrypted() == m_messageEncrypted->core()) return;
     m_core.setMessageEncrypted(m_messageEncrypted->core());
     Q_EMIT messageEncryptedChanged();
-    Q_EMIT coreChanged();
-}
-
-inline void UpdateObject::coreMessageGeoChatChanged() {
-    if(m_core.messageGeoChat() == m_messageGeoChat->core()) return;
-    m_core.setMessageGeoChat(m_messageGeoChat->core());
-    Q_EMIT messageGeoChatChanged();
     Q_EMIT coreChanged();
 }
 

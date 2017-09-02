@@ -9,8 +9,6 @@
 * [typeMessageActionChatDeletePhoto](#messageactiontypemessageactionchatdeletephoto)
 * [typeMessageActionChatAddUser](#messageactiontypemessageactionchatadduser)
 * [typeMessageActionChatDeleteUser](#messageactiontypemessageactionchatdeleteuser)
-* [typeMessageActionGeoChatCreate](#messageactiontypemessageactiongeochatcreate)
-* [typeMessageActionGeoChatCheckin](#messageactiontypemessageactiongeochatcheckin)
 * [typeMessageActionChatJoinedByLink](#messageactiontypemessageactionchatjoinedbylink)
 
 ## MessageAction::typeMessageActionEmpty
@@ -105,32 +103,6 @@ messageActionChatDeleteUser#b2ae9b0c user_id:int = MessageAction;
 |Name|Type|
 |----|----|
 |userId|qint32|
-
-## MessageAction::typeMessageActionGeoChatCreate
-
-#### Schema:
-
-```c++
-messageActionGeoChatCreate#6f038ebc title:string address:string = MessageAction;
-```
-
-#### Parameters:
-
-|Name|Type|
-|----|----|
-|title|QString|
-|address|QString|
-
-## MessageAction::typeMessageActionGeoChatCheckin
-
-#### Schema:
-
-```c++
-messageActionGeoChatCheckin#c7d53de = MessageAction;
-```
-
-#### Parameters:
-
 
 ## MessageAction::typeMessageActionChatJoinedByLink
 

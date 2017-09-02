@@ -9,7 +9,7 @@
 #### Schema:
 
 ```c++
-stickerSet#a7a43b17 id:long access_hash:long title:string short_name:string = StickerSet;
+stickerSet#cd303b41 flags:# id:long access_hash:long title:string short_name:string count:int hash:int = StickerSet;
 ```
 
 #### Parameters:
@@ -20,4 +20,6 @@ stickerSet#a7a43b17 id:long access_hash:long title:string short_name:string = St
 |accessHash|qint64|
 |title|QString|
 |shortName|QString|
+|count|qint32|
+|hash|qint32|
 

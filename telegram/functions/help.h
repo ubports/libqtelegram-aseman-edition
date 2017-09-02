@@ -18,6 +18,7 @@
 #include "telegram/types/inputappevent.h"
 #include "telegram/types/helpinvitetext.h"
 #include "telegram/types/helpsupport.h"
+#include "telegram/types/helpappchangelog.h"
 
 namespace Tg {
 namespace Functions {
@@ -31,7 +32,8 @@ public:
         fncHelpGetAppUpdate = 0xc812ac7e,
         fncHelpSaveAppLog = 0x6f02f748,
         fncHelpGetInviteText = 0xa4a95186,
-        fncHelpGetSupport = 0x9cdf08cd
+        fncHelpGetSupport = 0x9cdf08cd,
+        fncHelpGetAppChangelog = 0x5bab7fb2
     };
 
     Help();
@@ -54,6 +56,9 @@ public:
 
     static bool getSupport(OutboundPkt *out);
     static HelpSupport getSupportResult(InboundPkt *in);
+
+    static bool getAppChangelog(OutboundPkt *out, const QString &deviceModel, const QString &systemVersion, const QString &appVersion, const QString &langCode);
+    static HelpAppChangelog getAppChangelogResult(InboundPkt *in);
 
 };
 
@@ -136,6 +141,21 @@ inline bool Functions::Help::getSupport(OutboundPkt *out) {
 
 inline HelpSupport Functions::Help::getSupportResult(InboundPkt *in) {
     HelpSupport result;
+    if(!result.fetch(in)) return result;
+    return result;
+}
+
+inline bool Functions::Help::getAppChangelog(OutboundPkt *out, const QString &deviceModel, const QString &systemVersion, const QString &appVersion, const QString &langCode) {
+    out->appendInt(fncHelpGetAppChangelog);
+    out->appendQString(deviceModel);
+    out->appendQString(systemVersion);
+    out->appendQString(appVersion);
+    out->appendQString(langCode);
+    return true;
+}
+
+inline HelpAppChangelog Functions::Help::getAppChangelogResult(InboundPkt *in) {
+    HelpAppChangelog result;
     if(!result.fetch(in)) return result;
     return result;
 }

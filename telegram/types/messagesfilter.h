@@ -24,10 +24,11 @@ public:
         typeInputMessagesFilterPhotos = 0x9609a51c,
         typeInputMessagesFilterVideo = 0x9fc00e65,
         typeInputMessagesFilterPhotoVideo = 0x56e9f0e4,
-        typeInputMessagesFilterPhotoVideoDocuments = 0xd95e73bb,
-        typeInputMessagesFilterDocument = 0x9eddf188,
         typeInputMessagesFilterAudio = 0xcfc87522,
-        typeInputMessagesFilterAudioDocuments = 0x5afbf764
+        typeInputMessagesFilterDocument = 0x9eddf188,
+        typeInputMessagesFilterPhotoVideoDocuments = 0xd95e73bb,
+        typeInputMessagesFilterAudioDocuments = 0x5afbf764,
+        typeInputMessagesFilterUrl = 0x7ef0dd87
     };
 
     MessagesFilter(MessagesFilterClassType classType = typeInputMessagesFilterEmpty, InboundPkt *in = 0);
@@ -121,7 +122,7 @@ inline bool MessagesFilter::fetch(InboundPkt *in) {
     }
         break;
     
-    case typeInputMessagesFilterPhotoVideoDocuments: {
+    case typeInputMessagesFilterAudio: {
         m_classType = static_cast<MessagesFilterClassType>(x);
         return true;
     }
@@ -133,13 +134,19 @@ inline bool MessagesFilter::fetch(InboundPkt *in) {
     }
         break;
     
-    case typeInputMessagesFilterAudio: {
+    case typeInputMessagesFilterPhotoVideoDocuments: {
         m_classType = static_cast<MessagesFilterClassType>(x);
         return true;
     }
         break;
     
     case typeInputMessagesFilterAudioDocuments: {
+        m_classType = static_cast<MessagesFilterClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeInputMessagesFilterUrl: {
         m_classType = static_cast<MessagesFilterClassType>(x);
         return true;
     }
@@ -174,7 +181,7 @@ inline bool MessagesFilter::push(OutboundPkt *out) const {
     }
         break;
     
-    case typeInputMessagesFilterPhotoVideoDocuments: {
+    case typeInputMessagesFilterAudio: {
         return true;
     }
         break;
@@ -184,12 +191,17 @@ inline bool MessagesFilter::push(OutboundPkt *out) const {
     }
         break;
     
-    case typeInputMessagesFilterAudio: {
+    case typeInputMessagesFilterPhotoVideoDocuments: {
         return true;
     }
         break;
     
     case typeInputMessagesFilterAudioDocuments: {
+        return true;
+    }
+        break;
+    
+    case typeInputMessagesFilterUrl: {
         return true;
     }
         break;
@@ -226,8 +238,8 @@ inline QMap<QString, QVariant> MessagesFilter::toMap() const {
     }
         break;
     
-    case typeInputMessagesFilterPhotoVideoDocuments: {
-        result["classType"] = "MessagesFilter::typeInputMessagesFilterPhotoVideoDocuments";
+    case typeInputMessagesFilterAudio: {
+        result["classType"] = "MessagesFilter::typeInputMessagesFilterAudio";
         return result;
     }
         break;
@@ -238,14 +250,20 @@ inline QMap<QString, QVariant> MessagesFilter::toMap() const {
     }
         break;
     
-    case typeInputMessagesFilterAudio: {
-        result["classType"] = "MessagesFilter::typeInputMessagesFilterAudio";
+    case typeInputMessagesFilterPhotoVideoDocuments: {
+        result["classType"] = "MessagesFilter::typeInputMessagesFilterPhotoVideoDocuments";
         return result;
     }
         break;
     
     case typeInputMessagesFilterAudioDocuments: {
         result["classType"] = "MessagesFilter::typeInputMessagesFilterAudioDocuments";
+        return result;
+    }
+        break;
+    
+    case typeInputMessagesFilterUrl: {
+        result["classType"] = "MessagesFilter::typeInputMessagesFilterUrl";
         return result;
     }
         break;
@@ -273,20 +291,24 @@ inline MessagesFilter MessagesFilter::fromMap(const QMap<QString, QVariant> &map
         result.setClassType(typeInputMessagesFilterPhotoVideo);
         return result;
     }
-    if(map.value("classType").toString() == "MessagesFilter::typeInputMessagesFilterPhotoVideoDocuments") {
-        result.setClassType(typeInputMessagesFilterPhotoVideoDocuments);
+    if(map.value("classType").toString() == "MessagesFilter::typeInputMessagesFilterAudio") {
+        result.setClassType(typeInputMessagesFilterAudio);
         return result;
     }
     if(map.value("classType").toString() == "MessagesFilter::typeInputMessagesFilterDocument") {
         result.setClassType(typeInputMessagesFilterDocument);
         return result;
     }
-    if(map.value("classType").toString() == "MessagesFilter::typeInputMessagesFilterAudio") {
-        result.setClassType(typeInputMessagesFilterAudio);
+    if(map.value("classType").toString() == "MessagesFilter::typeInputMessagesFilterPhotoVideoDocuments") {
+        result.setClassType(typeInputMessagesFilterPhotoVideoDocuments);
         return result;
     }
     if(map.value("classType").toString() == "MessagesFilter::typeInputMessagesFilterAudioDocuments") {
         result.setClassType(typeInputMessagesFilterAudioDocuments);
+        return result;
+    }
+    if(map.value("classType").toString() == "MessagesFilter::typeInputMessagesFilterUrl") {
+        result.setClassType(typeInputMessagesFilterUrl);
         return result;
     }
     return result;
@@ -314,16 +336,19 @@ inline QDataStream &operator<<(QDataStream &stream, const MessagesFilter &item) 
     case MessagesFilter::typeInputMessagesFilterPhotoVideo:
         
         break;
-    case MessagesFilter::typeInputMessagesFilterPhotoVideoDocuments:
+    case MessagesFilter::typeInputMessagesFilterAudio:
         
         break;
     case MessagesFilter::typeInputMessagesFilterDocument:
         
         break;
-    case MessagesFilter::typeInputMessagesFilterAudio:
+    case MessagesFilter::typeInputMessagesFilterPhotoVideoDocuments:
         
         break;
     case MessagesFilter::typeInputMessagesFilterAudioDocuments:
+        
+        break;
+    case MessagesFilter::typeInputMessagesFilterUrl:
         
         break;
     }
@@ -351,7 +376,7 @@ inline QDataStream &operator>>(QDataStream &stream, MessagesFilter &item) {
         
     }
         break;
-    case MessagesFilter::typeInputMessagesFilterPhotoVideoDocuments: {
+    case MessagesFilter::typeInputMessagesFilterAudio: {
         
     }
         break;
@@ -359,11 +384,15 @@ inline QDataStream &operator>>(QDataStream &stream, MessagesFilter &item) {
         
     }
         break;
-    case MessagesFilter::typeInputMessagesFilterAudio: {
+    case MessagesFilter::typeInputMessagesFilterPhotoVideoDocuments: {
         
     }
         break;
     case MessagesFilter::typeInputMessagesFilterAudioDocuments: {
+        
+    }
+        break;
+    case MessagesFilter::typeInputMessagesFilterUrl: {
         
     }
         break;

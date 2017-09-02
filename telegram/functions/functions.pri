@@ -9,7 +9,6 @@ HEADERS += \
     $$PWD/account.h \
     $$PWD/auth.h \
     $$PWD/contacts.h \
-    $$PWD/geochats.h \
     $$PWD/help.h \
     $$PWD/messages.h \
     $$PWD/photos.h \

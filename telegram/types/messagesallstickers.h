@@ -15,10 +15,8 @@
 
 #include <QDataStream>
 
-#include <QList>
-#include "document.h"
 #include <QString>
-#include "stickerpack.h"
+#include <QList>
 #include "stickerset.h"
 
 class LIBQTELEGRAMSHARED_EXPORT MessagesAllStickers : public TelegramTypeObject
@@ -26,7 +24,7 @@ class LIBQTELEGRAMSHARED_EXPORT MessagesAllStickers : public TelegramTypeObject
 public:
     enum MessagesAllStickersClassType {
         typeMessagesAllStickersNotModified = 0xe86602c3,
-        typeMessagesAllStickers = 0x5ce352ec
+        typeMessagesAllStickers = 0xd51dafdb
     };
 
     MessagesAllStickers(MessagesAllStickersClassType classType = typeMessagesAllStickersNotModified, InboundPkt *in = 0);
@@ -34,14 +32,8 @@ public:
     MessagesAllStickers(const Null&);
     virtual ~MessagesAllStickers();
 
-    void setDocuments(const QList<Document> &documents);
-    QList<Document> documents() const;
-
     void setHash(const QString &hash);
     QString hash() const;
-
-    void setPacks(const QList<StickerPack> &packs);
-    QList<StickerPack> packs() const;
 
     void setSets(const QList<StickerSet> &sets);
     QList<StickerSet> sets() const;
@@ -63,9 +55,7 @@ public:
     QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
-    QList<Document> m_documents;
     QString m_hash;
-    QList<StickerPack> m_packs;
     QList<StickerSet> m_sets;
     MessagesAllStickersClassType m_classType;
 };
@@ -96,28 +86,12 @@ inline MessagesAllStickers::MessagesAllStickers(const Null &null) :
 inline MessagesAllStickers::~MessagesAllStickers() {
 }
 
-inline void MessagesAllStickers::setDocuments(const QList<Document> &documents) {
-    m_documents = documents;
-}
-
-inline QList<Document> MessagesAllStickers::documents() const {
-    return m_documents;
-}
-
 inline void MessagesAllStickers::setHash(const QString &hash) {
     m_hash = hash;
 }
 
 inline QString MessagesAllStickers::hash() const {
     return m_hash;
-}
-
-inline void MessagesAllStickers::setPacks(const QList<StickerPack> &packs) {
-    m_packs = packs;
-}
-
-inline QList<StickerPack> MessagesAllStickers::packs() const {
-    return m_packs;
 }
 
 inline void MessagesAllStickers::setSets(const QList<StickerSet> &sets) {
@@ -130,9 +104,7 @@ inline QList<StickerSet> MessagesAllStickers::sets() const {
 
 inline bool MessagesAllStickers::operator ==(const MessagesAllStickers &b) const {
     return m_classType == b.m_classType &&
-           m_documents == b.m_documents &&
            m_hash == b.m_hash &&
-           m_packs == b.m_packs &&
            m_sets == b.m_sets;
 }
 
@@ -157,28 +129,12 @@ inline bool MessagesAllStickers::fetch(InboundPkt *in) {
     case typeMessagesAllStickers: {
         m_hash = in->fetchQString();
         if(in->fetchInt() != (qint32)CoreTypes::typeVector) return false;
-        qint32 m_packs_length = in->fetchInt();
-        m_packs.clear();
-        for (qint32 i = 0; i < m_packs_length; i++) {
-            StickerPack type;
-            type.fetch(in);
-            m_packs.append(type);
-        }
-        if(in->fetchInt() != (qint32)CoreTypes::typeVector) return false;
         qint32 m_sets_length = in->fetchInt();
         m_sets.clear();
         for (qint32 i = 0; i < m_sets_length; i++) {
             StickerSet type;
             type.fetch(in);
             m_sets.append(type);
-        }
-        if(in->fetchInt() != (qint32)CoreTypes::typeVector) return false;
-        qint32 m_documents_length = in->fetchInt();
-        m_documents.clear();
-        for (qint32 i = 0; i < m_documents_length; i++) {
-            Document type;
-            type.fetch(in);
-            m_documents.append(type);
         }
         m_classType = static_cast<MessagesAllStickersClassType>(x);
         return true;
@@ -202,19 +158,9 @@ inline bool MessagesAllStickers::push(OutboundPkt *out) const {
     case typeMessagesAllStickers: {
         out->appendQString(m_hash);
         out->appendInt(CoreTypes::typeVector);
-        out->appendInt(m_packs.count());
-        for (qint32 i = 0; i < m_packs.count(); i++) {
-            m_packs[i].push(out);
-        }
-        out->appendInt(CoreTypes::typeVector);
         out->appendInt(m_sets.count());
         for (qint32 i = 0; i < m_sets.count(); i++) {
             m_sets[i].push(out);
-        }
-        out->appendInt(CoreTypes::typeVector);
-        out->appendInt(m_documents.count());
-        for (qint32 i = 0; i < m_documents.count(); i++) {
-            m_documents[i].push(out);
         }
         return true;
     }
@@ -237,18 +183,10 @@ inline QMap<QString, QVariant> MessagesAllStickers::toMap() const {
     case typeMessagesAllStickers: {
         result["classType"] = "MessagesAllStickers::typeMessagesAllStickers";
         result["hash"] = QVariant::fromValue<QString>(hash());
-        QList<QVariant> _packs;
-        Q_FOREACH(const StickerPack &m__type, m_packs)
-            _packs << m__type.toMap();
-        result["packs"] = _packs;
         QList<QVariant> _sets;
         Q_FOREACH(const StickerSet &m__type, m_sets)
             _sets << m__type.toMap();
         result["sets"] = _sets;
-        QList<QVariant> _documents;
-        Q_FOREACH(const Document &m__type, m_documents)
-            _documents << m__type.toMap();
-        result["documents"] = _documents;
         return result;
     }
         break;
@@ -267,21 +205,11 @@ inline MessagesAllStickers MessagesAllStickers::fromMap(const QMap<QString, QVar
     if(map.value("classType").toString() == "MessagesAllStickers::typeMessagesAllStickers") {
         result.setClassType(typeMessagesAllStickers);
         result.setHash( map.value("hash").value<QString>() );
-        QList<QVariant> map_packs = map["packs"].toList();
-        QList<StickerPack> _packs;
-        Q_FOREACH(const QVariant &var, map_packs)
-            _packs << StickerPack::fromMap(var.toMap());
-        result.setPacks(_packs);
         QList<QVariant> map_sets = map["sets"].toList();
         QList<StickerSet> _sets;
         Q_FOREACH(const QVariant &var, map_sets)
             _sets << StickerSet::fromMap(var.toMap());
         result.setSets(_sets);
-        QList<QVariant> map_documents = map["documents"].toList();
-        QList<Document> _documents;
-        Q_FOREACH(const QVariant &var, map_documents)
-            _documents << Document::fromMap(var.toMap());
-        result.setDocuments(_documents);
         return result;
     }
     return result;
@@ -302,9 +230,7 @@ inline QDataStream &operator<<(QDataStream &stream, const MessagesAllStickers &i
         break;
     case MessagesAllStickers::typeMessagesAllStickers:
         stream << item.hash();
-        stream << item.packs();
         stream << item.sets();
-        stream << item.documents();
         break;
     }
     return stream;
@@ -323,15 +249,9 @@ inline QDataStream &operator>>(QDataStream &stream, MessagesAllStickers &item) {
         QString m_hash;
         stream >> m_hash;
         item.setHash(m_hash);
-        QList<StickerPack> m_packs;
-        stream >> m_packs;
-        item.setPacks(m_packs);
         QList<StickerSet> m_sets;
         stream >> m_sets;
         item.setSets(m_sets);
-        QList<Document> m_documents;
-        stream >> m_documents;
-        item.setDocuments(m_documents);
     }
         break;
     }

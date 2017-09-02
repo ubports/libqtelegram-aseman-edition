@@ -15,7 +15,6 @@ HEADERS += \
     $$PWD/chatobject.h \
     $$PWD/chatfullobject.h \
     $$PWD/chatinviteobject.h \
-    $$PWD/chatlocatedobject.h \
     $$PWD/chatparticipantobject.h \
     $$PWD/chatparticipantsobject.h \
     $$PWD/chatphotoobject.h \
@@ -40,7 +39,6 @@ HEADERS += \
     $$PWD/encryptedmessageobject.h \
     $$PWD/exportedchatinviteobject.h \
     $$PWD/filelocationobject.h \
-    $$PWD/geochatmessageobject.h \
     $$PWD/geopointobject.h \
     $$PWD/importedcontactobject.h \
     $$PWD/inputappeventobject.h \
@@ -52,7 +50,6 @@ HEADERS += \
     $$PWD/inputencryptedfileobject.h \
     $$PWD/inputfileobject.h \
     $$PWD/inputfilelocationobject.h \
-    $$PWD/inputgeochatobject.h \
     $$PWD/inputgeopointobject.h \
     $$PWD/inputmediaobject.h \
     $$PWD/inputnotifypeerobject.h \
@@ -70,6 +67,7 @@ HEADERS += \
     $$PWD/keyboardbuttonrowobject.h \
     $$PWD/messageobject.h \
     $$PWD/messageactionobject.h \
+    $$PWD/messageentityobject.h \
     $$PWD/messagemediaobject.h \
     $$PWD/messagesfilterobject.h \
     $$PWD/nearestdcobject.h \
@@ -113,9 +111,7 @@ HEADERS += \
     $$PWD/contactsimportedcontactsobject.h \
     $$PWD/contactslinkobject.h \
     $$PWD/contactssuggestedobject.h \
-    $$PWD/geochatslocatedobject.h \
-    $$PWD/geochatsmessagesobject.h \
-    $$PWD/geochatsstatedmessageobject.h \
+    $$PWD/helpappchangelogobject.h \
     $$PWD/helpappupdateobject.h \
     $$PWD/helpinvitetextobject.h \
     $$PWD/helpsupportobject.h \
@@ -126,10 +122,8 @@ HEADERS += \
     $$PWD/messageschatsobject.h \
     $$PWD/messagesdhconfigobject.h \
     $$PWD/messagesdialogsobject.h \
-    $$PWD/messagesmessageobject.h \
     $$PWD/messagesmessagesobject.h \
     $$PWD/messagessentencryptedmessageobject.h \
-    $$PWD/messagessentmessageobject.h \
     $$PWD/messagesstickersetobject.h \
     $$PWD/messagesstickersobject.h \
     $$PWD/photosphotoobject.h \
@@ -149,7 +143,6 @@ SOURCES += \
     $$PWD/chatobject.cpp \
     $$PWD/chatfullobject.cpp \
     $$PWD/chatinviteobject.cpp \
-    $$PWD/chatlocatedobject.cpp \
     $$PWD/chatparticipantobject.cpp \
     $$PWD/chatparticipantsobject.cpp \
     $$PWD/chatphotoobject.cpp \
@@ -174,7 +167,6 @@ SOURCES += \
     $$PWD/encryptedmessageobject.cpp \
     $$PWD/exportedchatinviteobject.cpp \
     $$PWD/filelocationobject.cpp \
-    $$PWD/geochatmessageobject.cpp \
     $$PWD/geopointobject.cpp \
     $$PWD/importedcontactobject.cpp \
     $$PWD/inputappeventobject.cpp \
@@ -186,7 +178,6 @@ SOURCES += \
     $$PWD/inputencryptedfileobject.cpp \
     $$PWD/inputfileobject.cpp \
     $$PWD/inputfilelocationobject.cpp \
-    $$PWD/inputgeochatobject.cpp \
     $$PWD/inputgeopointobject.cpp \
     $$PWD/inputmediaobject.cpp \
     $$PWD/inputnotifypeerobject.cpp \
@@ -204,6 +195,7 @@ SOURCES += \
     $$PWD/keyboardbuttonrowobject.cpp \
     $$PWD/messageobject.cpp \
     $$PWD/messageactionobject.cpp \
+    $$PWD/messageentityobject.cpp \
     $$PWD/messagemediaobject.cpp \
     $$PWD/messagesfilterobject.cpp \
     $$PWD/nearestdcobject.cpp \
@@ -247,9 +239,7 @@ SOURCES += \
     $$PWD/contactsimportedcontactsobject.cpp \
     $$PWD/contactslinkobject.cpp \
     $$PWD/contactssuggestedobject.cpp \
-    $$PWD/geochatslocatedobject.cpp \
-    $$PWD/geochatsmessagesobject.cpp \
-    $$PWD/geochatsstatedmessageobject.cpp \
+    $$PWD/helpappchangelogobject.cpp \
     $$PWD/helpappupdateobject.cpp \
     $$PWD/helpinvitetextobject.cpp \
     $$PWD/helpsupportobject.cpp \
@@ -260,10 +250,8 @@ SOURCES += \
     $$PWD/messageschatsobject.cpp \
     $$PWD/messagesdhconfigobject.cpp \
     $$PWD/messagesdialogsobject.cpp \
-    $$PWD/messagesmessageobject.cpp \
     $$PWD/messagesmessagesobject.cpp \
     $$PWD/messagessentencryptedmessageobject.cpp \
-    $$PWD/messagessentmessageobject.cpp \
     $$PWD/messagesstickersetobject.cpp \
     $$PWD/messagesstickersobject.cpp \
     $$PWD/photosphotoobject.cpp \

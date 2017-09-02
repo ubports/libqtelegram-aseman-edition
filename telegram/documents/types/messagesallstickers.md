@@ -21,7 +21,7 @@ messages.allStickersNotModified#e86602c3 = messages.AllStickers;
 #### Schema:
 
 ```c++
-messages.allStickers#5ce352ec hash:string packs:Vector<StickerPack> sets:Vector<StickerSet> documents:Vector<Document> = messages.AllStickers;
+messages.allStickers#d51dafdb hash:string sets:Vector<StickerSet> = messages.AllStickers;
 ```
 
 #### Parameters:
@@ -29,7 +29,5 @@ messages.allStickers#5ce352ec hash:string packs:Vector<StickerPack> sets:Vector<
 |Name|Type|
 |----|----|
 |hash|QString|
-|packs|QList&lt;[StickerPack](stickerpack.md)&gt;|
 |sets|QList&lt;[StickerSet](stickerset.md)&gt;|
-|documents|QList&lt;[Document](document.md)&gt;|
 

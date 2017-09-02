@@ -23,8 +23,7 @@ public:
     enum InputUserClassType {
         TypeInputUserEmpty,
         TypeInputUserSelf,
-        TypeInputUserContact,
-        TypeInputUserForeign
+        TypeInputUser
     };
 
     InputUserObject(const InputUser &core, QObject *parent = 0);
@@ -118,11 +117,8 @@ inline void InputUserObject::setClassType(quint32 classType) {
     case TypeInputUserSelf:
         result = InputUser::typeInputUserSelf;
         break;
-    case TypeInputUserContact:
-        result = InputUser::typeInputUserContact;
-        break;
-    case TypeInputUserForeign:
-        result = InputUser::typeInputUserForeign;
+    case TypeInputUser:
+        result = InputUser::typeInputUser;
         break;
     default:
         result = InputUser::typeInputUserEmpty;
@@ -144,11 +140,8 @@ inline quint32 InputUserObject::classType() const {
     case InputUser::typeInputUserSelf:
         result = TypeInputUserSelf;
         break;
-    case InputUser::typeInputUserContact:
-        result = TypeInputUserContact;
-        break;
-    case InputUser::typeInputUserForeign:
-        result = TypeInputUserForeign;
+    case InputUser::typeInputUser:
+        result = TypeInputUser;
         break;
     default:
         result = TypeInputUserEmpty;

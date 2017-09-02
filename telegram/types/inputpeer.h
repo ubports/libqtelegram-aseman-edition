@@ -23,9 +23,8 @@ public:
     enum InputPeerClassType {
         typeInputPeerEmpty = 0x7f3b18ea,
         typeInputPeerSelf = 0x7da07ec9,
-        typeInputPeerContact = 0x1023dbe8,
-        typeInputPeerForeign = 0x9b447325,
-        typeInputPeerChat = 0x179be863
+        typeInputPeerChat = 0x179be863,
+        typeInputPeerUser = 0x7b8e7de6
     };
 
     InputPeer(InputPeerClassType classType = typeInputPeerEmpty, InboundPkt *in = 0);
@@ -155,23 +154,16 @@ inline bool InputPeer::fetch(InboundPkt *in) {
     }
         break;
     
-    case typeInputPeerContact: {
-        m_userId = in->fetchInt();
-        m_classType = static_cast<InputPeerClassType>(x);
-        return true;
-    }
-        break;
-    
-    case typeInputPeerForeign: {
-        m_userId = in->fetchInt();
-        m_accessHash = in->fetchLong();
-        m_classType = static_cast<InputPeerClassType>(x);
-        return true;
-    }
-        break;
-    
     case typeInputPeerChat: {
         m_chatId = in->fetchInt();
+        m_classType = static_cast<InputPeerClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeInputPeerUser: {
+        m_userId = in->fetchInt();
+        m_accessHash = in->fetchLong();
         m_classType = static_cast<InputPeerClassType>(x);
         return true;
     }
@@ -196,21 +188,15 @@ inline bool InputPeer::push(OutboundPkt *out) const {
     }
         break;
     
-    case typeInputPeerContact: {
-        out->appendInt(m_userId);
-        return true;
-    }
-        break;
-    
-    case typeInputPeerForeign: {
-        out->appendInt(m_userId);
-        out->appendLong(m_accessHash);
-        return true;
-    }
-        break;
-    
     case typeInputPeerChat: {
         out->appendInt(m_chatId);
+        return true;
+    }
+        break;
+    
+    case typeInputPeerUser: {
+        out->appendInt(m_userId);
+        out->appendLong(m_accessHash);
         return true;
     }
         break;
@@ -235,24 +221,17 @@ inline QMap<QString, QVariant> InputPeer::toMap() const {
     }
         break;
     
-    case typeInputPeerContact: {
-        result["classType"] = "InputPeer::typeInputPeerContact";
-        result["userId"] = QVariant::fromValue<qint32>(userId());
-        return result;
-    }
-        break;
-    
-    case typeInputPeerForeign: {
-        result["classType"] = "InputPeer::typeInputPeerForeign";
-        result["userId"] = QVariant::fromValue<qint32>(userId());
-        result["accessHash"] = QVariant::fromValue<qint64>(accessHash());
-        return result;
-    }
-        break;
-    
     case typeInputPeerChat: {
         result["classType"] = "InputPeer::typeInputPeerChat";
         result["chatId"] = QVariant::fromValue<qint32>(chatId());
+        return result;
+    }
+        break;
+    
+    case typeInputPeerUser: {
+        result["classType"] = "InputPeer::typeInputPeerUser";
+        result["userId"] = QVariant::fromValue<qint32>(userId());
+        result["accessHash"] = QVariant::fromValue<qint64>(accessHash());
         return result;
     }
         break;
@@ -272,20 +251,15 @@ inline InputPeer InputPeer::fromMap(const QMap<QString, QVariant> &map) {
         result.setClassType(typeInputPeerSelf);
         return result;
     }
-    if(map.value("classType").toString() == "InputPeer::typeInputPeerContact") {
-        result.setClassType(typeInputPeerContact);
-        result.setUserId( map.value("userId").value<qint32>() );
-        return result;
-    }
-    if(map.value("classType").toString() == "InputPeer::typeInputPeerForeign") {
-        result.setClassType(typeInputPeerForeign);
-        result.setUserId( map.value("userId").value<qint32>() );
-        result.setAccessHash( map.value("accessHash").value<qint64>() );
-        return result;
-    }
     if(map.value("classType").toString() == "InputPeer::typeInputPeerChat") {
         result.setClassType(typeInputPeerChat);
         result.setChatId( map.value("chatId").value<qint32>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "InputPeer::typeInputPeerUser") {
+        result.setClassType(typeInputPeerUser);
+        result.setUserId( map.value("userId").value<qint32>() );
+        result.setAccessHash( map.value("accessHash").value<qint64>() );
         return result;
     }
     return result;
@@ -307,15 +281,12 @@ inline QDataStream &operator<<(QDataStream &stream, const InputPeer &item) {
     case InputPeer::typeInputPeerSelf:
         
         break;
-    case InputPeer::typeInputPeerContact:
-        stream << item.userId();
-        break;
-    case InputPeer::typeInputPeerForeign:
-        stream << item.userId();
-        stream << item.accessHash();
-        break;
     case InputPeer::typeInputPeerChat:
         stream << item.chatId();
+        break;
+    case InputPeer::typeInputPeerUser:
+        stream << item.userId();
+        stream << item.accessHash();
         break;
     }
     return stream;
@@ -334,25 +305,19 @@ inline QDataStream &operator>>(QDataStream &stream, InputPeer &item) {
         
     }
         break;
-    case InputPeer::typeInputPeerContact: {
-        qint32 m_user_id;
-        stream >> m_user_id;
-        item.setUserId(m_user_id);
+    case InputPeer::typeInputPeerChat: {
+        qint32 m_chat_id;
+        stream >> m_chat_id;
+        item.setChatId(m_chat_id);
     }
         break;
-    case InputPeer::typeInputPeerForeign: {
+    case InputPeer::typeInputPeerUser: {
         qint32 m_user_id;
         stream >> m_user_id;
         item.setUserId(m_user_id);
         qint64 m_access_hash;
         stream >> m_access_hash;
         item.setAccessHash(m_access_hash);
-    }
-        break;
-    case InputPeer::typeInputPeerChat: {
-        qint32 m_chat_id;
-        stream >> m_chat_id;
-        item.setChatId(m_chat_id);
     }
         break;
     }

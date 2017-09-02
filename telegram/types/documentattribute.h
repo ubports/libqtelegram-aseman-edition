@@ -27,7 +27,7 @@ public:
         typeDocumentAttributeAnimated = 0x11b58939,
         typeDocumentAttributeSticker = 0x3a556302,
         typeDocumentAttributeVideo = 0x5910cccb,
-        typeDocumentAttributeAudio = 0x51448e5,
+        typeDocumentAttributeAudio = 0xded218e0,
         typeDocumentAttributeFilename = 0x15590068
     };
 
@@ -48,8 +48,14 @@ public:
     void setH(qint32 h);
     qint32 h() const;
 
+    void setPerformer(const QString &performer);
+    QString performer() const;
+
     void setStickerset(const InputStickerSet &stickerset);
     InputStickerSet stickerset() const;
+
+    void setTitle(const QString &title);
+    QString title() const;
 
     void setW(qint32 w);
     qint32 w() const;
@@ -75,7 +81,9 @@ private:
     qint32 m_duration;
     QString m_fileName;
     qint32 m_h;
+    QString m_performer;
     InputStickerSet m_stickerset;
+    QString m_title;
     qint32 m_w;
     DocumentAttributeClassType m_classType;
 };
@@ -147,12 +155,28 @@ inline qint32 DocumentAttribute::h() const {
     return m_h;
 }
 
+inline void DocumentAttribute::setPerformer(const QString &performer) {
+    m_performer = performer;
+}
+
+inline QString DocumentAttribute::performer() const {
+    return m_performer;
+}
+
 inline void DocumentAttribute::setStickerset(const InputStickerSet &stickerset) {
     m_stickerset = stickerset;
 }
 
 inline InputStickerSet DocumentAttribute::stickerset() const {
     return m_stickerset;
+}
+
+inline void DocumentAttribute::setTitle(const QString &title) {
+    m_title = title;
+}
+
+inline QString DocumentAttribute::title() const {
+    return m_title;
 }
 
 inline void DocumentAttribute::setW(qint32 w) {
@@ -169,7 +193,9 @@ inline bool DocumentAttribute::operator ==(const DocumentAttribute &b) const {
            m_duration == b.m_duration &&
            m_fileName == b.m_fileName &&
            m_h == b.m_h &&
+           m_performer == b.m_performer &&
            m_stickerset == b.m_stickerset &&
+           m_title == b.m_title &&
            m_w == b.m_w;
 }
 
@@ -218,6 +244,8 @@ inline bool DocumentAttribute::fetch(InboundPkt *in) {
     
     case typeDocumentAttributeAudio: {
         m_duration = in->fetchInt();
+        m_title = in->fetchQString();
+        m_performer = in->fetchQString();
         m_classType = static_cast<DocumentAttributeClassType>(x);
         return true;
     }
@@ -268,6 +296,8 @@ inline bool DocumentAttribute::push(OutboundPkt *out) const {
     
     case typeDocumentAttributeAudio: {
         out->appendInt(m_duration);
+        out->appendQString(m_title);
+        out->appendQString(m_performer);
         return true;
     }
         break;
@@ -320,6 +350,8 @@ inline QMap<QString, QVariant> DocumentAttribute::toMap() const {
     case typeDocumentAttributeAudio: {
         result["classType"] = "DocumentAttribute::typeDocumentAttributeAudio";
         result["duration"] = QVariant::fromValue<qint32>(duration());
+        result["title"] = QVariant::fromValue<QString>(title());
+        result["performer"] = QVariant::fromValue<QString>(performer());
         return result;
     }
         break;
@@ -364,6 +396,8 @@ inline DocumentAttribute DocumentAttribute::fromMap(const QMap<QString, QVariant
     if(map.value("classType").toString() == "DocumentAttribute::typeDocumentAttributeAudio") {
         result.setClassType(typeDocumentAttributeAudio);
         result.setDuration( map.value("duration").value<qint32>() );
+        result.setTitle( map.value("title").value<QString>() );
+        result.setPerformer( map.value("performer").value<QString>() );
         return result;
     }
     if(map.value("classType").toString() == "DocumentAttribute::typeDocumentAttributeFilename") {
@@ -402,6 +436,8 @@ inline QDataStream &operator<<(QDataStream &stream, const DocumentAttribute &ite
         break;
     case DocumentAttribute::typeDocumentAttributeAudio:
         stream << item.duration();
+        stream << item.title();
+        stream << item.performer();
         break;
     case DocumentAttribute::typeDocumentAttributeFilename:
         stream << item.fileName();
@@ -453,6 +489,12 @@ inline QDataStream &operator>>(QDataStream &stream, DocumentAttribute &item) {
         qint32 m_duration;
         stream >> m_duration;
         item.setDuration(m_duration);
+        QString m_title;
+        stream >> m_title;
+        item.setTitle(m_title);
+        QString m_performer;
+        stream >> m_performer;
+        item.setPerformer(m_performer);
     }
         break;
     case DocumentAttribute::typeDocumentAttributeFilename: {

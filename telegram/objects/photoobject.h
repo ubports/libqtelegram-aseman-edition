@@ -9,7 +9,6 @@
 #include "telegram/types/photo.h"
 
 #include <QPointer>
-#include "geopointobject.h"
 
 class LIBQTELEGRAMSHARED_EXPORT PhotoObject : public TelegramTypeQObject
 {
@@ -17,10 +16,8 @@ class LIBQTELEGRAMSHARED_EXPORT PhotoObject : public TelegramTypeQObject
     Q_ENUMS(PhotoClassType)
     Q_PROPERTY(qint64 accessHash READ accessHash WRITE setAccessHash NOTIFY accessHashChanged)
     Q_PROPERTY(qint32 date READ date WRITE setDate NOTIFY dateChanged)
-    Q_PROPERTY(GeoPointObject* geo READ geo WRITE setGeo NOTIFY geoChanged)
     Q_PROPERTY(qint64 id READ id WRITE setId NOTIFY idChanged)
     Q_PROPERTY(QList<PhotoSize> sizes READ sizes WRITE setSizes NOTIFY sizesChanged)
-    Q_PROPERTY(qint32 userId READ userId WRITE setUserId NOTIFY userIdChanged)
     Q_PROPERTY(Photo core READ core WRITE setCore NOTIFY coreChanged)
     Q_PROPERTY(quint32 classType READ classType WRITE setClassType NOTIFY classTypeChanged)
 
@@ -40,17 +37,11 @@ public:
     void setDate(qint32 date);
     qint32 date() const;
 
-    void setGeo(GeoPointObject* geo);
-    GeoPointObject* geo() const;
-
     void setId(qint64 id);
     qint64 id() const;
 
     void setSizes(const QList<PhotoSize> &sizes);
     QList<PhotoSize> sizes() const;
-
-    void setUserId(qint32 userId);
-    qint32 userId() const;
 
     void setClassType(quint32 classType);
     quint32 classType() const;
@@ -66,35 +57,25 @@ Q_SIGNALS:
     void classTypeChanged();
     void accessHashChanged();
     void dateChanged();
-    void geoChanged();
     void idChanged();
     void sizesChanged();
-    void userIdChanged();
 
 private Q_SLOTS:
-    void coreGeoChanged();
 
 private:
-    QPointer<GeoPointObject> m_geo;
     Photo m_core;
 };
 
 inline PhotoObject::PhotoObject(const Photo &core, QObject *parent) :
     TelegramTypeQObject(parent),
-    m_geo(0),
     m_core(core)
 {
-    m_geo = new GeoPointObject(m_core.geo(), this);
-    connect(m_geo.data(), &GeoPointObject::coreChanged, this, &PhotoObject::coreGeoChanged);
 }
 
 inline PhotoObject::PhotoObject(QObject *parent) :
     TelegramTypeQObject(parent),
-    m_geo(0),
     m_core()
 {
-    m_geo = new GeoPointObject(m_core.geo(), this);
-    connect(m_geo.data(), &GeoPointObject::coreChanged, this, &PhotoObject::coreGeoChanged);
 }
 
 inline PhotoObject::~PhotoObject() {
@@ -122,23 +103,6 @@ inline qint32 PhotoObject::date() const {
     return m_core.date();
 }
 
-inline void PhotoObject::setGeo(GeoPointObject* geo) {
-    if(m_geo == geo) return;
-    if(m_geo) delete m_geo;
-    m_geo = geo;
-    if(m_geo) {
-        m_geo->setParent(this);
-        m_core.setGeo(m_geo->core());
-        connect(m_geo.data(), &GeoPointObject::coreChanged, this, &PhotoObject::coreGeoChanged);
-    }
-    Q_EMIT geoChanged();
-    Q_EMIT coreChanged();
-}
-
-inline GeoPointObject*  PhotoObject::geo() const {
-    return m_geo;
-}
-
 inline void PhotoObject::setId(qint64 id) {
     if(m_core.id() == id) return;
     m_core.setId(id);
@@ -161,28 +125,14 @@ inline QList<PhotoSize> PhotoObject::sizes() const {
     return m_core.sizes();
 }
 
-inline void PhotoObject::setUserId(qint32 userId) {
-    if(m_core.userId() == userId) return;
-    m_core.setUserId(userId);
-    Q_EMIT userIdChanged();
-    Q_EMIT coreChanged();
-}
-
-inline qint32 PhotoObject::userId() const {
-    return m_core.userId();
-}
-
 inline PhotoObject &PhotoObject::operator =(const Photo &b) {
     if(m_core == b) return *this;
     m_core = b;
-    m_geo->setCore(b.geo());
 
     Q_EMIT accessHashChanged();
     Q_EMIT dateChanged();
-    Q_EMIT geoChanged();
     Q_EMIT idChanged();
     Q_EMIT sizesChanged();
-    Q_EMIT userIdChanged();
     Q_EMIT coreChanged();
     return *this;
 }
@@ -234,13 +184,6 @@ inline void PhotoObject::setCore(const Photo &core) {
 
 inline Photo PhotoObject::core() const {
     return m_core;
-}
-
-inline void PhotoObject::coreGeoChanged() {
-    if(m_core.geo() == m_geo->core()) return;
-    m_core.setGeo(m_geo->core());
-    Q_EMIT geoChanged();
-    Q_EMIT coreChanged();
 }
 
 #endif // LQTG_TYPE_PHOTO_OBJECT

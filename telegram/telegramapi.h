@@ -38,13 +38,12 @@ public:
     qint64 accountSendChangePhoneCode(const QString &phone_number, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 accountChangePhone(const QString &phone_number, const QString &phone_code_hash, const QString &phone_code, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 accountUpdateDeviceLocked(qint32 period, const QVariant &attachedData = QVariant(), Session *session = 0);
+    qint64 accountGetPassword(const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 accountGetAuthorizations(const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 accountResetAuthorization(qint64 hash, const QVariant &attachedData = QVariant(), Session *session = 0);
-    qint64 accountGetPassword(const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 accountGetPasswordSettings(const QByteArray &current_password_hash, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 accountUpdatePasswordSettings(const QByteArray &current_password_hash, const AccountPasswordInputSettings &new_settings, const QVariant &attachedData = QVariant(), Session *session = 0);
     
-    qint64 authImportBotAuthorization(qint32 flags, qint32 api_id, const QString &api_hash, const QString &bot_auth_token, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 authCheckPhone(const QString &phone_number, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 authSendCode(const QString &phone_number, qint32 sms_type, qint32 api_id, const QString &api_hash, const QString &lang_code, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 authSendCall(const QString &phone_number, const QString &phone_code_hash, const QVariant &attachedData = QVariant(), Session *session = 0);
@@ -60,11 +59,12 @@ public:
     qint64 authCheckPassword(const QByteArray &password_hash, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 authRequestPasswordRecovery(const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 authRecoverPassword(const QString &code, const QVariant &attachedData = QVariant(), Session *session = 0);
+    qint64 authImportBotAuthorization(qint32 flags, qint32 api_id, const QString &api_hash, const QString &bot_auth_token, const QVariant &attachedData = QVariant(), Session *session = 0);
     
     qint64 contactsGetStatuses(const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 contactsGetContacts(const QString &hash, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 contactsImportContacts(const QList<InputContact> &contacts, bool replace, const QVariant &attachedData = QVariant(), Session *session = 0);
-    qint64 contactsGetSuggested(qint32 limit, const QVariant &attachedData = QVariant(), Session *session = 0);
+    qint64 contactsSearch(const QString &q, qint32 limit, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 contactsDeleteContact(const InputUser &id, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 contactsDeleteContacts(const QList<InputUser> &id, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 contactsBlock(const InputUser &id, const QVariant &attachedData = QVariant(), Session *session = 0);
@@ -72,21 +72,8 @@ public:
     qint64 contactsGetBlocked(qint32 offset, qint32 limit, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 contactsExportCard(const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 contactsImportCard(const QList<qint32> &export_card, const QVariant &attachedData = QVariant(), Session *session = 0);
-    qint64 contactsSearch(const QString &q, qint32 limit, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 contactsResolveUsername(const QString &username, const QVariant &attachedData = QVariant(), Session *session = 0);
-    
-    qint64 geochatsGetLocated(const InputGeoPoint &geo_point, qint32 radius, qint32 limit, const QVariant &attachedData = QVariant(), Session *session = 0);
-    qint64 geochatsGetRecents(qint32 offset, qint32 limit, const QVariant &attachedData = QVariant(), Session *session = 0);
-    qint64 geochatsCheckin(const InputGeoChat &peer, const QVariant &attachedData = QVariant(), Session *session = 0);
-    qint64 geochatsGetFullChat(const InputGeoChat &peer, const QVariant &attachedData = QVariant(), Session *session = 0);
-    qint64 geochatsEditChatTitle(const InputGeoChat &peer, const QString &title, const QString &address, const QVariant &attachedData = QVariant(), Session *session = 0);
-    qint64 geochatsEditChatPhoto(const InputGeoChat &peer, const InputChatPhoto &photo, const QVariant &attachedData = QVariant(), Session *session = 0);
-    qint64 geochatsSearch(const InputGeoChat &peer, const QString &q, const MessagesFilter &filter, qint32 min_date, qint32 max_date, qint32 offset, qint32 max_id, qint32 limit, const QVariant &attachedData = QVariant(), Session *session = 0);
-    qint64 geochatsGetHistory(const InputGeoChat &peer, qint32 offset, qint32 max_id, qint32 limit, const QVariant &attachedData = QVariant(), Session *session = 0);
-    qint64 geochatsSetTyping(const InputGeoChat &peer, bool typing, const QVariant &attachedData = QVariant(), Session *session = 0);
-    qint64 geochatsSendMessage(const InputGeoChat &peer, const QString &message, qint64 random_id, const QVariant &attachedData = QVariant(), Session *session = 0);
-    qint64 geochatsSendMedia(const InputGeoChat &peer, const InputMedia &media, qint64 random_id, const QVariant &attachedData = QVariant(), Session *session = 0);
-    qint64 geochatsCreateGeoChat(const QString &title, const InputGeoPoint &geo_point, const QString &address, const QString &venue, const QVariant &attachedData = QVariant(), Session *session = 0);
+    qint64 contactsGetSuggested(qint32 limit, const QVariant &attachedData = QVariant(), Session *session = 0);
     
     qint64 helpGetConfig(const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 helpGetNearestDc(const QVariant &attachedData = QVariant(), Session *session = 0);
@@ -94,8 +81,8 @@ public:
     qint64 helpSaveAppLog(const QList<InputAppEvent> &events, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 helpGetInviteText(const QString &lang_code, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 helpGetSupport(const QVariant &attachedData = QVariant(), Session *session = 0);
+    qint64 helpGetAppChangelog(const QString &device_model, const QString &system_version, const QString &app_version, const QString &lang_code, const QVariant &attachedData = QVariant(), Session *session = 0);
     
-    qint64 messagesStartBot(const InputUser &bot, qint32 chat_id, qint64 random_id, const QString &start_param, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesGetMessages(const QList<qint32> &id, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesGetDialogs(qint32 offset, qint32 max_id, qint32 limit, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesGetHistory(const InputPeer &peer, qint32 offset, qint32 max_id, qint32 limit, const QVariant &attachedData = QVariant(), Session *session = 0);
@@ -105,7 +92,7 @@ public:
     qint64 messagesDeleteMessages(const QList<qint32> &id, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesReceivedMessages(qint32 max_id, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesSetTyping(const InputPeer &peer, const SendMessageAction &action, const QVariant &attachedData = QVariant(), Session *session = 0);
-    qint64 messagesSendMessage(const InputPeer &peer, qint32 reply_to_msg_id, const QString &message, qint64 random_id, const ReplyMarkup &reply_markup, const QVariant &attachedData = QVariant(), Session *session = 0);
+    qint64 messagesSendMessage(const InputPeer &peer, qint32 reply_to_msg_id, const QString &message, qint64 random_id, const ReplyMarkup &reply_markup, const QList<MessageEntity> &entities, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesSendMedia(const InputPeer &peer, qint32 reply_to_msg_id, const InputMedia &media, qint64 random_id, const ReplyMarkup &reply_markup, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesForwardMessages(const InputPeer &peer, const QList<qint32> &id, const QList<qint64> &random_id, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesGetChats(const QList<qint32> &id, const QVariant &attachedData = QVariant(), Session *session = 0);
@@ -116,7 +103,6 @@ public:
     qint64 messagesDeleteChatUser(qint32 chat_id, const InputUser &user_id, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesCreateChat(const QList<InputUser> &users, const QString &title, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesForwardMessage(const InputPeer &peer, qint32 id, qint64 random_id, const QVariant &attachedData = QVariant(), Session *session = 0);
-    qint64 messagesSendBroadcast(const QList<InputUser> &contacts, const QList<qint64> &random_id, const QString &message, const InputMedia &media, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesGetDhConfig(qint32 version, qint32 random_length, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesRequestEncryption(const InputUser &user_id, qint32 random_id, const QByteArray &g_a, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesAcceptEncryption(const InputEncryptedChat &peer, const QByteArray &g_b, qint64 key_fingerprint, const QVariant &attachedData = QVariant(), Session *session = 0);
@@ -130,18 +116,20 @@ public:
     qint64 messagesReadMessageContents(const QList<qint32> &id, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesGetStickers(const QString &emoticon, const QString &hash, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesGetAllStickers(const QString &hash, const QVariant &attachedData = QVariant(), Session *session = 0);
+    qint64 messagesSendBroadcast(const QList<InputUser> &contacts, const QList<qint64> &random_id, const QString &message, const InputMedia &media, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesGetWebPagePreview(const QString &message, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesExportChatInvite(qint32 chat_id, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesCheckChatInvite(const QString &hash, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesImportChatInvite(const QString &hash, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesGetStickerSet(const InputStickerSet &stickerset, const QVariant &attachedData = QVariant(), Session *session = 0);
-    qint64 messagesInstallStickerSet(const InputStickerSet &stickerset, const QVariant &attachedData = QVariant(), Session *session = 0);
+    qint64 messagesInstallStickerSet(const InputStickerSet &stickerset, bool disabled, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 messagesUninstallStickerSet(const InputStickerSet &stickerset, const QVariant &attachedData = QVariant(), Session *session = 0);
+    qint64 messagesStartBot(const InputUser &bot, qint32 chat_id, qint64 random_id, const QString &start_param, const QVariant &attachedData = QVariant(), Session *session = 0);
     
     qint64 photosUpdateProfilePhoto(const InputPhoto &id, const InputPhotoCrop &crop, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 photosUploadProfilePhoto(const InputFile &file, const QString &caption, const InputGeoPoint &geo_point, const InputPhotoCrop &crop, const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 photosDeletePhotos(const QList<InputPhoto> &id, const QVariant &attachedData = QVariant(), Session *session = 0);
-    qint64 photosGetUserPhotos(const InputUser &user_id, qint32 offset, qint32 max_id, qint32 limit, const QVariant &attachedData = QVariant(), Session *session = 0);
+    qint64 photosGetUserPhotos(const InputUser &user_id, qint32 offset, qint64 max_id, qint32 limit, const QVariant &attachedData = QVariant(), Session *session = 0);
     
     qint64 updatesGetState(const QVariant &attachedData = QVariant(), Session *session = 0);
     qint64 updatesGetDifference(qint32 pts, qint32 date, qint32 qts, const QVariant &attachedData = QVariant(), Session *session = 0);
@@ -172,13 +160,12 @@ Q_SIGNALS:
     void accountSendChangePhoneCodeAnswer(qint64 msgId, const AccountSentChangePhoneCode &result, const QVariant &attachedData);
     void accountChangePhoneAnswer(qint64 msgId, const User &result, const QVariant &attachedData);
     void accountUpdateDeviceLockedAnswer(qint64 msgId, bool result, const QVariant &attachedData);
+    void accountGetPasswordAnswer(qint64 msgId, const AccountPassword &result, const QVariant &attachedData);
     void accountGetAuthorizationsAnswer(qint64 msgId, const AccountAuthorizations &result, const QVariant &attachedData);
     void accountResetAuthorizationAnswer(qint64 msgId, bool result, const QVariant &attachedData);
-    void accountGetPasswordAnswer(qint64 msgId, const AccountPassword &result, const QVariant &attachedData);
     void accountGetPasswordSettingsAnswer(qint64 msgId, const AccountPasswordSettings &result, const QVariant &attachedData);
     void accountUpdatePasswordSettingsAnswer(qint64 msgId, bool result, const QVariant &attachedData);
     
-    void authImportBotAuthorizationAnswer(qint64 msgId, const AuthAuthorization &result, const QVariant &attachedData);
     void authCheckPhoneAnswer(qint64 msgId, const AuthCheckedPhone &result, const QVariant &attachedData);
     void authSendCodeAnswer(qint64 msgId, const AuthSentCode &result, const QVariant &attachedData);
     void authSendCallAnswer(qint64 msgId, bool result, const QVariant &attachedData);
@@ -194,11 +181,12 @@ Q_SIGNALS:
     void authCheckPasswordAnswer(qint64 msgId, const AuthAuthorization &result, const QVariant &attachedData);
     void authRequestPasswordRecoveryAnswer(qint64 msgId, const AuthPasswordRecovery &result, const QVariant &attachedData);
     void authRecoverPasswordAnswer(qint64 msgId, const AuthAuthorization &result, const QVariant &attachedData);
+    void authImportBotAuthorizationAnswer(qint64 msgId, const AuthAuthorization &result, const QVariant &attachedData);
     
     void contactsGetStatusesAnswer(qint64 msgId, const QList<ContactStatus> &result, const QVariant &attachedData);
     void contactsGetContactsAnswer(qint64 msgId, const ContactsContacts &result, const QVariant &attachedData);
     void contactsImportContactsAnswer(qint64 msgId, const ContactsImportedContacts &result, const QVariant &attachedData);
-    void contactsGetSuggestedAnswer(qint64 msgId, const ContactsSuggested &result, const QVariant &attachedData);
+    void contactsSearchAnswer(qint64 msgId, const ContactsFound &result, const QVariant &attachedData);
     void contactsDeleteContactAnswer(qint64 msgId, const ContactsLink &result, const QVariant &attachedData);
     void contactsDeleteContactsAnswer(qint64 msgId, bool result, const QVariant &attachedData);
     void contactsBlockAnswer(qint64 msgId, bool result, const QVariant &attachedData);
@@ -206,21 +194,8 @@ Q_SIGNALS:
     void contactsGetBlockedAnswer(qint64 msgId, const ContactsBlocked &result, const QVariant &attachedData);
     void contactsExportCardAnswer(qint64 msgId, const QList<qint32> &result, const QVariant &attachedData);
     void contactsImportCardAnswer(qint64 msgId, const User &result, const QVariant &attachedData);
-    void contactsSearchAnswer(qint64 msgId, const ContactsFound &result, const QVariant &attachedData);
     void contactsResolveUsernameAnswer(qint64 msgId, const User &result, const QVariant &attachedData);
-    
-    void geochatsGetLocatedAnswer(qint64 msgId, const GeochatsLocated &result, const QVariant &attachedData);
-    void geochatsGetRecentsAnswer(qint64 msgId, const GeochatsMessages &result, const QVariant &attachedData);
-    void geochatsCheckinAnswer(qint64 msgId, const GeochatsStatedMessage &result, const QVariant &attachedData);
-    void geochatsGetFullChatAnswer(qint64 msgId, const MessagesChatFull &result, const QVariant &attachedData);
-    void geochatsEditChatTitleAnswer(qint64 msgId, const GeochatsStatedMessage &result, const QVariant &attachedData);
-    void geochatsEditChatPhotoAnswer(qint64 msgId, const GeochatsStatedMessage &result, const QVariant &attachedData);
-    void geochatsSearchAnswer(qint64 msgId, const GeochatsMessages &result, const QVariant &attachedData);
-    void geochatsGetHistoryAnswer(qint64 msgId, const GeochatsMessages &result, const QVariant &attachedData);
-    void geochatsSetTypingAnswer(qint64 msgId, bool result, const QVariant &attachedData);
-    void geochatsSendMessageAnswer(qint64 msgId, const GeochatsStatedMessage &result, const QVariant &attachedData);
-    void geochatsSendMediaAnswer(qint64 msgId, const GeochatsStatedMessage &result, const QVariant &attachedData);
-    void geochatsCreateGeoChatAnswer(qint64 msgId, const GeochatsStatedMessage &result, const QVariant &attachedData);
+    void contactsGetSuggestedAnswer(qint64 msgId, const ContactsSuggested &result, const QVariant &attachedData);
     
     void helpGetConfigAnswer(qint64 msgId, const Config &result, const QVariant &attachedData);
     void helpGetNearestDcAnswer(qint64 msgId, const NearestDc &result, const QVariant &attachedData);
@@ -228,8 +203,8 @@ Q_SIGNALS:
     void helpSaveAppLogAnswer(qint64 msgId, bool result, const QVariant &attachedData);
     void helpGetInviteTextAnswer(qint64 msgId, const HelpInviteText &result, const QVariant &attachedData);
     void helpGetSupportAnswer(qint64 msgId, const HelpSupport &result, const QVariant &attachedData);
+    void helpGetAppChangelogAnswer(qint64 msgId, const HelpAppChangelog &result, const QVariant &attachedData);
     
-    void messagesStartBotAnswer(qint64 msgId, const UpdatesType &result, const QVariant &attachedData);
     void messagesGetMessagesAnswer(qint64 msgId, const MessagesMessages &result, const QVariant &attachedData);
     void messagesGetDialogsAnswer(qint64 msgId, const MessagesDialogs &result, const QVariant &attachedData);
     void messagesGetHistoryAnswer(qint64 msgId, const MessagesMessages &result, const QVariant &attachedData);
@@ -239,7 +214,7 @@ Q_SIGNALS:
     void messagesDeleteMessagesAnswer(qint64 msgId, const MessagesAffectedMessages &result, const QVariant &attachedData);
     void messagesReceivedMessagesAnswer(qint64 msgId, const QList<ReceivedNotifyMessage> &result, const QVariant &attachedData);
     void messagesSetTypingAnswer(qint64 msgId, bool result, const QVariant &attachedData);
-    void messagesSendMessageAnswer(qint64 msgId, const MessagesSentMessage &result, const QVariant &attachedData);
+    void messagesSendMessageAnswer(qint64 msgId, const UpdatesType &result, const QVariant &attachedData);
     void messagesSendMediaAnswer(qint64 msgId, const UpdatesType &result, const QVariant &attachedData);
     void messagesForwardMessagesAnswer(qint64 msgId, const UpdatesType &result, const QVariant &attachedData);
     void messagesGetChatsAnswer(qint64 msgId, const MessagesChats &result, const QVariant &attachedData);
@@ -250,7 +225,6 @@ Q_SIGNALS:
     void messagesDeleteChatUserAnswer(qint64 msgId, const UpdatesType &result, const QVariant &attachedData);
     void messagesCreateChatAnswer(qint64 msgId, const UpdatesType &result, const QVariant &attachedData);
     void messagesForwardMessageAnswer(qint64 msgId, const UpdatesType &result, const QVariant &attachedData);
-    void messagesSendBroadcastAnswer(qint64 msgId, const UpdatesType &result, const QVariant &attachedData);
     void messagesGetDhConfigAnswer(qint64 msgId, const MessagesDhConfig &result, const QVariant &attachedData);
     void messagesRequestEncryptionAnswer(qint64 msgId, const EncryptedChat &result, const QVariant &attachedData);
     void messagesAcceptEncryptionAnswer(qint64 msgId, const EncryptedChat &result, const QVariant &attachedData);
@@ -264,6 +238,7 @@ Q_SIGNALS:
     void messagesReadMessageContentsAnswer(qint64 msgId, const MessagesAffectedMessages &result, const QVariant &attachedData);
     void messagesGetStickersAnswer(qint64 msgId, const MessagesStickers &result, const QVariant &attachedData);
     void messagesGetAllStickersAnswer(qint64 msgId, const MessagesAllStickers &result, const QVariant &attachedData);
+    void messagesSendBroadcastAnswer(qint64 msgId, const UpdatesType &result, const QVariant &attachedData);
     void messagesGetWebPagePreviewAnswer(qint64 msgId, const MessageMedia &result, const QVariant &attachedData);
     void messagesExportChatInviteAnswer(qint64 msgId, const ExportedChatInvite &result, const QVariant &attachedData);
     void messagesCheckChatInviteAnswer(qint64 msgId, const ChatInvite &result, const QVariant &attachedData);
@@ -271,6 +246,7 @@ Q_SIGNALS:
     void messagesGetStickerSetAnswer(qint64 msgId, const MessagesStickerSet &result, const QVariant &attachedData);
     void messagesInstallStickerSetAnswer(qint64 msgId, bool result, const QVariant &attachedData);
     void messagesUninstallStickerSetAnswer(qint64 msgId, bool result, const QVariant &attachedData);
+    void messagesStartBotAnswer(qint64 msgId, const UpdatesType &result, const QVariant &attachedData);
     
     void photosUpdateProfilePhotoAnswer(qint64 msgId, const UserProfilePhoto &result, const QVariant &attachedData);
     void photosUploadProfilePhotoAnswer(qint64 msgId, const PhotosPhoto &result, const QVariant &attachedData);
@@ -306,13 +282,12 @@ Q_SIGNALS:
     void accountSendChangePhoneCodeError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void accountChangePhoneError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void accountUpdateDeviceLockedError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
+    void accountGetPasswordError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void accountGetAuthorizationsError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void accountResetAuthorizationError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
-    void accountGetPasswordError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void accountGetPasswordSettingsError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void accountUpdatePasswordSettingsError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     
-    void authImportBotAuthorizationError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void authCheckPhoneError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void authSendCodeError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void authSendCallError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
@@ -328,11 +303,12 @@ Q_SIGNALS:
     void authCheckPasswordError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void authRequestPasswordRecoveryError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void authRecoverPasswordError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
+    void authImportBotAuthorizationError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     
     void contactsGetStatusesError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void contactsGetContactsError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void contactsImportContactsError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
-    void contactsGetSuggestedError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
+    void contactsSearchError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void contactsDeleteContactError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void contactsDeleteContactsError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void contactsBlockError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
@@ -340,21 +316,8 @@ Q_SIGNALS:
     void contactsGetBlockedError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void contactsExportCardError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void contactsImportCardError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
-    void contactsSearchError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void contactsResolveUsernameError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
-    
-    void geochatsGetLocatedError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
-    void geochatsGetRecentsError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
-    void geochatsCheckinError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
-    void geochatsGetFullChatError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
-    void geochatsEditChatTitleError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
-    void geochatsEditChatPhotoError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
-    void geochatsSearchError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
-    void geochatsGetHistoryError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
-    void geochatsSetTypingError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
-    void geochatsSendMessageError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
-    void geochatsSendMediaError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
-    void geochatsCreateGeoChatError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
+    void contactsGetSuggestedError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     
     void helpGetConfigError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void helpGetNearestDcError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
@@ -362,8 +325,8 @@ Q_SIGNALS:
     void helpSaveAppLogError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void helpGetInviteTextError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void helpGetSupportError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
+    void helpGetAppChangelogError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     
-    void messagesStartBotError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void messagesGetMessagesError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void messagesGetDialogsError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void messagesGetHistoryError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
@@ -384,7 +347,6 @@ Q_SIGNALS:
     void messagesDeleteChatUserError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void messagesCreateChatError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void messagesForwardMessageError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
-    void messagesSendBroadcastError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void messagesGetDhConfigError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void messagesRequestEncryptionError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void messagesAcceptEncryptionError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
@@ -398,6 +360,7 @@ Q_SIGNALS:
     void messagesReadMessageContentsError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void messagesGetStickersError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void messagesGetAllStickersError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
+    void messagesSendBroadcastError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void messagesGetWebPagePreviewError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void messagesExportChatInviteError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void messagesCheckChatInviteError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
@@ -405,6 +368,7 @@ Q_SIGNALS:
     void messagesGetStickerSetError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void messagesInstallStickerSetError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void messagesUninstallStickerSetError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
+    void messagesStartBotError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     
     void photosUpdateProfilePhotoError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
     void photosUploadProfilePhotoError(qint64 msgId, qint32 errorCode, const QString &errorText, const QVariant &attachedData);
@@ -445,13 +409,12 @@ private:
     QueryMethods accountSendChangePhoneCodeMethods;
     QueryMethods accountChangePhoneMethods;
     QueryMethods accountUpdateDeviceLockedMethods;
+    QueryMethods accountGetPasswordMethods;
     QueryMethods accountGetAuthorizationsMethods;
     QueryMethods accountResetAuthorizationMethods;
-    QueryMethods accountGetPasswordMethods;
     QueryMethods accountGetPasswordSettingsMethods;
     QueryMethods accountUpdatePasswordSettingsMethods;
     
-    QueryMethods authImportBotAuthorizationMethods;
     QueryMethods authCheckPhoneMethods;
     QueryMethods authSendCodeMethods;
     QueryMethods authSendCallMethods;
@@ -467,11 +430,12 @@ private:
     QueryMethods authCheckPasswordMethods;
     QueryMethods authRequestPasswordRecoveryMethods;
     QueryMethods authRecoverPasswordMethods;
+    QueryMethods authImportBotAuthorizationMethods;
     
     QueryMethods contactsGetStatusesMethods;
     QueryMethods contactsGetContactsMethods;
     QueryMethods contactsImportContactsMethods;
-    QueryMethods contactsGetSuggestedMethods;
+    QueryMethods contactsSearchMethods;
     QueryMethods contactsDeleteContactMethods;
     QueryMethods contactsDeleteContactsMethods;
     QueryMethods contactsBlockMethods;
@@ -479,21 +443,8 @@ private:
     QueryMethods contactsGetBlockedMethods;
     QueryMethods contactsExportCardMethods;
     QueryMethods contactsImportCardMethods;
-    QueryMethods contactsSearchMethods;
     QueryMethods contactsResolveUsernameMethods;
-    
-    QueryMethods geochatsGetLocatedMethods;
-    QueryMethods geochatsGetRecentsMethods;
-    QueryMethods geochatsCheckinMethods;
-    QueryMethods geochatsGetFullChatMethods;
-    QueryMethods geochatsEditChatTitleMethods;
-    QueryMethods geochatsEditChatPhotoMethods;
-    QueryMethods geochatsSearchMethods;
-    QueryMethods geochatsGetHistoryMethods;
-    QueryMethods geochatsSetTypingMethods;
-    QueryMethods geochatsSendMessageMethods;
-    QueryMethods geochatsSendMediaMethods;
-    QueryMethods geochatsCreateGeoChatMethods;
+    QueryMethods contactsGetSuggestedMethods;
     
     QueryMethods helpGetConfigMethods;
     QueryMethods helpGetNearestDcMethods;
@@ -501,8 +452,8 @@ private:
     QueryMethods helpSaveAppLogMethods;
     QueryMethods helpGetInviteTextMethods;
     QueryMethods helpGetSupportMethods;
+    QueryMethods helpGetAppChangelogMethods;
     
-    QueryMethods messagesStartBotMethods;
     QueryMethods messagesGetMessagesMethods;
     QueryMethods messagesGetDialogsMethods;
     QueryMethods messagesGetHistoryMethods;
@@ -523,7 +474,6 @@ private:
     QueryMethods messagesDeleteChatUserMethods;
     QueryMethods messagesCreateChatMethods;
     QueryMethods messagesForwardMessageMethods;
-    QueryMethods messagesSendBroadcastMethods;
     QueryMethods messagesGetDhConfigMethods;
     QueryMethods messagesRequestEncryptionMethods;
     QueryMethods messagesAcceptEncryptionMethods;
@@ -537,6 +487,7 @@ private:
     QueryMethods messagesReadMessageContentsMethods;
     QueryMethods messagesGetStickersMethods;
     QueryMethods messagesGetAllStickersMethods;
+    QueryMethods messagesSendBroadcastMethods;
     QueryMethods messagesGetWebPagePreviewMethods;
     QueryMethods messagesExportChatInviteMethods;
     QueryMethods messagesCheckChatInviteMethods;
@@ -544,6 +495,7 @@ private:
     QueryMethods messagesGetStickerSetMethods;
     QueryMethods messagesInstallStickerSetMethods;
     QueryMethods messagesUninstallStickerSetMethods;
+    QueryMethods messagesStartBotMethods;
     
     QueryMethods photosUpdateProfilePhotoMethods;
     QueryMethods photosUploadProfilePhotoMethods;
@@ -579,13 +531,12 @@ private:
     void onAccountSendChangePhoneCodeAnswer(Query *q, InboundPkt &inboundPkt);
     void onAccountChangePhoneAnswer(Query *q, InboundPkt &inboundPkt);
     void onAccountUpdateDeviceLockedAnswer(Query *q, InboundPkt &inboundPkt);
+    void onAccountGetPasswordAnswer(Query *q, InboundPkt &inboundPkt);
     void onAccountGetAuthorizationsAnswer(Query *q, InboundPkt &inboundPkt);
     void onAccountResetAuthorizationAnswer(Query *q, InboundPkt &inboundPkt);
-    void onAccountGetPasswordAnswer(Query *q, InboundPkt &inboundPkt);
     void onAccountGetPasswordSettingsAnswer(Query *q, InboundPkt &inboundPkt);
     void onAccountUpdatePasswordSettingsAnswer(Query *q, InboundPkt &inboundPkt);
     
-    void onAuthImportBotAuthorizationAnswer(Query *q, InboundPkt &inboundPkt);
     void onAuthCheckPhoneAnswer(Query *q, InboundPkt &inboundPkt);
     void onAuthSendCodeAnswer(Query *q, InboundPkt &inboundPkt);
     void onAuthSendCallAnswer(Query *q, InboundPkt &inboundPkt);
@@ -601,11 +552,12 @@ private:
     void onAuthCheckPasswordAnswer(Query *q, InboundPkt &inboundPkt);
     void onAuthRequestPasswordRecoveryAnswer(Query *q, InboundPkt &inboundPkt);
     void onAuthRecoverPasswordAnswer(Query *q, InboundPkt &inboundPkt);
+    void onAuthImportBotAuthorizationAnswer(Query *q, InboundPkt &inboundPkt);
     
     void onContactsGetStatusesAnswer(Query *q, InboundPkt &inboundPkt);
     void onContactsGetContactsAnswer(Query *q, InboundPkt &inboundPkt);
     void onContactsImportContactsAnswer(Query *q, InboundPkt &inboundPkt);
-    void onContactsGetSuggestedAnswer(Query *q, InboundPkt &inboundPkt);
+    void onContactsSearchAnswer(Query *q, InboundPkt &inboundPkt);
     void onContactsDeleteContactAnswer(Query *q, InboundPkt &inboundPkt);
     void onContactsDeleteContactsAnswer(Query *q, InboundPkt &inboundPkt);
     void onContactsBlockAnswer(Query *q, InboundPkt &inboundPkt);
@@ -613,21 +565,8 @@ private:
     void onContactsGetBlockedAnswer(Query *q, InboundPkt &inboundPkt);
     void onContactsExportCardAnswer(Query *q, InboundPkt &inboundPkt);
     void onContactsImportCardAnswer(Query *q, InboundPkt &inboundPkt);
-    void onContactsSearchAnswer(Query *q, InboundPkt &inboundPkt);
     void onContactsResolveUsernameAnswer(Query *q, InboundPkt &inboundPkt);
-    
-    void onGeochatsGetLocatedAnswer(Query *q, InboundPkt &inboundPkt);
-    void onGeochatsGetRecentsAnswer(Query *q, InboundPkt &inboundPkt);
-    void onGeochatsCheckinAnswer(Query *q, InboundPkt &inboundPkt);
-    void onGeochatsGetFullChatAnswer(Query *q, InboundPkt &inboundPkt);
-    void onGeochatsEditChatTitleAnswer(Query *q, InboundPkt &inboundPkt);
-    void onGeochatsEditChatPhotoAnswer(Query *q, InboundPkt &inboundPkt);
-    void onGeochatsSearchAnswer(Query *q, InboundPkt &inboundPkt);
-    void onGeochatsGetHistoryAnswer(Query *q, InboundPkt &inboundPkt);
-    void onGeochatsSetTypingAnswer(Query *q, InboundPkt &inboundPkt);
-    void onGeochatsSendMessageAnswer(Query *q, InboundPkt &inboundPkt);
-    void onGeochatsSendMediaAnswer(Query *q, InboundPkt &inboundPkt);
-    void onGeochatsCreateGeoChatAnswer(Query *q, InboundPkt &inboundPkt);
+    void onContactsGetSuggestedAnswer(Query *q, InboundPkt &inboundPkt);
     
     void onHelpGetConfigAnswer(Query *q, InboundPkt &inboundPkt);
     void onHelpGetNearestDcAnswer(Query *q, InboundPkt &inboundPkt);
@@ -635,8 +574,8 @@ private:
     void onHelpSaveAppLogAnswer(Query *q, InboundPkt &inboundPkt);
     void onHelpGetInviteTextAnswer(Query *q, InboundPkt &inboundPkt);
     void onHelpGetSupportAnswer(Query *q, InboundPkt &inboundPkt);
+    void onHelpGetAppChangelogAnswer(Query *q, InboundPkt &inboundPkt);
     
-    void onMessagesStartBotAnswer(Query *q, InboundPkt &inboundPkt);
     void onMessagesGetMessagesAnswer(Query *q, InboundPkt &inboundPkt);
     void onMessagesGetDialogsAnswer(Query *q, InboundPkt &inboundPkt);
     void onMessagesGetHistoryAnswer(Query *q, InboundPkt &inboundPkt);
@@ -657,7 +596,6 @@ private:
     void onMessagesDeleteChatUserAnswer(Query *q, InboundPkt &inboundPkt);
     void onMessagesCreateChatAnswer(Query *q, InboundPkt &inboundPkt);
     void onMessagesForwardMessageAnswer(Query *q, InboundPkt &inboundPkt);
-    void onMessagesSendBroadcastAnswer(Query *q, InboundPkt &inboundPkt);
     void onMessagesGetDhConfigAnswer(Query *q, InboundPkt &inboundPkt);
     void onMessagesRequestEncryptionAnswer(Query *q, InboundPkt &inboundPkt);
     void onMessagesAcceptEncryptionAnswer(Query *q, InboundPkt &inboundPkt);
@@ -671,6 +609,7 @@ private:
     void onMessagesReadMessageContentsAnswer(Query *q, InboundPkt &inboundPkt);
     void onMessagesGetStickersAnswer(Query *q, InboundPkt &inboundPkt);
     void onMessagesGetAllStickersAnswer(Query *q, InboundPkt &inboundPkt);
+    void onMessagesSendBroadcastAnswer(Query *q, InboundPkt &inboundPkt);
     void onMessagesGetWebPagePreviewAnswer(Query *q, InboundPkt &inboundPkt);
     void onMessagesExportChatInviteAnswer(Query *q, InboundPkt &inboundPkt);
     void onMessagesCheckChatInviteAnswer(Query *q, InboundPkt &inboundPkt);
@@ -678,6 +617,7 @@ private:
     void onMessagesGetStickerSetAnswer(Query *q, InboundPkt &inboundPkt);
     void onMessagesInstallStickerSetAnswer(Query *q, InboundPkt &inboundPkt);
     void onMessagesUninstallStickerSetAnswer(Query *q, InboundPkt &inboundPkt);
+    void onMessagesStartBotAnswer(Query *q, InboundPkt &inboundPkt);
     
     void onPhotosUpdateProfilePhotoAnswer(Query *q, InboundPkt &inboundPkt);
     void onPhotosUploadProfilePhotoAnswer(Query *q, InboundPkt &inboundPkt);
@@ -713,13 +653,12 @@ private:
     void onAccountSendChangePhoneCodeError(Query *q, qint32 errorCode, const QString &errorText);
     void onAccountChangePhoneError(Query *q, qint32 errorCode, const QString &errorText);
     void onAccountUpdateDeviceLockedError(Query *q, qint32 errorCode, const QString &errorText);
+    void onAccountGetPasswordError(Query *q, qint32 errorCode, const QString &errorText);
     void onAccountGetAuthorizationsError(Query *q, qint32 errorCode, const QString &errorText);
     void onAccountResetAuthorizationError(Query *q, qint32 errorCode, const QString &errorText);
-    void onAccountGetPasswordError(Query *q, qint32 errorCode, const QString &errorText);
     void onAccountGetPasswordSettingsError(Query *q, qint32 errorCode, const QString &errorText);
     void onAccountUpdatePasswordSettingsError(Query *q, qint32 errorCode, const QString &errorText);
     
-    void onAuthImportBotAuthorizationError(Query *q, qint32 errorCode, const QString &errorText);
     void onAuthCheckPhoneError(Query *q, qint32 errorCode, const QString &errorText);
     void onAuthSendCodeError(Query *q, qint32 errorCode, const QString &errorText);
     void onAuthSendCallError(Query *q, qint32 errorCode, const QString &errorText);
@@ -735,11 +674,12 @@ private:
     void onAuthCheckPasswordError(Query *q, qint32 errorCode, const QString &errorText);
     void onAuthRequestPasswordRecoveryError(Query *q, qint32 errorCode, const QString &errorText);
     void onAuthRecoverPasswordError(Query *q, qint32 errorCode, const QString &errorText);
+    void onAuthImportBotAuthorizationError(Query *q, qint32 errorCode, const QString &errorText);
     
     void onContactsGetStatusesError(Query *q, qint32 errorCode, const QString &errorText);
     void onContactsGetContactsError(Query *q, qint32 errorCode, const QString &errorText);
     void onContactsImportContactsError(Query *q, qint32 errorCode, const QString &errorText);
-    void onContactsGetSuggestedError(Query *q, qint32 errorCode, const QString &errorText);
+    void onContactsSearchError(Query *q, qint32 errorCode, const QString &errorText);
     void onContactsDeleteContactError(Query *q, qint32 errorCode, const QString &errorText);
     void onContactsDeleteContactsError(Query *q, qint32 errorCode, const QString &errorText);
     void onContactsBlockError(Query *q, qint32 errorCode, const QString &errorText);
@@ -747,21 +687,8 @@ private:
     void onContactsGetBlockedError(Query *q, qint32 errorCode, const QString &errorText);
     void onContactsExportCardError(Query *q, qint32 errorCode, const QString &errorText);
     void onContactsImportCardError(Query *q, qint32 errorCode, const QString &errorText);
-    void onContactsSearchError(Query *q, qint32 errorCode, const QString &errorText);
     void onContactsResolveUsernameError(Query *q, qint32 errorCode, const QString &errorText);
-    
-    void onGeochatsGetLocatedError(Query *q, qint32 errorCode, const QString &errorText);
-    void onGeochatsGetRecentsError(Query *q, qint32 errorCode, const QString &errorText);
-    void onGeochatsCheckinError(Query *q, qint32 errorCode, const QString &errorText);
-    void onGeochatsGetFullChatError(Query *q, qint32 errorCode, const QString &errorText);
-    void onGeochatsEditChatTitleError(Query *q, qint32 errorCode, const QString &errorText);
-    void onGeochatsEditChatPhotoError(Query *q, qint32 errorCode, const QString &errorText);
-    void onGeochatsSearchError(Query *q, qint32 errorCode, const QString &errorText);
-    void onGeochatsGetHistoryError(Query *q, qint32 errorCode, const QString &errorText);
-    void onGeochatsSetTypingError(Query *q, qint32 errorCode, const QString &errorText);
-    void onGeochatsSendMessageError(Query *q, qint32 errorCode, const QString &errorText);
-    void onGeochatsSendMediaError(Query *q, qint32 errorCode, const QString &errorText);
-    void onGeochatsCreateGeoChatError(Query *q, qint32 errorCode, const QString &errorText);
+    void onContactsGetSuggestedError(Query *q, qint32 errorCode, const QString &errorText);
     
     void onHelpGetConfigError(Query *q, qint32 errorCode, const QString &errorText);
     void onHelpGetNearestDcError(Query *q, qint32 errorCode, const QString &errorText);
@@ -769,8 +696,8 @@ private:
     void onHelpSaveAppLogError(Query *q, qint32 errorCode, const QString &errorText);
     void onHelpGetInviteTextError(Query *q, qint32 errorCode, const QString &errorText);
     void onHelpGetSupportError(Query *q, qint32 errorCode, const QString &errorText);
+    void onHelpGetAppChangelogError(Query *q, qint32 errorCode, const QString &errorText);
     
-    void onMessagesStartBotError(Query *q, qint32 errorCode, const QString &errorText);
     void onMessagesGetMessagesError(Query *q, qint32 errorCode, const QString &errorText);
     void onMessagesGetDialogsError(Query *q, qint32 errorCode, const QString &errorText);
     void onMessagesGetHistoryError(Query *q, qint32 errorCode, const QString &errorText);
@@ -791,7 +718,6 @@ private:
     void onMessagesDeleteChatUserError(Query *q, qint32 errorCode, const QString &errorText);
     void onMessagesCreateChatError(Query *q, qint32 errorCode, const QString &errorText);
     void onMessagesForwardMessageError(Query *q, qint32 errorCode, const QString &errorText);
-    void onMessagesSendBroadcastError(Query *q, qint32 errorCode, const QString &errorText);
     void onMessagesGetDhConfigError(Query *q, qint32 errorCode, const QString &errorText);
     void onMessagesRequestEncryptionError(Query *q, qint32 errorCode, const QString &errorText);
     void onMessagesAcceptEncryptionError(Query *q, qint32 errorCode, const QString &errorText);
@@ -805,6 +731,7 @@ private:
     void onMessagesReadMessageContentsError(Query *q, qint32 errorCode, const QString &errorText);
     void onMessagesGetStickersError(Query *q, qint32 errorCode, const QString &errorText);
     void onMessagesGetAllStickersError(Query *q, qint32 errorCode, const QString &errorText);
+    void onMessagesSendBroadcastError(Query *q, qint32 errorCode, const QString &errorText);
     void onMessagesGetWebPagePreviewError(Query *q, qint32 errorCode, const QString &errorText);
     void onMessagesExportChatInviteError(Query *q, qint32 errorCode, const QString &errorText);
     void onMessagesCheckChatInviteError(Query *q, qint32 errorCode, const QString &errorText);
@@ -812,6 +739,7 @@ private:
     void onMessagesGetStickerSetError(Query *q, qint32 errorCode, const QString &errorText);
     void onMessagesInstallStickerSetError(Query *q, qint32 errorCode, const QString &errorText);
     void onMessagesUninstallStickerSetError(Query *q, qint32 errorCode, const QString &errorText);
+    void onMessagesStartBotError(Query *q, qint32 errorCode, const QString &errorText);
     
     void onPhotosUpdateProfilePhotoError(Query *q, qint32 errorCode, const QString &errorText);
     void onPhotosUploadProfilePhotoError(Query *q, qint32 errorCode, const QString &errorText);

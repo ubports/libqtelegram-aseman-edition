@@ -16,9 +16,8 @@
 #include <QDataStream>
 
 #include <QtGlobal>
-#include <QString>
-#include "geopoint.h"
 #include "chatphoto.h"
+#include <QString>
 
 class LIBQTELEGRAMSHARED_EXPORT Chat : public TelegramTypeObject
 {
@@ -26,8 +25,7 @@ public:
     enum ChatClassType {
         typeChatEmpty = 0x9ba2d800,
         typeChat = 0x6e9c9bc7,
-        typeChatForbidden = 0xfb0ccc41,
-        typeGeoChat = 0x75eaea5a
+        typeChatForbidden = 0xfb0ccc41
     };
 
     Chat(ChatClassType classType = typeChatEmpty, InboundPkt *in = 0);
@@ -35,20 +33,8 @@ public:
     Chat(const Null&);
     virtual ~Chat();
 
-    void setAccessHash(qint64 accessHash);
-    qint64 accessHash() const;
-
-    void setAddress(const QString &address);
-    QString address() const;
-
-    void setCheckedIn(bool checkedIn);
-    bool checkedIn() const;
-
     void setDate(qint32 date);
     qint32 date() const;
-
-    void setGeo(const GeoPoint &geo);
-    GeoPoint geo() const;
 
     void setId(qint32 id);
     qint32 id() const;
@@ -64,9 +50,6 @@ public:
 
     void setTitle(const QString &title);
     QString title() const;
-
-    void setVenue(const QString &venue);
-    QString venue() const;
 
     void setVersion(qint32 version);
     qint32 version() const;
@@ -88,17 +71,12 @@ public:
     QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
-    qint64 m_accessHash;
-    QString m_address;
-    bool m_checkedIn;
     qint32 m_date;
-    GeoPoint m_geo;
     qint32 m_id;
     bool m_left;
     qint32 m_participantsCount;
     ChatPhoto m_photo;
     QString m_title;
-    QString m_venue;
     qint32 m_version;
     ChatClassType m_classType;
 };
@@ -109,8 +87,6 @@ QDataStream LIBQTELEGRAMSHARED_EXPORT &operator<<(QDataStream &stream, const Cha
 QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, Chat &item);
 
 inline Chat::Chat(ChatClassType classType, InboundPkt *in) :
-    m_accessHash(0),
-    m_checkedIn(false),
     m_date(0),
     m_id(0),
     m_left(false),
@@ -122,8 +98,6 @@ inline Chat::Chat(ChatClassType classType, InboundPkt *in) :
 }
 
 inline Chat::Chat(InboundPkt *in) :
-    m_accessHash(0),
-    m_checkedIn(false),
     m_date(0),
     m_id(0),
     m_left(false),
@@ -136,8 +110,6 @@ inline Chat::Chat(InboundPkt *in) :
 
 inline Chat::Chat(const Null &null) :
     TelegramTypeObject(null),
-    m_accessHash(0),
-    m_checkedIn(false),
     m_date(0),
     m_id(0),
     m_left(false),
@@ -150,44 +122,12 @@ inline Chat::Chat(const Null &null) :
 inline Chat::~Chat() {
 }
 
-inline void Chat::setAccessHash(qint64 accessHash) {
-    m_accessHash = accessHash;
-}
-
-inline qint64 Chat::accessHash() const {
-    return m_accessHash;
-}
-
-inline void Chat::setAddress(const QString &address) {
-    m_address = address;
-}
-
-inline QString Chat::address() const {
-    return m_address;
-}
-
-inline void Chat::setCheckedIn(bool checkedIn) {
-    m_checkedIn = checkedIn;
-}
-
-inline bool Chat::checkedIn() const {
-    return m_checkedIn;
-}
-
 inline void Chat::setDate(qint32 date) {
     m_date = date;
 }
 
 inline qint32 Chat::date() const {
     return m_date;
-}
-
-inline void Chat::setGeo(const GeoPoint &geo) {
-    m_geo = geo;
-}
-
-inline GeoPoint Chat::geo() const {
-    return m_geo;
 }
 
 inline void Chat::setId(qint32 id) {
@@ -230,14 +170,6 @@ inline QString Chat::title() const {
     return m_title;
 }
 
-inline void Chat::setVenue(const QString &venue) {
-    m_venue = venue;
-}
-
-inline QString Chat::venue() const {
-    return m_venue;
-}
-
 inline void Chat::setVersion(qint32 version) {
     m_version = version;
 }
@@ -248,17 +180,12 @@ inline qint32 Chat::version() const {
 
 inline bool Chat::operator ==(const Chat &b) const {
     return m_classType == b.m_classType &&
-           m_accessHash == b.m_accessHash &&
-           m_address == b.m_address &&
-           m_checkedIn == b.m_checkedIn &&
            m_date == b.m_date &&
-           m_geo == b.m_geo &&
            m_id == b.m_id &&
            m_left == b.m_left &&
            m_participantsCount == b.m_participantsCount &&
            m_photo == b.m_photo &&
            m_title == b.m_title &&
-           m_venue == b.m_venue &&
            m_version == b.m_version;
 }
 
@@ -303,23 +230,6 @@ inline bool Chat::fetch(InboundPkt *in) {
     }
         break;
     
-    case typeGeoChat: {
-        m_id = in->fetchInt();
-        m_accessHash = in->fetchLong();
-        m_title = in->fetchQString();
-        m_address = in->fetchQString();
-        m_venue = in->fetchQString();
-        m_geo.fetch(in);
-        m_photo.fetch(in);
-        m_participantsCount = in->fetchInt();
-        m_date = in->fetchInt();
-        m_checkedIn = in->fetchBool();
-        m_version = in->fetchInt();
-        m_classType = static_cast<ChatClassType>(x);
-        return true;
-    }
-        break;
-    
     default:
         LQTG_FETCH_ASSERT;
         return false;
@@ -351,22 +261,6 @@ inline bool Chat::push(OutboundPkt *out) const {
         out->appendInt(m_id);
         out->appendQString(m_title);
         out->appendInt(m_date);
-        return true;
-    }
-        break;
-    
-    case typeGeoChat: {
-        out->appendInt(m_id);
-        out->appendLong(m_accessHash);
-        out->appendQString(m_title);
-        out->appendQString(m_address);
-        out->appendQString(m_venue);
-        m_geo.push(out);
-        m_photo.push(out);
-        out->appendInt(m_participantsCount);
-        out->appendInt(m_date);
-        out->appendBool(m_checkedIn);
-        out->appendInt(m_version);
         return true;
     }
         break;
@@ -408,23 +302,6 @@ inline QMap<QString, QVariant> Chat::toMap() const {
     }
         break;
     
-    case typeGeoChat: {
-        result["classType"] = "Chat::typeGeoChat";
-        result["id"] = QVariant::fromValue<qint32>(id());
-        result["accessHash"] = QVariant::fromValue<qint64>(accessHash());
-        result["title"] = QVariant::fromValue<QString>(title());
-        result["address"] = QVariant::fromValue<QString>(address());
-        result["venue"] = QVariant::fromValue<QString>(venue());
-        result["geo"] = m_geo.toMap();
-        result["photo"] = m_photo.toMap();
-        result["participantsCount"] = QVariant::fromValue<qint32>(participantsCount());
-        result["date"] = QVariant::fromValue<qint32>(date());
-        result["checkedIn"] = QVariant::fromValue<bool>(checkedIn());
-        result["version"] = QVariant::fromValue<qint32>(version());
-        return result;
-    }
-        break;
-    
     default:
         return result;
     }
@@ -453,21 +330,6 @@ inline Chat Chat::fromMap(const QMap<QString, QVariant> &map) {
         result.setId( map.value("id").value<qint32>() );
         result.setTitle( map.value("title").value<QString>() );
         result.setDate( map.value("date").value<qint32>() );
-        return result;
-    }
-    if(map.value("classType").toString() == "Chat::typeGeoChat") {
-        result.setClassType(typeGeoChat);
-        result.setId( map.value("id").value<qint32>() );
-        result.setAccessHash( map.value("accessHash").value<qint64>() );
-        result.setTitle( map.value("title").value<QString>() );
-        result.setAddress( map.value("address").value<QString>() );
-        result.setVenue( map.value("venue").value<QString>() );
-        result.setGeo( GeoPoint::fromMap(map.value("geo").toMap()) );
-        result.setPhoto( ChatPhoto::fromMap(map.value("photo").toMap()) );
-        result.setParticipantsCount( map.value("participantsCount").value<qint32>() );
-        result.setDate( map.value("date").value<qint32>() );
-        result.setCheckedIn( map.value("checkedIn").value<bool>() );
-        result.setVersion( map.value("version").value<qint32>() );
         return result;
     }
     return result;
@@ -499,19 +361,6 @@ inline QDataStream &operator<<(QDataStream &stream, const Chat &item) {
         stream << item.id();
         stream << item.title();
         stream << item.date();
-        break;
-    case Chat::typeGeoChat:
-        stream << item.id();
-        stream << item.accessHash();
-        stream << item.title();
-        stream << item.address();
-        stream << item.venue();
-        stream << item.geo();
-        stream << item.photo();
-        stream << item.participantsCount();
-        stream << item.date();
-        stream << item.checkedIn();
-        stream << item.version();
         break;
     }
     return stream;
@@ -562,42 +411,6 @@ inline QDataStream &operator>>(QDataStream &stream, Chat &item) {
         qint32 m_date;
         stream >> m_date;
         item.setDate(m_date);
-    }
-        break;
-    case Chat::typeGeoChat: {
-        qint32 m_id;
-        stream >> m_id;
-        item.setId(m_id);
-        qint64 m_access_hash;
-        stream >> m_access_hash;
-        item.setAccessHash(m_access_hash);
-        QString m_title;
-        stream >> m_title;
-        item.setTitle(m_title);
-        QString m_address;
-        stream >> m_address;
-        item.setAddress(m_address);
-        QString m_venue;
-        stream >> m_venue;
-        item.setVenue(m_venue);
-        GeoPoint m_geo;
-        stream >> m_geo;
-        item.setGeo(m_geo);
-        ChatPhoto m_photo;
-        stream >> m_photo;
-        item.setPhoto(m_photo);
-        qint32 m_participants_count;
-        stream >> m_participants_count;
-        item.setParticipantsCount(m_participants_count);
-        qint32 m_date;
-        stream >> m_date;
-        item.setDate(m_date);
-        bool m_checked_in;
-        stream >> m_checked_in;
-        item.setCheckedIn(m_checked_in);
-        qint32 m_version;
-        stream >> m_version;
-        item.setVersion(m_version);
     }
         break;
     }

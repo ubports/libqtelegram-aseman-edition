@@ -4,9 +4,8 @@
 
 * [typeInputPeerEmpty](#inputpeertypeinputpeerempty)
 * [typeInputPeerSelf](#inputpeertypeinputpeerself)
-* [typeInputPeerContact](#inputpeertypeinputpeercontact)
-* [typeInputPeerForeign](#inputpeertypeinputpeerforeign)
 * [typeInputPeerChat](#inputpeertypeinputpeerchat)
+* [typeInputPeerUser](#inputpeertypeinputpeeruser)
 
 ## InputPeer::typeInputPeerEmpty
 
@@ -30,35 +29,6 @@ inputPeerSelf#7da07ec9 = InputPeer;
 #### Parameters:
 
 
-## InputPeer::typeInputPeerContact
-
-#### Schema:
-
-```c++
-inputPeerContact#1023dbe8 user_id:int = InputPeer;
-```
-
-#### Parameters:
-
-|Name|Type|
-|----|----|
-|userId|qint32|
-
-## InputPeer::typeInputPeerForeign
-
-#### Schema:
-
-```c++
-inputPeerForeign#9b447325 user_id:int access_hash:long = InputPeer;
-```
-
-#### Parameters:
-
-|Name|Type|
-|----|----|
-|userId|qint32|
-|accessHash|qint64|
-
 ## InputPeer::typeInputPeerChat
 
 #### Schema:
@@ -72,4 +42,19 @@ inputPeerChat#179be863 chat_id:int = InputPeer;
 |Name|Type|
 |----|----|
 |chatId|qint32|
+
+## InputPeer::typeInputPeerUser
+
+#### Schema:
+
+```c++
+inputPeerUser#7b8e7de6 user_id:int access_hash:long = InputPeer;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|userId|qint32|
+|accessHash|qint64|
 

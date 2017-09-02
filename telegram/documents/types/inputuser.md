@@ -4,8 +4,7 @@
 
 * [typeInputUserEmpty](#inputusertypeinputuserempty)
 * [typeInputUserSelf](#inputusertypeinputuserself)
-* [typeInputUserContact](#inputusertypeinputusercontact)
-* [typeInputUserForeign](#inputusertypeinputuserforeign)
+* [typeInputUser](#inputusertypeinputuser)
 
 ## InputUser::typeInputUserEmpty
 
@@ -29,26 +28,12 @@ inputUserSelf#f7c1b13f = InputUser;
 #### Parameters:
 
 
-## InputUser::typeInputUserContact
+## InputUser::typeInputUser
 
 #### Schema:
 
 ```c++
-inputUserContact#86e94f65 user_id:int = InputUser;
-```
-
-#### Parameters:
-
-|Name|Type|
-|----|----|
-|userId|qint32|
-
-## InputUser::typeInputUserForeign
-
-#### Schema:
-
-```c++
-inputUserForeign#655e74ff user_id:int access_hash:long = InputUser;
+inputUser#d8292816 user_id:int access_hash:long = InputUser;
 ```
 
 #### Parameters:

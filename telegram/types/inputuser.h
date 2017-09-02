@@ -23,8 +23,7 @@ public:
     enum InputUserClassType {
         typeInputUserEmpty = 0xb98886cf,
         typeInputUserSelf = 0xf7c1b13f,
-        typeInputUserContact = 0x86e94f65,
-        typeInputUserForeign = 0x655e74ff
+        typeInputUser = 0xd8292816
     };
 
     InputUser(InputUserClassType classType = typeInputUserEmpty, InboundPkt *in = 0);
@@ -138,14 +137,7 @@ inline bool InputUser::fetch(InboundPkt *in) {
     }
         break;
     
-    case typeInputUserContact: {
-        m_userId = in->fetchInt();
-        m_classType = static_cast<InputUserClassType>(x);
-        return true;
-    }
-        break;
-    
-    case typeInputUserForeign: {
+    case typeInputUser: {
         m_userId = in->fetchInt();
         m_accessHash = in->fetchLong();
         m_classType = static_cast<InputUserClassType>(x);
@@ -172,13 +164,7 @@ inline bool InputUser::push(OutboundPkt *out) const {
     }
         break;
     
-    case typeInputUserContact: {
-        out->appendInt(m_userId);
-        return true;
-    }
-        break;
-    
-    case typeInputUserForeign: {
+    case typeInputUser: {
         out->appendInt(m_userId);
         out->appendLong(m_accessHash);
         return true;
@@ -205,15 +191,8 @@ inline QMap<QString, QVariant> InputUser::toMap() const {
     }
         break;
     
-    case typeInputUserContact: {
-        result["classType"] = "InputUser::typeInputUserContact";
-        result["userId"] = QVariant::fromValue<qint32>(userId());
-        return result;
-    }
-        break;
-    
-    case typeInputUserForeign: {
-        result["classType"] = "InputUser::typeInputUserForeign";
+    case typeInputUser: {
+        result["classType"] = "InputUser::typeInputUser";
         result["userId"] = QVariant::fromValue<qint32>(userId());
         result["accessHash"] = QVariant::fromValue<qint64>(accessHash());
         return result;
@@ -235,13 +214,8 @@ inline InputUser InputUser::fromMap(const QMap<QString, QVariant> &map) {
         result.setClassType(typeInputUserSelf);
         return result;
     }
-    if(map.value("classType").toString() == "InputUser::typeInputUserContact") {
-        result.setClassType(typeInputUserContact);
-        result.setUserId( map.value("userId").value<qint32>() );
-        return result;
-    }
-    if(map.value("classType").toString() == "InputUser::typeInputUserForeign") {
-        result.setClassType(typeInputUserForeign);
+    if(map.value("classType").toString() == "InputUser::typeInputUser") {
+        result.setClassType(typeInputUser);
         result.setUserId( map.value("userId").value<qint32>() );
         result.setAccessHash( map.value("accessHash").value<qint64>() );
         return result;
@@ -265,10 +239,7 @@ inline QDataStream &operator<<(QDataStream &stream, const InputUser &item) {
     case InputUser::typeInputUserSelf:
         
         break;
-    case InputUser::typeInputUserContact:
-        stream << item.userId();
-        break;
-    case InputUser::typeInputUserForeign:
+    case InputUser::typeInputUser:
         stream << item.userId();
         stream << item.accessHash();
         break;
@@ -289,13 +260,7 @@ inline QDataStream &operator>>(QDataStream &stream, InputUser &item) {
         
     }
         break;
-    case InputUser::typeInputUserContact: {
-        qint32 m_user_id;
-        stream >> m_user_id;
-        item.setUserId(m_user_id);
-    }
-        break;
-    case InputUser::typeInputUserForeign: {
+    case InputUser::typeInputUser: {
         qint32 m_user_id;
         stream >> m_user_id;
         item.setUserId(m_user_id);

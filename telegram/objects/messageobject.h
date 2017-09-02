@@ -20,6 +20,7 @@ class LIBQTELEGRAMSHARED_EXPORT MessageObject : public TelegramTypeQObject
     Q_ENUMS(MessageClassType)
     Q_PROPERTY(MessageActionObject* action READ action WRITE setAction NOTIFY actionChanged)
     Q_PROPERTY(qint32 date READ date WRITE setDate NOTIFY dateChanged)
+    Q_PROPERTY(QList<MessageEntity> entities READ entities WRITE setEntities NOTIFY entitiesChanged)
     Q_PROPERTY(qint32 flags READ flags WRITE setFlags NOTIFY flagsChanged)
     Q_PROPERTY(qint32 fromId READ fromId WRITE setFromId NOTIFY fromIdChanged)
     Q_PROPERTY(qint32 fwdDate READ fwdDate WRITE setFwdDate NOTIFY fwdDateChanged)
@@ -49,6 +50,9 @@ public:
 
     void setDate(qint32 date);
     qint32 date() const;
+
+    void setEntities(const QList<MessageEntity> &entities);
+    QList<MessageEntity> entities() const;
 
     void setFlags(qint32 flags);
     qint32 flags() const;
@@ -94,6 +98,7 @@ Q_SIGNALS:
     void classTypeChanged();
     void actionChanged();
     void dateChanged();
+    void entitiesChanged();
     void flagsChanged();
     void fromIdChanged();
     void fwdDateChanged();
@@ -184,6 +189,17 @@ inline void MessageObject::setDate(qint32 date) {
 
 inline qint32 MessageObject::date() const {
     return m_core.date();
+}
+
+inline void MessageObject::setEntities(const QList<MessageEntity> &entities) {
+    if(m_core.entities() == entities) return;
+    m_core.setEntities(entities);
+    Q_EMIT entitiesChanged();
+    Q_EMIT coreChanged();
+}
+
+inline QList<MessageEntity> MessageObject::entities() const {
+    return m_core.entities();
 }
 
 inline void MessageObject::setFlags(qint32 flags) {
@@ -324,6 +340,7 @@ inline MessageObject &MessageObject::operator =(const Message &b) {
 
     Q_EMIT actionChanged();
     Q_EMIT dateChanged();
+    Q_EMIT entitiesChanged();
     Q_EMIT flagsChanged();
     Q_EMIT fromIdChanged();
     Q_EMIT fwdDateChanged();

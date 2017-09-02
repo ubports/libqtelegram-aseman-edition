@@ -10,11 +10,11 @@
 #include "core/outboundpkt.h"
 #include "../coretypes.h"
 
-#include "telegram/types/authauthorization.h"
-#include <QtGlobal>
-#include <QString>
 #include "telegram/types/authcheckedphone.h"
+#include <QString>
 #include "telegram/types/authsentcode.h"
+#include <QtGlobal>
+#include "telegram/types/authauthorization.h"
 #include <QList>
 #include "telegram/types/authexportedauthorization.h"
 #include <QByteArray>
@@ -27,7 +27,6 @@ class LIBQTELEGRAMSHARED_EXPORT Auth : public TelegramFunctionObject
 {
 public:
     enum AuthFunction {
-        fncAuthImportBotAuthorization = 0x67a3ff2c,
         fncAuthCheckPhone = 0x6fe51dfb,
         fncAuthSendCode = 0x768d5f4d,
         fncAuthSendCall = 0x3c51564,
@@ -42,14 +41,12 @@ public:
         fncAuthSendSms = 0xda9f3e8,
         fncAuthCheckPassword = 0xa63011e,
         fncAuthRequestPasswordRecovery = 0xd897bc66,
-        fncAuthRecoverPassword = 0x4ea56e92
+        fncAuthRecoverPassword = 0x4ea56e92,
+        fncAuthImportBotAuthorization = 0x67a3ff2c
     };
 
     Auth();
     virtual ~Auth();
-
-    static bool importBotAuthorization(OutboundPkt *out, qint32 flags, qint32 apiId, const QString &apiHash, const QString &botAuthToken);
-    static AuthAuthorization importBotAuthorizationResult(InboundPkt *in);
 
     static bool checkPhone(OutboundPkt *out, const QString &phoneNumber);
     static AuthCheckedPhone checkPhoneResult(InboundPkt *in);
@@ -96,6 +93,9 @@ public:
     static bool recoverPassword(OutboundPkt *out, const QString &code);
     static AuthAuthorization recoverPasswordResult(InboundPkt *in);
 
+    static bool importBotAuthorization(OutboundPkt *out, qint32 flags, qint32 apiId, const QString &apiHash, const QString &botAuthToken);
+    static AuthAuthorization importBotAuthorizationResult(InboundPkt *in);
+
 };
 
 }
@@ -103,21 +103,6 @@ inline Functions::Auth::Auth() {
 }
 
 inline Functions::Auth::~Auth() {
-}
-
-inline bool Functions::Auth::importBotAuthorization(OutboundPkt *out, qint32 flags, qint32 apiId, const QString &apiHash, const QString &botAuthToken) {
-    out->appendInt(fncAuthImportBotAuthorization);
-    out->appendInt(flags);
-    out->appendInt(apiId);
-    out->appendQString(apiHash);
-    out->appendQString(botAuthToken);
-    return true;
-}
-
-inline AuthAuthorization Functions::Auth::importBotAuthorizationResult(InboundPkt *in) {
-    AuthAuthorization result;
-    if(!result.fetch(in)) return result;
-    return result;
 }
 
 inline bool Functions::Auth::checkPhone(OutboundPkt *out, const QString &phoneNumber) {
@@ -313,6 +298,21 @@ inline bool Functions::Auth::recoverPassword(OutboundPkt *out, const QString &co
 }
 
 inline AuthAuthorization Functions::Auth::recoverPasswordResult(InboundPkt *in) {
+    AuthAuthorization result;
+    if(!result.fetch(in)) return result;
+    return result;
+}
+
+inline bool Functions::Auth::importBotAuthorization(OutboundPkt *out, qint32 flags, qint32 apiId, const QString &apiHash, const QString &botAuthToken) {
+    out->appendInt(fncAuthImportBotAuthorization);
+    out->appendInt(flags);
+    out->appendInt(apiId);
+    out->appendQString(apiHash);
+    out->appendQString(botAuthToken);
+    return true;
+}
+
+inline AuthAuthorization Functions::Auth::importBotAuthorizationResult(InboundPkt *in) {
     AuthAuthorization result;
     if(!result.fetch(in)) return result;
     return result;

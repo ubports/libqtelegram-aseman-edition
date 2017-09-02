@@ -6,8 +6,6 @@
 
 * [Contacts](contacts.md)
 
-* [Geochats](geochats.md)
-
 * [Help](help.md)
 
 * [Messages](messages.md)

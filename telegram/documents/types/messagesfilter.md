@@ -6,10 +6,11 @@
 * [typeInputMessagesFilterPhotos](#messagesfiltertypeinputmessagesfilterphotos)
 * [typeInputMessagesFilterVideo](#messagesfiltertypeinputmessagesfiltervideo)
 * [typeInputMessagesFilterPhotoVideo](#messagesfiltertypeinputmessagesfilterphotovideo)
-* [typeInputMessagesFilterPhotoVideoDocuments](#messagesfiltertypeinputmessagesfilterphotovideodocuments)
-* [typeInputMessagesFilterDocument](#messagesfiltertypeinputmessagesfilterdocument)
 * [typeInputMessagesFilterAudio](#messagesfiltertypeinputmessagesfilteraudio)
+* [typeInputMessagesFilterDocument](#messagesfiltertypeinputmessagesfilterdocument)
+* [typeInputMessagesFilterPhotoVideoDocuments](#messagesfiltertypeinputmessagesfilterphotovideodocuments)
 * [typeInputMessagesFilterAudioDocuments](#messagesfiltertypeinputmessagesfilteraudiodocuments)
+* [typeInputMessagesFilterUrl](#messagesfiltertypeinputmessagesfilterurl)
 
 ## MessagesFilter::typeInputMessagesFilterEmpty
 
@@ -55,12 +56,12 @@ inputMessagesFilterPhotoVideo#56e9f0e4 = MessagesFilter;
 #### Parameters:
 
 
-## MessagesFilter::typeInputMessagesFilterPhotoVideoDocuments
+## MessagesFilter::typeInputMessagesFilterAudio
 
 #### Schema:
 
 ```c++
-inputMessagesFilterPhotoVideoDocuments#d95e73bb = MessagesFilter;
+inputMessagesFilterAudio#cfc87522 = MessagesFilter;
 ```
 
 #### Parameters:
@@ -77,12 +78,12 @@ inputMessagesFilterDocument#9eddf188 = MessagesFilter;
 #### Parameters:
 
 
-## MessagesFilter::typeInputMessagesFilterAudio
+## MessagesFilter::typeInputMessagesFilterPhotoVideoDocuments
 
 #### Schema:
 
 ```c++
-inputMessagesFilterAudio#cfc87522 = MessagesFilter;
+inputMessagesFilterPhotoVideoDocuments#d95e73bb = MessagesFilter;
 ```
 
 #### Parameters:
@@ -94,6 +95,17 @@ inputMessagesFilterAudio#cfc87522 = MessagesFilter;
 
 ```c++
 inputMessagesFilterAudioDocuments#5afbf764 = MessagesFilter;
+```
+
+#### Parameters:
+
+
+## MessagesFilter::typeInputMessagesFilterUrl
+
+#### Schema:
+
+```c++
+inputMessagesFilterUrl#7ef0dd87 = MessagesFilter;
 ```
 
 #### Parameters:

@@ -25,7 +25,6 @@
 #include "privacykey.h"
 #include "messagemedia.h"
 #include "encryptedmessage.h"
-#include "geochatmessage.h"
 #include "message.h"
 #include "peernotifysettings.h"
 #include "chatparticipants.h"
@@ -52,7 +51,6 @@ public:
         typeUpdateContactRegistered = 0x2575bbb9,
         typeUpdateContactLink = 0x9d2e67c5,
         typeUpdateNewAuthorization = 0x8f06529a,
-        typeUpdateNewGeoChatMessage = 0x5a68e3f7,
         typeUpdateNewEncryptedMessage = 0x12bcbd9a,
         typeUpdateEncryptedChatTyping = 0x1710f156,
         typeUpdateEncryption = 0xb4a2e88d,
@@ -132,9 +130,6 @@ public:
 
     void setMessageEncrypted(const EncryptedMessage &messageEncrypted);
     EncryptedMessage messageEncrypted() const;
-
-    void setMessageGeoChat(const GeoChatMessage &messageGeoChat);
-    GeoChatMessage messageGeoChat() const;
 
     void setMessage(const Message &message);
     Message message() const;
@@ -241,7 +236,6 @@ private:
     qint32 m_maxId;
     MessageMedia m_media;
     EncryptedMessage m_messageEncrypted;
-    GeoChatMessage m_messageGeoChat;
     Message m_message;
     QString m_messageString;
     QList<qint32> m_messages;
@@ -494,14 +488,6 @@ inline EncryptedMessage Update::messageEncrypted() const {
     return m_messageEncrypted;
 }
 
-inline void Update::setMessageGeoChat(const GeoChatMessage &messageGeoChat) {
-    m_messageGeoChat = messageGeoChat;
-}
-
-inline GeoChatMessage Update::messageGeoChat() const {
-    return m_messageGeoChat;
-}
-
 inline void Update::setMessage(const Message &message) {
     m_message = message;
 }
@@ -707,7 +693,6 @@ inline bool Update::operator ==(const Update &b) const {
            m_maxId == b.m_maxId &&
            m_media == b.m_media &&
            m_messageEncrypted == b.m_messageEncrypted &&
-           m_messageGeoChat == b.m_messageGeoChat &&
            m_message == b.m_message &&
            m_messageString == b.m_messageString &&
            m_messages == b.m_messages &&
@@ -852,13 +837,6 @@ inline bool Update::fetch(InboundPkt *in) {
         m_date = in->fetchInt();
         m_device = in->fetchQString();
         m_location = in->fetchQString();
-        m_classType = static_cast<UpdateClassType>(x);
-        return true;
-    }
-        break;
-    
-    case typeUpdateNewGeoChatMessage: {
-        m_messageGeoChat.fetch(in);
         m_classType = static_cast<UpdateClassType>(x);
         return true;
     }
@@ -1127,12 +1105,6 @@ inline bool Update::push(OutboundPkt *out) const {
     }
         break;
     
-    case typeUpdateNewGeoChatMessage: {
-        m_messageGeoChat.push(out);
-        return true;
-    }
-        break;
-    
     case typeUpdateNewEncryptedMessage: {
         m_messageEncrypted.push(out);
         out->appendInt(m_qts);
@@ -1381,13 +1353,6 @@ inline QMap<QString, QVariant> Update::toMap() const {
     }
         break;
     
-    case typeUpdateNewGeoChatMessage: {
-        result["classType"] = "Update::typeUpdateNewGeoChatMessage";
-        result["messageGeoChat"] = m_messageGeoChat.toMap();
-        return result;
-    }
-        break;
-    
     case typeUpdateNewEncryptedMessage: {
         result["classType"] = "Update::typeUpdateNewEncryptedMessage";
         result["messageEncrypted"] = m_messageEncrypted.toMap();
@@ -1625,11 +1590,6 @@ inline Update Update::fromMap(const QMap<QString, QVariant> &map) {
         result.setLocation( map.value("location").value<QString>() );
         return result;
     }
-    if(map.value("classType").toString() == "Update::typeUpdateNewGeoChatMessage") {
-        result.setClassType(typeUpdateNewGeoChatMessage);
-        result.setMessageGeoChat( GeoChatMessage::fromMap(map.value("messageGeoChat").toMap()) );
-        return result;
-    }
     if(map.value("classType").toString() == "Update::typeUpdateNewEncryptedMessage") {
         result.setClassType(typeUpdateNewEncryptedMessage);
         result.setMessageEncrypted( EncryptedMessage::fromMap(map.value("messageEncrypted").toMap()) );
@@ -1815,9 +1775,6 @@ inline QDataStream &operator<<(QDataStream &stream, const Update &item) {
         stream << item.date();
         stream << item.device();
         stream << item.location();
-        break;
-    case Update::typeUpdateNewGeoChatMessage:
-        stream << item.messageGeoChat();
         break;
     case Update::typeUpdateNewEncryptedMessage:
         stream << item.messageEncrypted();
@@ -2033,12 +1990,6 @@ inline QDataStream &operator>>(QDataStream &stream, Update &item) {
         QString m_location;
         stream >> m_location;
         item.setLocation(m_location);
-    }
-        break;
-    case Update::typeUpdateNewGeoChatMessage: {
-        GeoChatMessage m_message_GeoChat;
-        stream >> m_message_GeoChat;
-        item.setMessageGeoChat(m_message_GeoChat);
     }
         break;
     case Update::typeUpdateNewEncryptedMessage: {

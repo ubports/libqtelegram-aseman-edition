@@ -32,7 +32,7 @@ public:
         fncPhotosUpdateProfilePhoto = 0xeef579a0,
         fncPhotosUploadProfilePhoto = 0xd50f9c88,
         fncPhotosDeletePhotos = 0x87cf7f2f,
-        fncPhotosGetUserPhotos = 0xb7ee553c
+        fncPhotosGetUserPhotos = 0x91cd32a8
     };
 
     Photos();
@@ -47,7 +47,7 @@ public:
     static bool deletePhotos(OutboundPkt *out, const QList<InputPhoto> &id);
     static QList<qint64> deletePhotosResult(InboundPkt *in);
 
-    static bool getUserPhotos(OutboundPkt *out, const InputUser &userId, qint32 offset, qint32 maxId, qint32 limit);
+    static bool getUserPhotos(OutboundPkt *out, const InputUser &userId, qint32 offset, qint64 maxId, qint32 limit);
     static PhotosPhotos getUserPhotosResult(InboundPkt *in);
 
 };
@@ -110,11 +110,11 @@ inline QList<qint64> Functions::Photos::deletePhotosResult(InboundPkt *in) {
     return result;
 }
 
-inline bool Functions::Photos::getUserPhotos(OutboundPkt *out, const InputUser &userId, qint32 offset, qint32 maxId, qint32 limit) {
+inline bool Functions::Photos::getUserPhotos(OutboundPkt *out, const InputUser &userId, qint32 offset, qint64 maxId, qint32 limit) {
     out->appendInt(fncPhotosGetUserPhotos);
     if(!userId.push(out)) return false;
     out->appendInt(offset);
-    out->appendInt(maxId);
+    out->appendLong(maxId);
     out->appendInt(limit);
     return true;
 }

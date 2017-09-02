@@ -65,19 +65,17 @@ TelegramApi::TelegramApi(Session *session, Settings *settings, CryptoUtils *cryp
     accountChangePhoneMethods.onError = &TelegramApi::onAccountChangePhoneError;
     accountUpdateDeviceLockedMethods.onAnswer = &TelegramApi::onAccountUpdateDeviceLockedAnswer;
     accountUpdateDeviceLockedMethods.onError = &TelegramApi::onAccountUpdateDeviceLockedError;
+    accountGetPasswordMethods.onAnswer = &TelegramApi::onAccountGetPasswordAnswer;
+    accountGetPasswordMethods.onError = &TelegramApi::onAccountGetPasswordError;
     accountGetAuthorizationsMethods.onAnswer = &TelegramApi::onAccountGetAuthorizationsAnswer;
     accountGetAuthorizationsMethods.onError = &TelegramApi::onAccountGetAuthorizationsError;
     accountResetAuthorizationMethods.onAnswer = &TelegramApi::onAccountResetAuthorizationAnswer;
     accountResetAuthorizationMethods.onError = &TelegramApi::onAccountResetAuthorizationError;
-    accountGetPasswordMethods.onAnswer = &TelegramApi::onAccountGetPasswordAnswer;
-    accountGetPasswordMethods.onError = &TelegramApi::onAccountGetPasswordError;
     accountGetPasswordSettingsMethods.onAnswer = &TelegramApi::onAccountGetPasswordSettingsAnswer;
     accountGetPasswordSettingsMethods.onError = &TelegramApi::onAccountGetPasswordSettingsError;
     accountUpdatePasswordSettingsMethods.onAnswer = &TelegramApi::onAccountUpdatePasswordSettingsAnswer;
     accountUpdatePasswordSettingsMethods.onError = &TelegramApi::onAccountUpdatePasswordSettingsError;
     
-    authImportBotAuthorizationMethods.onAnswer = &TelegramApi::onAuthImportBotAuthorizationAnswer;
-    authImportBotAuthorizationMethods.onError = &TelegramApi::onAuthImportBotAuthorizationError;
     authCheckPhoneMethods.onAnswer = &TelegramApi::onAuthCheckPhoneAnswer;
     authCheckPhoneMethods.onError = &TelegramApi::onAuthCheckPhoneError;
     authSendCodeMethods.onAnswer = &TelegramApi::onAuthSendCodeAnswer;
@@ -108,6 +106,8 @@ TelegramApi::TelegramApi(Session *session, Settings *settings, CryptoUtils *cryp
     authRequestPasswordRecoveryMethods.onError = &TelegramApi::onAuthRequestPasswordRecoveryError;
     authRecoverPasswordMethods.onAnswer = &TelegramApi::onAuthRecoverPasswordAnswer;
     authRecoverPasswordMethods.onError = &TelegramApi::onAuthRecoverPasswordError;
+    authImportBotAuthorizationMethods.onAnswer = &TelegramApi::onAuthImportBotAuthorizationAnswer;
+    authImportBotAuthorizationMethods.onError = &TelegramApi::onAuthImportBotAuthorizationError;
     
     contactsGetStatusesMethods.onAnswer = &TelegramApi::onContactsGetStatusesAnswer;
     contactsGetStatusesMethods.onError = &TelegramApi::onContactsGetStatusesError;
@@ -115,8 +115,8 @@ TelegramApi::TelegramApi(Session *session, Settings *settings, CryptoUtils *cryp
     contactsGetContactsMethods.onError = &TelegramApi::onContactsGetContactsError;
     contactsImportContactsMethods.onAnswer = &TelegramApi::onContactsImportContactsAnswer;
     contactsImportContactsMethods.onError = &TelegramApi::onContactsImportContactsError;
-    contactsGetSuggestedMethods.onAnswer = &TelegramApi::onContactsGetSuggestedAnswer;
-    contactsGetSuggestedMethods.onError = &TelegramApi::onContactsGetSuggestedError;
+    contactsSearchMethods.onAnswer = &TelegramApi::onContactsSearchAnswer;
+    contactsSearchMethods.onError = &TelegramApi::onContactsSearchError;
     contactsDeleteContactMethods.onAnswer = &TelegramApi::onContactsDeleteContactAnswer;
     contactsDeleteContactMethods.onError = &TelegramApi::onContactsDeleteContactError;
     contactsDeleteContactsMethods.onAnswer = &TelegramApi::onContactsDeleteContactsAnswer;
@@ -131,35 +131,10 @@ TelegramApi::TelegramApi(Session *session, Settings *settings, CryptoUtils *cryp
     contactsExportCardMethods.onError = &TelegramApi::onContactsExportCardError;
     contactsImportCardMethods.onAnswer = &TelegramApi::onContactsImportCardAnswer;
     contactsImportCardMethods.onError = &TelegramApi::onContactsImportCardError;
-    contactsSearchMethods.onAnswer = &TelegramApi::onContactsSearchAnswer;
-    contactsSearchMethods.onError = &TelegramApi::onContactsSearchError;
     contactsResolveUsernameMethods.onAnswer = &TelegramApi::onContactsResolveUsernameAnswer;
     contactsResolveUsernameMethods.onError = &TelegramApi::onContactsResolveUsernameError;
-    
-    geochatsGetLocatedMethods.onAnswer = &TelegramApi::onGeochatsGetLocatedAnswer;
-    geochatsGetLocatedMethods.onError = &TelegramApi::onGeochatsGetLocatedError;
-    geochatsGetRecentsMethods.onAnswer = &TelegramApi::onGeochatsGetRecentsAnswer;
-    geochatsGetRecentsMethods.onError = &TelegramApi::onGeochatsGetRecentsError;
-    geochatsCheckinMethods.onAnswer = &TelegramApi::onGeochatsCheckinAnswer;
-    geochatsCheckinMethods.onError = &TelegramApi::onGeochatsCheckinError;
-    geochatsGetFullChatMethods.onAnswer = &TelegramApi::onGeochatsGetFullChatAnswer;
-    geochatsGetFullChatMethods.onError = &TelegramApi::onGeochatsGetFullChatError;
-    geochatsEditChatTitleMethods.onAnswer = &TelegramApi::onGeochatsEditChatTitleAnswer;
-    geochatsEditChatTitleMethods.onError = &TelegramApi::onGeochatsEditChatTitleError;
-    geochatsEditChatPhotoMethods.onAnswer = &TelegramApi::onGeochatsEditChatPhotoAnswer;
-    geochatsEditChatPhotoMethods.onError = &TelegramApi::onGeochatsEditChatPhotoError;
-    geochatsSearchMethods.onAnswer = &TelegramApi::onGeochatsSearchAnswer;
-    geochatsSearchMethods.onError = &TelegramApi::onGeochatsSearchError;
-    geochatsGetHistoryMethods.onAnswer = &TelegramApi::onGeochatsGetHistoryAnswer;
-    geochatsGetHistoryMethods.onError = &TelegramApi::onGeochatsGetHistoryError;
-    geochatsSetTypingMethods.onAnswer = &TelegramApi::onGeochatsSetTypingAnswer;
-    geochatsSetTypingMethods.onError = &TelegramApi::onGeochatsSetTypingError;
-    geochatsSendMessageMethods.onAnswer = &TelegramApi::onGeochatsSendMessageAnswer;
-    geochatsSendMessageMethods.onError = &TelegramApi::onGeochatsSendMessageError;
-    geochatsSendMediaMethods.onAnswer = &TelegramApi::onGeochatsSendMediaAnswer;
-    geochatsSendMediaMethods.onError = &TelegramApi::onGeochatsSendMediaError;
-    geochatsCreateGeoChatMethods.onAnswer = &TelegramApi::onGeochatsCreateGeoChatAnswer;
-    geochatsCreateGeoChatMethods.onError = &TelegramApi::onGeochatsCreateGeoChatError;
+    contactsGetSuggestedMethods.onAnswer = &TelegramApi::onContactsGetSuggestedAnswer;
+    contactsGetSuggestedMethods.onError = &TelegramApi::onContactsGetSuggestedError;
     
     helpGetConfigMethods.onAnswer = &TelegramApi::onHelpGetConfigAnswer;
     helpGetConfigMethods.onError = &TelegramApi::onHelpGetConfigError;
@@ -173,9 +148,9 @@ TelegramApi::TelegramApi(Session *session, Settings *settings, CryptoUtils *cryp
     helpGetInviteTextMethods.onError = &TelegramApi::onHelpGetInviteTextError;
     helpGetSupportMethods.onAnswer = &TelegramApi::onHelpGetSupportAnswer;
     helpGetSupportMethods.onError = &TelegramApi::onHelpGetSupportError;
+    helpGetAppChangelogMethods.onAnswer = &TelegramApi::onHelpGetAppChangelogAnswer;
+    helpGetAppChangelogMethods.onError = &TelegramApi::onHelpGetAppChangelogError;
     
-    messagesStartBotMethods.onAnswer = &TelegramApi::onMessagesStartBotAnswer;
-    messagesStartBotMethods.onError = &TelegramApi::onMessagesStartBotError;
     messagesGetMessagesMethods.onAnswer = &TelegramApi::onMessagesGetMessagesAnswer;
     messagesGetMessagesMethods.onError = &TelegramApi::onMessagesGetMessagesError;
     messagesGetDialogsMethods.onAnswer = &TelegramApi::onMessagesGetDialogsAnswer;
@@ -216,8 +191,6 @@ TelegramApi::TelegramApi(Session *session, Settings *settings, CryptoUtils *cryp
     messagesCreateChatMethods.onError = &TelegramApi::onMessagesCreateChatError;
     messagesForwardMessageMethods.onAnswer = &TelegramApi::onMessagesForwardMessageAnswer;
     messagesForwardMessageMethods.onError = &TelegramApi::onMessagesForwardMessageError;
-    messagesSendBroadcastMethods.onAnswer = &TelegramApi::onMessagesSendBroadcastAnswer;
-    messagesSendBroadcastMethods.onError = &TelegramApi::onMessagesSendBroadcastError;
     messagesGetDhConfigMethods.onAnswer = &TelegramApi::onMessagesGetDhConfigAnswer;
     messagesGetDhConfigMethods.onError = &TelegramApi::onMessagesGetDhConfigError;
     messagesRequestEncryptionMethods.onAnswer = &TelegramApi::onMessagesRequestEncryptionAnswer;
@@ -244,6 +217,8 @@ TelegramApi::TelegramApi(Session *session, Settings *settings, CryptoUtils *cryp
     messagesGetStickersMethods.onError = &TelegramApi::onMessagesGetStickersError;
     messagesGetAllStickersMethods.onAnswer = &TelegramApi::onMessagesGetAllStickersAnswer;
     messagesGetAllStickersMethods.onError = &TelegramApi::onMessagesGetAllStickersError;
+    messagesSendBroadcastMethods.onAnswer = &TelegramApi::onMessagesSendBroadcastAnswer;
+    messagesSendBroadcastMethods.onError = &TelegramApi::onMessagesSendBroadcastError;
     messagesGetWebPagePreviewMethods.onAnswer = &TelegramApi::onMessagesGetWebPagePreviewAnswer;
     messagesGetWebPagePreviewMethods.onError = &TelegramApi::onMessagesGetWebPagePreviewError;
     messagesExportChatInviteMethods.onAnswer = &TelegramApi::onMessagesExportChatInviteAnswer;
@@ -258,6 +233,8 @@ TelegramApi::TelegramApi(Session *session, Settings *settings, CryptoUtils *cryp
     messagesInstallStickerSetMethods.onError = &TelegramApi::onMessagesInstallStickerSetError;
     messagesUninstallStickerSetMethods.onAnswer = &TelegramApi::onMessagesUninstallStickerSetAnswer;
     messagesUninstallStickerSetMethods.onError = &TelegramApi::onMessagesUninstallStickerSetError;
+    messagesStartBotMethods.onAnswer = &TelegramApi::onMessagesStartBotAnswer;
+    messagesStartBotMethods.onError = &TelegramApi::onMessagesStartBotError;
     
     photosUpdateProfilePhotoMethods.onAnswer = &TelegramApi::onPhotosUpdateProfilePhotoAnswer;
     photosUpdateProfilePhotoMethods.onError = &TelegramApi::onPhotosUpdateProfilePhotoError;
@@ -710,6 +687,31 @@ void TelegramApi::onAccountUpdateDeviceLockedError(Query *q, qint32 errorCode, c
         Q_EMIT accountUpdateDeviceLockedError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
+qint64 TelegramApi::accountGetPassword(const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Account::getPassword(&p);
+    return session->sendQuery(p, &accountGetPasswordMethods, attachedData, "Account->getPassword" );
+}
+
+void TelegramApi::onAccountGetPasswordAnswer(Query *q, InboundPkt &inboundPkt) {
+    const AccountPassword &result = Functions::Account::getPasswordResult(&inboundPkt);
+    if(result.error())
+        onAccountGetPasswordError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT accountGetPasswordAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onAccountGetPasswordError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT accountGetPasswordError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
 qint64 TelegramApi::accountGetAuthorizations(const QVariant &attachedData, Session *session) {
     if(!session) session = mMainSession;
     CHECK_SESSION(session)
@@ -755,31 +757,6 @@ void TelegramApi::onAccountResetAuthorizationError(Query *q, qint32 errorCode, c
     onError(q, errorCode, errorText, q->extra(), accepted);
     if(!accepted)
         Q_EMIT accountResetAuthorizationError(q->mainMsgId(), errorCode, errorText, q->extra());
-}
-
-qint64 TelegramApi::accountGetPassword(const QVariant &attachedData, Session *session) {
-    if(!session) session = mMainSession;
-    CHECK_SESSION(session)
-    DEBUG_FUNCTION
-    OutboundPkt p(mSettings);
-    INIT_MAIN_CONNECTION(session)
-    Functions::Account::getPassword(&p);
-    return session->sendQuery(p, &accountGetPasswordMethods, attachedData, "Account->getPassword" );
-}
-
-void TelegramApi::onAccountGetPasswordAnswer(Query *q, InboundPkt &inboundPkt) {
-    const AccountPassword &result = Functions::Account::getPasswordResult(&inboundPkt);
-    if(result.error())
-        onAccountGetPasswordError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
-    else
-        Q_EMIT accountGetPasswordAnswer(q->mainMsgId(), result, q->extra());
-}
-
-void TelegramApi::onAccountGetPasswordError(Query *q, qint32 errorCode, const QString &errorText) {
-    bool accepted = false;
-    onError(q, errorCode, errorText, q->extra(), accepted);
-    if(!accepted)
-        Q_EMIT accountGetPasswordError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
 qint64 TelegramApi::accountGetPasswordSettings(const QByteArray &current_password_hash, const QVariant &attachedData, Session *session) {
@@ -829,31 +806,6 @@ void TelegramApi::onAccountUpdatePasswordSettingsError(Query *q, qint32 errorCod
         Q_EMIT accountUpdatePasswordSettingsError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
-
-qint64 TelegramApi::authImportBotAuthorization(qint32 flags, qint32 api_id, const QString &api_hash, const QString &bot_auth_token, const QVariant &attachedData, Session *session) {
-    if(!session) session = mMainSession;
-    CHECK_SESSION(session)
-    DEBUG_FUNCTION
-    OutboundPkt p(mSettings);
-    INIT_MAIN_CONNECTION(session)
-    Functions::Auth::importBotAuthorization(&p, flags, api_id, api_hash, bot_auth_token);
-    return session->sendQuery(p, &authImportBotAuthorizationMethods, attachedData, "Auth->importBotAuthorization" );
-}
-
-void TelegramApi::onAuthImportBotAuthorizationAnswer(Query *q, InboundPkt &inboundPkt) {
-    const AuthAuthorization &result = Functions::Auth::importBotAuthorizationResult(&inboundPkt);
-    if(result.error())
-        onAuthImportBotAuthorizationError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
-    else
-        Q_EMIT authImportBotAuthorizationAnswer(q->mainMsgId(), result, q->extra());
-}
-
-void TelegramApi::onAuthImportBotAuthorizationError(Query *q, qint32 errorCode, const QString &errorText) {
-    bool accepted = false;
-    onError(q, errorCode, errorText, q->extra(), accepted);
-    if(!accepted)
-        Q_EMIT authImportBotAuthorizationError(q->mainMsgId(), errorCode, errorText, q->extra());
-}
 
 qint64 TelegramApi::authCheckPhone(const QString &phone_number, const QVariant &attachedData, Session *session) {
     if(!session) session = mMainSession;
@@ -1212,6 +1164,31 @@ void TelegramApi::onAuthRecoverPasswordError(Query *q, qint32 errorCode, const Q
         Q_EMIT authRecoverPasswordError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
+qint64 TelegramApi::authImportBotAuthorization(qint32 flags, qint32 api_id, const QString &api_hash, const QString &bot_auth_token, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Auth::importBotAuthorization(&p, flags, api_id, api_hash, bot_auth_token);
+    return session->sendQuery(p, &authImportBotAuthorizationMethods, attachedData, "Auth->importBotAuthorization" );
+}
+
+void TelegramApi::onAuthImportBotAuthorizationAnswer(Query *q, InboundPkt &inboundPkt) {
+    const AuthAuthorization &result = Functions::Auth::importBotAuthorizationResult(&inboundPkt);
+    if(result.error())
+        onAuthImportBotAuthorizationError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT authImportBotAuthorizationAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onAuthImportBotAuthorizationError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT authImportBotAuthorizationError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
 
 qint64 TelegramApi::contactsGetStatuses(const QVariant &attachedData, Session *session) {
     if(!session) session = mMainSession;
@@ -1285,29 +1262,29 @@ void TelegramApi::onContactsImportContactsError(Query *q, qint32 errorCode, cons
         Q_EMIT contactsImportContactsError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
-qint64 TelegramApi::contactsGetSuggested(qint32 limit, const QVariant &attachedData, Session *session) {
+qint64 TelegramApi::contactsSearch(const QString &q, qint32 limit, const QVariant &attachedData, Session *session) {
     if(!session) session = mMainSession;
     CHECK_SESSION(session)
     DEBUG_FUNCTION
     OutboundPkt p(mSettings);
     INIT_MAIN_CONNECTION(session)
-    Functions::Contacts::getSuggested(&p, limit);
-    return session->sendQuery(p, &contactsGetSuggestedMethods, attachedData, "Contacts->getSuggested" );
+    Functions::Contacts::search(&p, q, limit);
+    return session->sendQuery(p, &contactsSearchMethods, attachedData, "Contacts->search" );
 }
 
-void TelegramApi::onContactsGetSuggestedAnswer(Query *q, InboundPkt &inboundPkt) {
-    const ContactsSuggested &result = Functions::Contacts::getSuggestedResult(&inboundPkt);
+void TelegramApi::onContactsSearchAnswer(Query *q, InboundPkt &inboundPkt) {
+    const ContactsFound &result = Functions::Contacts::searchResult(&inboundPkt);
     if(result.error())
-        onContactsGetSuggestedError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+        onContactsSearchError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
     else
-        Q_EMIT contactsGetSuggestedAnswer(q->mainMsgId(), result, q->extra());
+        Q_EMIT contactsSearchAnswer(q->mainMsgId(), result, q->extra());
 }
 
-void TelegramApi::onContactsGetSuggestedError(Query *q, qint32 errorCode, const QString &errorText) {
+void TelegramApi::onContactsSearchError(Query *q, qint32 errorCode, const QString &errorText) {
     bool accepted = false;
     onError(q, errorCode, errorText, q->extra(), accepted);
     if(!accepted)
-        Q_EMIT contactsGetSuggestedError(q->mainMsgId(), errorCode, errorText, q->extra());
+        Q_EMIT contactsSearchError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
 qint64 TelegramApi::contactsDeleteContact(const InputUser &id, const QVariant &attachedData, Session *session) {
@@ -1473,31 +1450,6 @@ void TelegramApi::onContactsImportCardError(Query *q, qint32 errorCode, const QS
         Q_EMIT contactsImportCardError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
-qint64 TelegramApi::contactsSearch(const QString &q, qint32 limit, const QVariant &attachedData, Session *session) {
-    if(!session) session = mMainSession;
-    CHECK_SESSION(session)
-    DEBUG_FUNCTION
-    OutboundPkt p(mSettings);
-    INIT_MAIN_CONNECTION(session)
-    Functions::Contacts::search(&p, q, limit);
-    return session->sendQuery(p, &contactsSearchMethods, attachedData, "Contacts->search" );
-}
-
-void TelegramApi::onContactsSearchAnswer(Query *q, InboundPkt &inboundPkt) {
-    const ContactsFound &result = Functions::Contacts::searchResult(&inboundPkt);
-    if(result.error())
-        onContactsSearchError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
-    else
-        Q_EMIT contactsSearchAnswer(q->mainMsgId(), result, q->extra());
-}
-
-void TelegramApi::onContactsSearchError(Query *q, qint32 errorCode, const QString &errorText) {
-    bool accepted = false;
-    onError(q, errorCode, errorText, q->extra(), accepted);
-    if(!accepted)
-        Q_EMIT contactsSearchError(q->mainMsgId(), errorCode, errorText, q->extra());
-}
-
 qint64 TelegramApi::contactsResolveUsername(const QString &username, const QVariant &attachedData, Session *session) {
     if(!session) session = mMainSession;
     CHECK_SESSION(session)
@@ -1523,302 +1475,29 @@ void TelegramApi::onContactsResolveUsernameError(Query *q, qint32 errorCode, con
         Q_EMIT contactsResolveUsernameError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
-
-qint64 TelegramApi::geochatsGetLocated(const InputGeoPoint &geo_point, qint32 radius, qint32 limit, const QVariant &attachedData, Session *session) {
+qint64 TelegramApi::contactsGetSuggested(qint32 limit, const QVariant &attachedData, Session *session) {
     if(!session) session = mMainSession;
     CHECK_SESSION(session)
     DEBUG_FUNCTION
     OutboundPkt p(mSettings);
     INIT_MAIN_CONNECTION(session)
-    Functions::Geochats::getLocated(&p, geo_point, radius, limit);
-    return session->sendQuery(p, &geochatsGetLocatedMethods, attachedData, "Geochats->getLocated" );
+    Functions::Contacts::getSuggested(&p, limit);
+    return session->sendQuery(p, &contactsGetSuggestedMethods, attachedData, "Contacts->getSuggested" );
 }
 
-void TelegramApi::onGeochatsGetLocatedAnswer(Query *q, InboundPkt &inboundPkt) {
-    const GeochatsLocated &result = Functions::Geochats::getLocatedResult(&inboundPkt);
+void TelegramApi::onContactsGetSuggestedAnswer(Query *q, InboundPkt &inboundPkt) {
+    const ContactsSuggested &result = Functions::Contacts::getSuggestedResult(&inboundPkt);
     if(result.error())
-        onGeochatsGetLocatedError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+        onContactsGetSuggestedError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
     else
-        Q_EMIT geochatsGetLocatedAnswer(q->mainMsgId(), result, q->extra());
+        Q_EMIT contactsGetSuggestedAnswer(q->mainMsgId(), result, q->extra());
 }
 
-void TelegramApi::onGeochatsGetLocatedError(Query *q, qint32 errorCode, const QString &errorText) {
+void TelegramApi::onContactsGetSuggestedError(Query *q, qint32 errorCode, const QString &errorText) {
     bool accepted = false;
     onError(q, errorCode, errorText, q->extra(), accepted);
     if(!accepted)
-        Q_EMIT geochatsGetLocatedError(q->mainMsgId(), errorCode, errorText, q->extra());
-}
-
-qint64 TelegramApi::geochatsGetRecents(qint32 offset, qint32 limit, const QVariant &attachedData, Session *session) {
-    if(!session) session = mMainSession;
-    CHECK_SESSION(session)
-    DEBUG_FUNCTION
-    OutboundPkt p(mSettings);
-    INIT_MAIN_CONNECTION(session)
-    Functions::Geochats::getRecents(&p, offset, limit);
-    return session->sendQuery(p, &geochatsGetRecentsMethods, attachedData, "Geochats->getRecents" );
-}
-
-void TelegramApi::onGeochatsGetRecentsAnswer(Query *q, InboundPkt &inboundPkt) {
-    const GeochatsMessages &result = Functions::Geochats::getRecentsResult(&inboundPkt);
-    if(result.error())
-        onGeochatsGetRecentsError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
-    else
-        Q_EMIT geochatsGetRecentsAnswer(q->mainMsgId(), result, q->extra());
-}
-
-void TelegramApi::onGeochatsGetRecentsError(Query *q, qint32 errorCode, const QString &errorText) {
-    bool accepted = false;
-    onError(q, errorCode, errorText, q->extra(), accepted);
-    if(!accepted)
-        Q_EMIT geochatsGetRecentsError(q->mainMsgId(), errorCode, errorText, q->extra());
-}
-
-qint64 TelegramApi::geochatsCheckin(const InputGeoChat &peer, const QVariant &attachedData, Session *session) {
-    if(!session) session = mMainSession;
-    CHECK_SESSION(session)
-    DEBUG_FUNCTION
-    OutboundPkt p(mSettings);
-    INIT_MAIN_CONNECTION(session)
-    Functions::Geochats::checkin(&p, peer);
-    return session->sendQuery(p, &geochatsCheckinMethods, attachedData, "Geochats->checkin" );
-}
-
-void TelegramApi::onGeochatsCheckinAnswer(Query *q, InboundPkt &inboundPkt) {
-    const GeochatsStatedMessage &result = Functions::Geochats::checkinResult(&inboundPkt);
-    if(result.error())
-        onGeochatsCheckinError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
-    else
-        Q_EMIT geochatsCheckinAnswer(q->mainMsgId(), result, q->extra());
-}
-
-void TelegramApi::onGeochatsCheckinError(Query *q, qint32 errorCode, const QString &errorText) {
-    bool accepted = false;
-    onError(q, errorCode, errorText, q->extra(), accepted);
-    if(!accepted)
-        Q_EMIT geochatsCheckinError(q->mainMsgId(), errorCode, errorText, q->extra());
-}
-
-qint64 TelegramApi::geochatsGetFullChat(const InputGeoChat &peer, const QVariant &attachedData, Session *session) {
-    if(!session) session = mMainSession;
-    CHECK_SESSION(session)
-    DEBUG_FUNCTION
-    OutboundPkt p(mSettings);
-    INIT_MAIN_CONNECTION(session)
-    Functions::Geochats::getFullChat(&p, peer);
-    return session->sendQuery(p, &geochatsGetFullChatMethods, attachedData, "Geochats->getFullChat" );
-}
-
-void TelegramApi::onGeochatsGetFullChatAnswer(Query *q, InboundPkt &inboundPkt) {
-    const MessagesChatFull &result = Functions::Geochats::getFullChatResult(&inboundPkt);
-    if(result.error())
-        onGeochatsGetFullChatError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
-    else
-        Q_EMIT geochatsGetFullChatAnswer(q->mainMsgId(), result, q->extra());
-}
-
-void TelegramApi::onGeochatsGetFullChatError(Query *q, qint32 errorCode, const QString &errorText) {
-    bool accepted = false;
-    onError(q, errorCode, errorText, q->extra(), accepted);
-    if(!accepted)
-        Q_EMIT geochatsGetFullChatError(q->mainMsgId(), errorCode, errorText, q->extra());
-}
-
-qint64 TelegramApi::geochatsEditChatTitle(const InputGeoChat &peer, const QString &title, const QString &address, const QVariant &attachedData, Session *session) {
-    if(!session) session = mMainSession;
-    CHECK_SESSION(session)
-    DEBUG_FUNCTION
-    OutboundPkt p(mSettings);
-    INIT_MAIN_CONNECTION(session)
-    Functions::Geochats::editChatTitle(&p, peer, title, address);
-    return session->sendQuery(p, &geochatsEditChatTitleMethods, attachedData, "Geochats->editChatTitle" );
-}
-
-void TelegramApi::onGeochatsEditChatTitleAnswer(Query *q, InboundPkt &inboundPkt) {
-    const GeochatsStatedMessage &result = Functions::Geochats::editChatTitleResult(&inboundPkt);
-    if(result.error())
-        onGeochatsEditChatTitleError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
-    else
-        Q_EMIT geochatsEditChatTitleAnswer(q->mainMsgId(), result, q->extra());
-}
-
-void TelegramApi::onGeochatsEditChatTitleError(Query *q, qint32 errorCode, const QString &errorText) {
-    bool accepted = false;
-    onError(q, errorCode, errorText, q->extra(), accepted);
-    if(!accepted)
-        Q_EMIT geochatsEditChatTitleError(q->mainMsgId(), errorCode, errorText, q->extra());
-}
-
-qint64 TelegramApi::geochatsEditChatPhoto(const InputGeoChat &peer, const InputChatPhoto &photo, const QVariant &attachedData, Session *session) {
-    if(!session) session = mMainSession;
-    CHECK_SESSION(session)
-    DEBUG_FUNCTION
-    OutboundPkt p(mSettings);
-    INIT_MAIN_CONNECTION(session)
-    Functions::Geochats::editChatPhoto(&p, peer, photo);
-    return session->sendQuery(p, &geochatsEditChatPhotoMethods, attachedData, "Geochats->editChatPhoto" );
-}
-
-void TelegramApi::onGeochatsEditChatPhotoAnswer(Query *q, InboundPkt &inboundPkt) {
-    const GeochatsStatedMessage &result = Functions::Geochats::editChatPhotoResult(&inboundPkt);
-    if(result.error())
-        onGeochatsEditChatPhotoError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
-    else
-        Q_EMIT geochatsEditChatPhotoAnswer(q->mainMsgId(), result, q->extra());
-}
-
-void TelegramApi::onGeochatsEditChatPhotoError(Query *q, qint32 errorCode, const QString &errorText) {
-    bool accepted = false;
-    onError(q, errorCode, errorText, q->extra(), accepted);
-    if(!accepted)
-        Q_EMIT geochatsEditChatPhotoError(q->mainMsgId(), errorCode, errorText, q->extra());
-}
-
-qint64 TelegramApi::geochatsSearch(const InputGeoChat &peer, const QString &q, const MessagesFilter &filter, qint32 min_date, qint32 max_date, qint32 offset, qint32 max_id, qint32 limit, const QVariant &attachedData, Session *session) {
-    if(!session) session = mMainSession;
-    CHECK_SESSION(session)
-    DEBUG_FUNCTION
-    OutboundPkt p(mSettings);
-    INIT_MAIN_CONNECTION(session)
-    Functions::Geochats::search(&p, peer, q, filter, min_date, max_date, offset, max_id, limit);
-    return session->sendQuery(p, &geochatsSearchMethods, attachedData, "Geochats->search" );
-}
-
-void TelegramApi::onGeochatsSearchAnswer(Query *q, InboundPkt &inboundPkt) {
-    const GeochatsMessages &result = Functions::Geochats::searchResult(&inboundPkt);
-    if(result.error())
-        onGeochatsSearchError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
-    else
-        Q_EMIT geochatsSearchAnswer(q->mainMsgId(), result, q->extra());
-}
-
-void TelegramApi::onGeochatsSearchError(Query *q, qint32 errorCode, const QString &errorText) {
-    bool accepted = false;
-    onError(q, errorCode, errorText, q->extra(), accepted);
-    if(!accepted)
-        Q_EMIT geochatsSearchError(q->mainMsgId(), errorCode, errorText, q->extra());
-}
-
-qint64 TelegramApi::geochatsGetHistory(const InputGeoChat &peer, qint32 offset, qint32 max_id, qint32 limit, const QVariant &attachedData, Session *session) {
-    if(!session) session = mMainSession;
-    CHECK_SESSION(session)
-    DEBUG_FUNCTION
-    OutboundPkt p(mSettings);
-    INIT_MAIN_CONNECTION(session)
-    Functions::Geochats::getHistory(&p, peer, offset, max_id, limit);
-    return session->sendQuery(p, &geochatsGetHistoryMethods, attachedData, "Geochats->getHistory" );
-}
-
-void TelegramApi::onGeochatsGetHistoryAnswer(Query *q, InboundPkt &inboundPkt) {
-    const GeochatsMessages &result = Functions::Geochats::getHistoryResult(&inboundPkt);
-    if(result.error())
-        onGeochatsGetHistoryError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
-    else
-        Q_EMIT geochatsGetHistoryAnswer(q->mainMsgId(), result, q->extra());
-}
-
-void TelegramApi::onGeochatsGetHistoryError(Query *q, qint32 errorCode, const QString &errorText) {
-    bool accepted = false;
-    onError(q, errorCode, errorText, q->extra(), accepted);
-    if(!accepted)
-        Q_EMIT geochatsGetHistoryError(q->mainMsgId(), errorCode, errorText, q->extra());
-}
-
-qint64 TelegramApi::geochatsSetTyping(const InputGeoChat &peer, bool typing, const QVariant &attachedData, Session *session) {
-    if(!session) session = mMainSession;
-    CHECK_SESSION(session)
-    DEBUG_FUNCTION
-    OutboundPkt p(mSettings);
-    INIT_MAIN_CONNECTION(session)
-    Functions::Geochats::setTyping(&p, peer, typing);
-    return session->sendQuery(p, &geochatsSetTypingMethods, attachedData, "Geochats->setTyping" );
-}
-
-void TelegramApi::onGeochatsSetTypingAnswer(Query *q, InboundPkt &inboundPkt) {
-    const bool result = Functions::Geochats::setTypingResult(&inboundPkt);
-    Q_EMIT geochatsSetTypingAnswer(q->mainMsgId(), result, q->extra());
-}
-
-void TelegramApi::onGeochatsSetTypingError(Query *q, qint32 errorCode, const QString &errorText) {
-    bool accepted = false;
-    onError(q, errorCode, errorText, q->extra(), accepted);
-    if(!accepted)
-        Q_EMIT geochatsSetTypingError(q->mainMsgId(), errorCode, errorText, q->extra());
-}
-
-qint64 TelegramApi::geochatsSendMessage(const InputGeoChat &peer, const QString &message, qint64 random_id, const QVariant &attachedData, Session *session) {
-    if(!session) session = mMainSession;
-    CHECK_SESSION(session)
-    DEBUG_FUNCTION
-    OutboundPkt p(mSettings);
-    INIT_MAIN_CONNECTION(session)
-    Functions::Geochats::sendMessage(&p, peer, message, random_id);
-    return session->sendQuery(p, &geochatsSendMessageMethods, attachedData, "Geochats->sendMessage" );
-}
-
-void TelegramApi::onGeochatsSendMessageAnswer(Query *q, InboundPkt &inboundPkt) {
-    const GeochatsStatedMessage &result = Functions::Geochats::sendMessageResult(&inboundPkt);
-    if(result.error())
-        onGeochatsSendMessageError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
-    else
-        Q_EMIT geochatsSendMessageAnswer(q->mainMsgId(), result, q->extra());
-}
-
-void TelegramApi::onGeochatsSendMessageError(Query *q, qint32 errorCode, const QString &errorText) {
-    bool accepted = false;
-    onError(q, errorCode, errorText, q->extra(), accepted);
-    if(!accepted)
-        Q_EMIT geochatsSendMessageError(q->mainMsgId(), errorCode, errorText, q->extra());
-}
-
-qint64 TelegramApi::geochatsSendMedia(const InputGeoChat &peer, const InputMedia &media, qint64 random_id, const QVariant &attachedData, Session *session) {
-    if(!session) session = mMainSession;
-    CHECK_SESSION(session)
-    DEBUG_FUNCTION
-    OutboundPkt p(mSettings);
-    INIT_MAIN_CONNECTION(session)
-    Functions::Geochats::sendMedia(&p, peer, media, random_id);
-    return session->sendQuery(p, &geochatsSendMediaMethods, attachedData, "Geochats->sendMedia" );
-}
-
-void TelegramApi::onGeochatsSendMediaAnswer(Query *q, InboundPkt &inboundPkt) {
-    const GeochatsStatedMessage &result = Functions::Geochats::sendMediaResult(&inboundPkt);
-    if(result.error())
-        onGeochatsSendMediaError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
-    else
-        Q_EMIT geochatsSendMediaAnswer(q->mainMsgId(), result, q->extra());
-}
-
-void TelegramApi::onGeochatsSendMediaError(Query *q, qint32 errorCode, const QString &errorText) {
-    bool accepted = false;
-    onError(q, errorCode, errorText, q->extra(), accepted);
-    if(!accepted)
-        Q_EMIT geochatsSendMediaError(q->mainMsgId(), errorCode, errorText, q->extra());
-}
-
-qint64 TelegramApi::geochatsCreateGeoChat(const QString &title, const InputGeoPoint &geo_point, const QString &address, const QString &venue, const QVariant &attachedData, Session *session) {
-    if(!session) session = mMainSession;
-    CHECK_SESSION(session)
-    DEBUG_FUNCTION
-    OutboundPkt p(mSettings);
-    INIT_MAIN_CONNECTION(session)
-    Functions::Geochats::createGeoChat(&p, title, geo_point, address, venue);
-    return session->sendQuery(p, &geochatsCreateGeoChatMethods, attachedData, "Geochats->createGeoChat" );
-}
-
-void TelegramApi::onGeochatsCreateGeoChatAnswer(Query *q, InboundPkt &inboundPkt) {
-    const GeochatsStatedMessage &result = Functions::Geochats::createGeoChatResult(&inboundPkt);
-    if(result.error())
-        onGeochatsCreateGeoChatError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
-    else
-        Q_EMIT geochatsCreateGeoChatAnswer(q->mainMsgId(), result, q->extra());
-}
-
-void TelegramApi::onGeochatsCreateGeoChatError(Query *q, qint32 errorCode, const QString &errorText) {
-    bool accepted = false;
-    onError(q, errorCode, errorText, q->extra(), accepted);
-    if(!accepted)
-        Q_EMIT geochatsCreateGeoChatError(q->mainMsgId(), errorCode, errorText, q->extra());
+        Q_EMIT contactsGetSuggestedError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
 
@@ -1969,31 +1648,31 @@ void TelegramApi::onHelpGetSupportError(Query *q, qint32 errorCode, const QStrin
         Q_EMIT helpGetSupportError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
-
-qint64 TelegramApi::messagesStartBot(const InputUser &bot, qint32 chat_id, qint64 random_id, const QString &start_param, const QVariant &attachedData, Session *session) {
+qint64 TelegramApi::helpGetAppChangelog(const QString &device_model, const QString &system_version, const QString &app_version, const QString &lang_code, const QVariant &attachedData, Session *session) {
     if(!session) session = mMainSession;
     CHECK_SESSION(session)
     DEBUG_FUNCTION
     OutboundPkt p(mSettings);
     INIT_MAIN_CONNECTION(session)
-    Functions::Messages::startBot(&p, bot, chat_id, random_id, start_param);
-    return session->sendQuery(p, &messagesStartBotMethods, attachedData, "Messages->startBot" );
+    Functions::Help::getAppChangelog(&p, device_model, system_version, app_version, lang_code);
+    return session->sendQuery(p, &helpGetAppChangelogMethods, attachedData, "Help->getAppChangelog" );
 }
 
-void TelegramApi::onMessagesStartBotAnswer(Query *q, InboundPkt &inboundPkt) {
-    const UpdatesType &result = Functions::Messages::startBotResult(&inboundPkt);
+void TelegramApi::onHelpGetAppChangelogAnswer(Query *q, InboundPkt &inboundPkt) {
+    const HelpAppChangelog &result = Functions::Help::getAppChangelogResult(&inboundPkt);
     if(result.error())
-        onMessagesStartBotError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+        onHelpGetAppChangelogError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
     else
-        Q_EMIT messagesStartBotAnswer(q->mainMsgId(), result, q->extra());
+        Q_EMIT helpGetAppChangelogAnswer(q->mainMsgId(), result, q->extra());
 }
 
-void TelegramApi::onMessagesStartBotError(Query *q, qint32 errorCode, const QString &errorText) {
+void TelegramApi::onHelpGetAppChangelogError(Query *q, qint32 errorCode, const QString &errorText) {
     bool accepted = false;
     onError(q, errorCode, errorText, q->extra(), accepted);
     if(!accepted)
-        Q_EMIT messagesStartBotError(q->mainMsgId(), errorCode, errorText, q->extra());
+        Q_EMIT helpGetAppChangelogError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
+
 
 qint64 TelegramApi::messagesGetMessages(const QList<qint32> &id, const QVariant &attachedData, Session *session) {
     if(!session) session = mMainSession;
@@ -2214,18 +1893,18 @@ void TelegramApi::onMessagesSetTypingError(Query *q, qint32 errorCode, const QSt
         Q_EMIT messagesSetTypingError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
-qint64 TelegramApi::messagesSendMessage(const InputPeer &peer, qint32 reply_to_msg_id, const QString &message, qint64 random_id, const ReplyMarkup &reply_markup, const QVariant &attachedData, Session *session) {
+qint64 TelegramApi::messagesSendMessage(const InputPeer &peer, qint32 reply_to_msg_id, const QString &message, qint64 random_id, const ReplyMarkup &reply_markup, const QList<MessageEntity> &entities, const QVariant &attachedData, Session *session) {
     if(!session) session = mMainSession;
     CHECK_SESSION(session)
     DEBUG_FUNCTION
     OutboundPkt p(mSettings);
     INIT_MAIN_CONNECTION(session)
-    Functions::Messages::sendMessage(&p, peer, reply_to_msg_id, message, random_id, reply_markup);
+    Functions::Messages::sendMessage(&p, peer, reply_to_msg_id, message, random_id, reply_markup, entities);
     return session->sendQuery(p, &messagesSendMessageMethods, attachedData, "Messages->sendMessage" );
 }
 
 void TelegramApi::onMessagesSendMessageAnswer(Query *q, InboundPkt &inboundPkt) {
-    const MessagesSentMessage &result = Functions::Messages::sendMessageResult(&inboundPkt);
+    const UpdatesType &result = Functions::Messages::sendMessageResult(&inboundPkt);
     if(result.error())
         onMessagesSendMessageError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
     else
@@ -2487,31 +2166,6 @@ void TelegramApi::onMessagesForwardMessageError(Query *q, qint32 errorCode, cons
     onError(q, errorCode, errorText, q->extra(), accepted);
     if(!accepted)
         Q_EMIT messagesForwardMessageError(q->mainMsgId(), errorCode, errorText, q->extra());
-}
-
-qint64 TelegramApi::messagesSendBroadcast(const QList<InputUser> &contacts, const QList<qint64> &random_id, const QString &message, const InputMedia &media, const QVariant &attachedData, Session *session) {
-    if(!session) session = mMainSession;
-    CHECK_SESSION(session)
-    DEBUG_FUNCTION
-    OutboundPkt p(mSettings);
-    INIT_MAIN_CONNECTION(session)
-    Functions::Messages::sendBroadcast(&p, contacts, random_id, message, media);
-    return session->sendQuery(p, &messagesSendBroadcastMethods, attachedData, "Messages->sendBroadcast" );
-}
-
-void TelegramApi::onMessagesSendBroadcastAnswer(Query *q, InboundPkt &inboundPkt) {
-    const UpdatesType &result = Functions::Messages::sendBroadcastResult(&inboundPkt);
-    if(result.error())
-        onMessagesSendBroadcastError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
-    else
-        Q_EMIT messagesSendBroadcastAnswer(q->mainMsgId(), result, q->extra());
-}
-
-void TelegramApi::onMessagesSendBroadcastError(Query *q, qint32 errorCode, const QString &errorText) {
-    bool accepted = false;
-    onError(q, errorCode, errorText, q->extra(), accepted);
-    if(!accepted)
-        Q_EMIT messagesSendBroadcastError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
 qint64 TelegramApi::messagesGetDhConfig(qint32 version, qint32 random_length, const QVariant &attachedData, Session *session) {
@@ -2827,6 +2481,31 @@ void TelegramApi::onMessagesGetAllStickersError(Query *q, qint32 errorCode, cons
         Q_EMIT messagesGetAllStickersError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
+qint64 TelegramApi::messagesSendBroadcast(const QList<InputUser> &contacts, const QList<qint64> &random_id, const QString &message, const InputMedia &media, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Messages::sendBroadcast(&p, contacts, random_id, message, media);
+    return session->sendQuery(p, &messagesSendBroadcastMethods, attachedData, "Messages->sendBroadcast" );
+}
+
+void TelegramApi::onMessagesSendBroadcastAnswer(Query *q, InboundPkt &inboundPkt) {
+    const UpdatesType &result = Functions::Messages::sendBroadcastResult(&inboundPkt);
+    if(result.error())
+        onMessagesSendBroadcastError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT messagesSendBroadcastAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onMessagesSendBroadcastError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT messagesSendBroadcastError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
 qint64 TelegramApi::messagesGetWebPagePreview(const QString &message, const QVariant &attachedData, Session *session) {
     if(!session) session = mMainSession;
     CHECK_SESSION(session)
@@ -2952,13 +2631,13 @@ void TelegramApi::onMessagesGetStickerSetError(Query *q, qint32 errorCode, const
         Q_EMIT messagesGetStickerSetError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
-qint64 TelegramApi::messagesInstallStickerSet(const InputStickerSet &stickerset, const QVariant &attachedData, Session *session) {
+qint64 TelegramApi::messagesInstallStickerSet(const InputStickerSet &stickerset, bool disabled, const QVariant &attachedData, Session *session) {
     if(!session) session = mMainSession;
     CHECK_SESSION(session)
     DEBUG_FUNCTION
     OutboundPkt p(mSettings);
     INIT_MAIN_CONNECTION(session)
-    Functions::Messages::installStickerSet(&p, stickerset);
+    Functions::Messages::installStickerSet(&p, stickerset, disabled);
     return session->sendQuery(p, &messagesInstallStickerSetMethods, attachedData, "Messages->installStickerSet" );
 }
 
@@ -2994,6 +2673,31 @@ void TelegramApi::onMessagesUninstallStickerSetError(Query *q, qint32 errorCode,
     onError(q, errorCode, errorText, q->extra(), accepted);
     if(!accepted)
         Q_EMIT messagesUninstallStickerSetError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::messagesStartBot(const InputUser &bot, qint32 chat_id, qint64 random_id, const QString &start_param, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Messages::startBot(&p, bot, chat_id, random_id, start_param);
+    return session->sendQuery(p, &messagesStartBotMethods, attachedData, "Messages->startBot" );
+}
+
+void TelegramApi::onMessagesStartBotAnswer(Query *q, InboundPkt &inboundPkt) {
+    const UpdatesType &result = Functions::Messages::startBotResult(&inboundPkt);
+    if(result.error())
+        onMessagesStartBotError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT messagesStartBotAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onMessagesStartBotError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT messagesStartBotError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
 
@@ -3069,7 +2773,7 @@ void TelegramApi::onPhotosDeletePhotosError(Query *q, qint32 errorCode, const QS
         Q_EMIT photosDeletePhotosError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
-qint64 TelegramApi::photosGetUserPhotos(const InputUser &user_id, qint32 offset, qint32 max_id, qint32 limit, const QVariant &attachedData, Session *session) {
+qint64 TelegramApi::photosGetUserPhotos(const InputUser &user_id, qint32 offset, qint64 max_id, qint32 limit, const QVariant &attachedData, Session *session) {
     if(!session) session = mMainSession;
     CHECK_SESSION(session)
     DEBUG_FUNCTION

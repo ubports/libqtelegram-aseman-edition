@@ -24,7 +24,7 @@ videoEmpty#c10658a8 id:long = Video;
 #### Schema:
 
 ```c++
-video#ee9f4a4d id:long access_hash:long user_id:int date:int duration:int size:int thumb:PhotoSize dc_id:int w:int h:int = Video;
+video#f72887d3 id:long access_hash:long date:int duration:int mime_type:string size:int thumb:PhotoSize dc_id:int w:int h:int = Video;
 ```
 
 #### Parameters:
@@ -33,9 +33,9 @@ video#ee9f4a4d id:long access_hash:long user_id:int date:int duration:int size:i
 |----|----|
 |id|qint64|
 |accessHash|qint64|
-|userId|qint32|
 |date|qint32|
 |duration|qint32|
+|mimeType|QString|
 |size|qint32|
 |thumb|[PhotoSize](photosize.md)|
 |dcId|qint32|

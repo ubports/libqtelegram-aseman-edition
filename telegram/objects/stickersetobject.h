@@ -15,6 +15,9 @@ class LIBQTELEGRAMSHARED_EXPORT StickerSetObject : public TelegramTypeQObject
     Q_OBJECT
     Q_ENUMS(StickerSetClassType)
     Q_PROPERTY(qint64 accessHash READ accessHash WRITE setAccessHash NOTIFY accessHashChanged)
+    Q_PROPERTY(qint32 count READ count WRITE setCount NOTIFY countChanged)
+    Q_PROPERTY(qint32 flags READ flags WRITE setFlags NOTIFY flagsChanged)
+    Q_PROPERTY(qint32 hash READ hash WRITE setHash NOTIFY hashChanged)
     Q_PROPERTY(qint64 id READ id WRITE setId NOTIFY idChanged)
     Q_PROPERTY(QString shortName READ shortName WRITE setShortName NOTIFY shortNameChanged)
     Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY titleChanged)
@@ -32,6 +35,15 @@ public:
 
     void setAccessHash(qint64 accessHash);
     qint64 accessHash() const;
+
+    void setCount(qint32 count);
+    qint32 count() const;
+
+    void setFlags(qint32 flags);
+    qint32 flags() const;
+
+    void setHash(qint32 hash);
+    qint32 hash() const;
 
     void setId(qint64 id);
     qint64 id() const;
@@ -55,6 +67,9 @@ Q_SIGNALS:
     void coreChanged();
     void classTypeChanged();
     void accessHashChanged();
+    void countChanged();
+    void flagsChanged();
+    void hashChanged();
     void idChanged();
     void shortNameChanged();
     void titleChanged();
@@ -89,6 +104,39 @@ inline void StickerSetObject::setAccessHash(qint64 accessHash) {
 
 inline qint64 StickerSetObject::accessHash() const {
     return m_core.accessHash();
+}
+
+inline void StickerSetObject::setCount(qint32 count) {
+    if(m_core.count() == count) return;
+    m_core.setCount(count);
+    Q_EMIT countChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 StickerSetObject::count() const {
+    return m_core.count();
+}
+
+inline void StickerSetObject::setFlags(qint32 flags) {
+    if(m_core.flags() == flags) return;
+    m_core.setFlags(flags);
+    Q_EMIT flagsChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 StickerSetObject::flags() const {
+    return m_core.flags();
+}
+
+inline void StickerSetObject::setHash(qint32 hash) {
+    if(m_core.hash() == hash) return;
+    m_core.setHash(hash);
+    Q_EMIT hashChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 StickerSetObject::hash() const {
+    return m_core.hash();
 }
 
 inline void StickerSetObject::setId(qint64 id) {
@@ -129,6 +177,9 @@ inline StickerSetObject &StickerSetObject::operator =(const StickerSet &b) {
     m_core = b;
 
     Q_EMIT accessHashChanged();
+    Q_EMIT countChanged();
+    Q_EMIT flagsChanged();
+    Q_EMIT hashChanged();
     Q_EMIT idChanged();
     Q_EMIT shortNameChanged();
     Q_EMIT titleChanged();

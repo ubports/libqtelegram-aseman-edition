@@ -38,11 +38,11 @@
 
 * **Update device locked** - [TelegramCore::accountUpdateDeviceLocked](methods/updatedevicelocked.md)
 
+* **Get password** - [TelegramCore::accountGetPassword](methods/getpassword.md)
+
 * **Get authorizations** - [TelegramCore::accountGetAuthorizations](methods/getauthorizations.md)
 
 * **Reset authorization** - [TelegramCore::accountResetAuthorization](methods/resetauthorization.md)
-
-* **Get password** - [TelegramCore::accountGetPassword](methods/getpassword.md)
 
 * **Get password settings** - [TelegramCore::accountGetPasswordSettings](methods/getpasswordsettings.md)
 

@@ -15,7 +15,6 @@
 
 #include <QDataStream>
 
-#include "inputgeochat.h"
 #include "inputpeer.h"
 
 class LIBQTELEGRAMSHARED_EXPORT InputNotifyPeer : public TelegramTypeObject
@@ -25,8 +24,7 @@ public:
         typeInputNotifyPeer = 0xb8bc5b0c,
         typeInputNotifyUsers = 0x193b4417,
         typeInputNotifyChats = 0x4a95e84e,
-        typeInputNotifyAll = 0xa429b886,
-        typeInputNotifyGeoChatPeer = 0x4d8ddec8
+        typeInputNotifyAll = 0xa429b886
     };
 
     InputNotifyPeer(InputNotifyPeerClassType classType = typeInputNotifyPeer, InboundPkt *in = 0);
@@ -34,11 +32,8 @@ public:
     InputNotifyPeer(const Null&);
     virtual ~InputNotifyPeer();
 
-    void setPeerInputGeoChat(const InputGeoChat &peerInputGeoChat);
-    InputGeoChat peerInputGeoChat() const;
-
-    void setPeerInput(const InputPeer &peerInput);
-    InputPeer peerInput() const;
+    void setPeer(const InputPeer &peer);
+    InputPeer peer() const;
 
     void setClassType(InputNotifyPeerClassType classType);
     InputNotifyPeerClassType classType() const;
@@ -57,8 +52,7 @@ public:
     QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
-    InputGeoChat m_peerInputGeoChat;
-    InputPeer m_peerInput;
+    InputPeer m_peer;
     InputNotifyPeerClassType m_classType;
 };
 
@@ -88,26 +82,17 @@ inline InputNotifyPeer::InputNotifyPeer(const Null &null) :
 inline InputNotifyPeer::~InputNotifyPeer() {
 }
 
-inline void InputNotifyPeer::setPeerInputGeoChat(const InputGeoChat &peerInputGeoChat) {
-    m_peerInputGeoChat = peerInputGeoChat;
+inline void InputNotifyPeer::setPeer(const InputPeer &peer) {
+    m_peer = peer;
 }
 
-inline InputGeoChat InputNotifyPeer::peerInputGeoChat() const {
-    return m_peerInputGeoChat;
-}
-
-inline void InputNotifyPeer::setPeerInput(const InputPeer &peerInput) {
-    m_peerInput = peerInput;
-}
-
-inline InputPeer InputNotifyPeer::peerInput() const {
-    return m_peerInput;
+inline InputPeer InputNotifyPeer::peer() const {
+    return m_peer;
 }
 
 inline bool InputNotifyPeer::operator ==(const InputNotifyPeer &b) const {
     return m_classType == b.m_classType &&
-           m_peerInputGeoChat == b.m_peerInputGeoChat &&
-           m_peerInput == b.m_peerInput;
+           m_peer == b.m_peer;
 }
 
 inline void InputNotifyPeer::setClassType(InputNotifyPeer::InputNotifyPeerClassType classType) {
@@ -123,7 +108,7 @@ inline bool InputNotifyPeer::fetch(InboundPkt *in) {
     int x = in->fetchInt();
     switch(x) {
     case typeInputNotifyPeer: {
-        m_peerInput.fetch(in);
+        m_peer.fetch(in);
         m_classType = static_cast<InputNotifyPeerClassType>(x);
         return true;
     }
@@ -142,13 +127,6 @@ inline bool InputNotifyPeer::fetch(InboundPkt *in) {
         break;
     
     case typeInputNotifyAll: {
-        m_classType = static_cast<InputNotifyPeerClassType>(x);
-        return true;
-    }
-        break;
-    
-    case typeInputNotifyGeoChatPeer: {
-        m_peerInputGeoChat.fetch(in);
         m_classType = static_cast<InputNotifyPeerClassType>(x);
         return true;
     }
@@ -164,7 +142,7 @@ inline bool InputNotifyPeer::push(OutboundPkt *out) const {
     out->appendInt(m_classType);
     switch(m_classType) {
     case typeInputNotifyPeer: {
-        m_peerInput.push(out);
+        m_peer.push(out);
         return true;
     }
         break;
@@ -184,12 +162,6 @@ inline bool InputNotifyPeer::push(OutboundPkt *out) const {
     }
         break;
     
-    case typeInputNotifyGeoChatPeer: {
-        m_peerInputGeoChat.push(out);
-        return true;
-    }
-        break;
-    
     default:
         return false;
     }
@@ -200,7 +172,7 @@ inline QMap<QString, QVariant> InputNotifyPeer::toMap() const {
     switch(static_cast<int>(m_classType)) {
     case typeInputNotifyPeer: {
         result["classType"] = "InputNotifyPeer::typeInputNotifyPeer";
-        result["peerInput"] = m_peerInput.toMap();
+        result["peer"] = m_peer.toMap();
         return result;
     }
         break;
@@ -223,13 +195,6 @@ inline QMap<QString, QVariant> InputNotifyPeer::toMap() const {
     }
         break;
     
-    case typeInputNotifyGeoChatPeer: {
-        result["classType"] = "InputNotifyPeer::typeInputNotifyGeoChatPeer";
-        result["peerInputGeoChat"] = m_peerInputGeoChat.toMap();
-        return result;
-    }
-        break;
-    
     default:
         return result;
     }
@@ -239,7 +204,7 @@ inline InputNotifyPeer InputNotifyPeer::fromMap(const QMap<QString, QVariant> &m
     InputNotifyPeer result;
     if(map.value("classType").toString() == "InputNotifyPeer::typeInputNotifyPeer") {
         result.setClassType(typeInputNotifyPeer);
-        result.setPeerInput( InputPeer::fromMap(map.value("peerInput").toMap()) );
+        result.setPeer( InputPeer::fromMap(map.value("peer").toMap()) );
         return result;
     }
     if(map.value("classType").toString() == "InputNotifyPeer::typeInputNotifyUsers") {
@@ -252,11 +217,6 @@ inline InputNotifyPeer InputNotifyPeer::fromMap(const QMap<QString, QVariant> &m
     }
     if(map.value("classType").toString() == "InputNotifyPeer::typeInputNotifyAll") {
         result.setClassType(typeInputNotifyAll);
-        return result;
-    }
-    if(map.value("classType").toString() == "InputNotifyPeer::typeInputNotifyGeoChatPeer") {
-        result.setClassType(typeInputNotifyGeoChatPeer);
-        result.setPeerInputGeoChat( InputGeoChat::fromMap(map.value("peerInputGeoChat").toMap()) );
         return result;
     }
     return result;
@@ -273,7 +233,7 @@ inline QDataStream &operator<<(QDataStream &stream, const InputNotifyPeer &item)
     stream << static_cast<uint>(item.classType());
     switch(item.classType()) {
     case InputNotifyPeer::typeInputNotifyPeer:
-        stream << item.peerInput();
+        stream << item.peer();
         break;
     case InputNotifyPeer::typeInputNotifyUsers:
         
@@ -283,9 +243,6 @@ inline QDataStream &operator<<(QDataStream &stream, const InputNotifyPeer &item)
         break;
     case InputNotifyPeer::typeInputNotifyAll:
         
-        break;
-    case InputNotifyPeer::typeInputNotifyGeoChatPeer:
-        stream << item.peerInputGeoChat();
         break;
     }
     return stream;
@@ -297,9 +254,9 @@ inline QDataStream &operator>>(QDataStream &stream, InputNotifyPeer &item) {
     item.setClassType(static_cast<InputNotifyPeer::InputNotifyPeerClassType>(type));
     switch(type) {
     case InputNotifyPeer::typeInputNotifyPeer: {
-        InputPeer m_peer_Input;
-        stream >> m_peer_Input;
-        item.setPeerInput(m_peer_Input);
+        InputPeer m_peer;
+        stream >> m_peer;
+        item.setPeer(m_peer);
     }
         break;
     case InputNotifyPeer::typeInputNotifyUsers: {
@@ -312,12 +269,6 @@ inline QDataStream &operator>>(QDataStream &stream, InputNotifyPeer &item) {
         break;
     case InputNotifyPeer::typeInputNotifyAll: {
         
-    }
-        break;
-    case InputNotifyPeer::typeInputNotifyGeoChatPeer: {
-        InputGeoChat m_peer_InputGeoChat;
-        stream >> m_peer_InputGeoChat;
-        item.setPeerInputGeoChat(m_peer_InputGeoChat);
     }
         break;
     }

@@ -19,7 +19,9 @@ class LIBQTELEGRAMSHARED_EXPORT DocumentAttributeObject : public TelegramTypeQOb
     Q_PROPERTY(qint32 duration READ duration WRITE setDuration NOTIFY durationChanged)
     Q_PROPERTY(QString fileName READ fileName WRITE setFileName NOTIFY fileNameChanged)
     Q_PROPERTY(qint32 h READ h WRITE setH NOTIFY hChanged)
+    Q_PROPERTY(QString performer READ performer WRITE setPerformer NOTIFY performerChanged)
     Q_PROPERTY(InputStickerSetObject* stickerset READ stickerset WRITE setStickerset NOTIFY stickersetChanged)
+    Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY titleChanged)
     Q_PROPERTY(qint32 w READ w WRITE setW NOTIFY wChanged)
     Q_PROPERTY(DocumentAttribute core READ core WRITE setCore NOTIFY coreChanged)
     Q_PROPERTY(quint32 classType READ classType WRITE setClassType NOTIFY classTypeChanged)
@@ -50,8 +52,14 @@ public:
     void setH(qint32 h);
     qint32 h() const;
 
+    void setPerformer(const QString &performer);
+    QString performer() const;
+
     void setStickerset(InputStickerSetObject* stickerset);
     InputStickerSetObject* stickerset() const;
+
+    void setTitle(const QString &title);
+    QString title() const;
 
     void setW(qint32 w);
     qint32 w() const;
@@ -72,7 +80,9 @@ Q_SIGNALS:
     void durationChanged();
     void fileNameChanged();
     void hChanged();
+    void performerChanged();
     void stickersetChanged();
+    void titleChanged();
     void wChanged();
 
 private Q_SLOTS:
@@ -148,6 +158,17 @@ inline qint32 DocumentAttributeObject::h() const {
     return m_core.h();
 }
 
+inline void DocumentAttributeObject::setPerformer(const QString &performer) {
+    if(m_core.performer() == performer) return;
+    m_core.setPerformer(performer);
+    Q_EMIT performerChanged();
+    Q_EMIT coreChanged();
+}
+
+inline QString DocumentAttributeObject::performer() const {
+    return m_core.performer();
+}
+
 inline void DocumentAttributeObject::setStickerset(InputStickerSetObject* stickerset) {
     if(m_stickerset == stickerset) return;
     if(m_stickerset) delete m_stickerset;
@@ -163,6 +184,17 @@ inline void DocumentAttributeObject::setStickerset(InputStickerSetObject* sticke
 
 inline InputStickerSetObject*  DocumentAttributeObject::stickerset() const {
     return m_stickerset;
+}
+
+inline void DocumentAttributeObject::setTitle(const QString &title) {
+    if(m_core.title() == title) return;
+    m_core.setTitle(title);
+    Q_EMIT titleChanged();
+    Q_EMIT coreChanged();
+}
+
+inline QString DocumentAttributeObject::title() const {
+    return m_core.title();
 }
 
 inline void DocumentAttributeObject::setW(qint32 w) {
@@ -185,7 +217,9 @@ inline DocumentAttributeObject &DocumentAttributeObject::operator =(const Docume
     Q_EMIT durationChanged();
     Q_EMIT fileNameChanged();
     Q_EMIT hChanged();
+    Q_EMIT performerChanged();
     Q_EMIT stickersetChanged();
+    Q_EMIT titleChanged();
     Q_EMIT wChanged();
     Q_EMIT coreChanged();
     return *this;

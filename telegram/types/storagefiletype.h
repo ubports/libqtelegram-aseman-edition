@@ -24,12 +24,12 @@ public:
         typeStorageFileJpeg = 0x7efe0e,
         typeStorageFileGif = 0xcae1aadf,
         typeStorageFilePng = 0xa4f63c0,
-        typeStorageFilePdf = 0xae1e508d,
         typeStorageFileMp3 = 0x528a0677,
         typeStorageFileMov = 0x4b09ebbc,
         typeStorageFilePartial = 0x40bc6f52,
         typeStorageFileMp4 = 0xb3cea0e4,
-        typeStorageFileWebp = 0x1081464c
+        typeStorageFileWebp = 0x1081464c,
+        typeStorageFilePdf = 0xae1e508d
     };
 
     StorageFileType(StorageFileTypeClassType classType = typeStorageFileUnknown, InboundPkt *in = 0);
@@ -123,12 +123,6 @@ inline bool StorageFileType::fetch(InboundPkt *in) {
     }
         break;
     
-    case typeStorageFilePdf: {
-        m_classType = static_cast<StorageFileTypeClassType>(x);
-        return true;
-    }
-        break;
-    
     case typeStorageFileMp3: {
         m_classType = static_cast<StorageFileTypeClassType>(x);
         return true;
@@ -154,6 +148,12 @@ inline bool StorageFileType::fetch(InboundPkt *in) {
         break;
     
     case typeStorageFileWebp: {
+        m_classType = static_cast<StorageFileTypeClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeStorageFilePdf: {
         m_classType = static_cast<StorageFileTypeClassType>(x);
         return true;
     }
@@ -188,11 +188,6 @@ inline bool StorageFileType::push(OutboundPkt *out) const {
     }
         break;
     
-    case typeStorageFilePdf: {
-        return true;
-    }
-        break;
-    
     case typeStorageFileMp3: {
         return true;
     }
@@ -214,6 +209,11 @@ inline bool StorageFileType::push(OutboundPkt *out) const {
         break;
     
     case typeStorageFileWebp: {
+        return true;
+    }
+        break;
+    
+    case typeStorageFilePdf: {
         return true;
     }
         break;
@@ -250,12 +250,6 @@ inline QMap<QString, QVariant> StorageFileType::toMap() const {
     }
         break;
     
-    case typeStorageFilePdf: {
-        result["classType"] = "StorageFileType::typeStorageFilePdf";
-        return result;
-    }
-        break;
-    
     case typeStorageFileMp3: {
         result["classType"] = "StorageFileType::typeStorageFileMp3";
         return result;
@@ -286,6 +280,12 @@ inline QMap<QString, QVariant> StorageFileType::toMap() const {
     }
         break;
     
+    case typeStorageFilePdf: {
+        result["classType"] = "StorageFileType::typeStorageFilePdf";
+        return result;
+    }
+        break;
+    
     default:
         return result;
     }
@@ -309,10 +309,6 @@ inline StorageFileType StorageFileType::fromMap(const QMap<QString, QVariant> &m
         result.setClassType(typeStorageFilePng);
         return result;
     }
-    if(map.value("classType").toString() == "StorageFileType::typeStorageFilePdf") {
-        result.setClassType(typeStorageFilePdf);
-        return result;
-    }
     if(map.value("classType").toString() == "StorageFileType::typeStorageFileMp3") {
         result.setClassType(typeStorageFileMp3);
         return result;
@@ -331,6 +327,10 @@ inline StorageFileType StorageFileType::fromMap(const QMap<QString, QVariant> &m
     }
     if(map.value("classType").toString() == "StorageFileType::typeStorageFileWebp") {
         result.setClassType(typeStorageFileWebp);
+        return result;
+    }
+    if(map.value("classType").toString() == "StorageFileType::typeStorageFilePdf") {
+        result.setClassType(typeStorageFilePdf);
         return result;
     }
     return result;
@@ -358,9 +358,6 @@ inline QDataStream &operator<<(QDataStream &stream, const StorageFileType &item)
     case StorageFileType::typeStorageFilePng:
         
         break;
-    case StorageFileType::typeStorageFilePdf:
-        
-        break;
     case StorageFileType::typeStorageFileMp3:
         
         break;
@@ -374,6 +371,9 @@ inline QDataStream &operator<<(QDataStream &stream, const StorageFileType &item)
         
         break;
     case StorageFileType::typeStorageFileWebp:
+        
+        break;
+    case StorageFileType::typeStorageFilePdf:
         
         break;
     }
@@ -401,10 +401,6 @@ inline QDataStream &operator>>(QDataStream &stream, StorageFileType &item) {
         
     }
         break;
-    case StorageFileType::typeStorageFilePdf: {
-        
-    }
-        break;
     case StorageFileType::typeStorageFileMp3: {
         
     }
@@ -422,6 +418,10 @@ inline QDataStream &operator>>(QDataStream &stream, StorageFileType &item) {
     }
         break;
     case StorageFileType::typeStorageFileWebp: {
+        
+    }
+        break;
+    case StorageFileType::typeStorageFilePdf: {
         
     }
         break;

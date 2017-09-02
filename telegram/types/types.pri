@@ -14,7 +14,6 @@ HEADERS += \
     $$PWD/chat.h \
     $$PWD/chatfull.h \
     $$PWD/chatinvite.h \
-    $$PWD/chatlocated.h \
     $$PWD/chatparticipant.h \
     $$PWD/chatparticipants.h \
     $$PWD/chatphoto.h \
@@ -39,7 +38,6 @@ HEADERS += \
     $$PWD/encryptedmessage.h \
     $$PWD/exportedchatinvite.h \
     $$PWD/filelocation.h \
-    $$PWD/geochatmessage.h \
     $$PWD/geopoint.h \
     $$PWD/importedcontact.h \
     $$PWD/inputappevent.h \
@@ -51,7 +49,6 @@ HEADERS += \
     $$PWD/inputencryptedfile.h \
     $$PWD/inputfile.h \
     $$PWD/inputfilelocation.h \
-    $$PWD/inputgeochat.h \
     $$PWD/inputgeopoint.h \
     $$PWD/inputmedia.h \
     $$PWD/inputnotifypeer.h \
@@ -69,6 +66,7 @@ HEADERS += \
     $$PWD/keyboardbuttonrow.h \
     $$PWD/message.h \
     $$PWD/messageaction.h \
+    $$PWD/messageentity.h \
     $$PWD/messagemedia.h \
     $$PWD/messagesfilter.h \
     $$PWD/nearestdc.h \
@@ -112,9 +110,7 @@ HEADERS += \
     $$PWD/contactsimportedcontacts.h \
     $$PWD/contactslink.h \
     $$PWD/contactssuggested.h \
-    $$PWD/geochatslocated.h \
-    $$PWD/geochatsmessages.h \
-    $$PWD/geochatsstatedmessage.h \
+    $$PWD/helpappchangelog.h \
     $$PWD/helpappupdate.h \
     $$PWD/helpinvitetext.h \
     $$PWD/helpsupport.h \
@@ -125,10 +121,8 @@ HEADERS += \
     $$PWD/messageschats.h \
     $$PWD/messagesdhconfig.h \
     $$PWD/messagesdialogs.h \
-    $$PWD/messagesmessage.h \
     $$PWD/messagesmessages.h \
     $$PWD/messagessentencryptedmessage.h \
-    $$PWD/messagessentmessage.h \
     $$PWD/messagesstickerset.h \
     $$PWD/messagesstickers.h \
     $$PWD/photosphoto.h \

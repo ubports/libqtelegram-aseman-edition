@@ -23,12 +23,12 @@ public:
         TypeStorageFileJpeg,
         TypeStorageFileGif,
         TypeStorageFilePng,
-        TypeStorageFilePdf,
         TypeStorageFileMp3,
         TypeStorageFileMov,
         TypeStorageFilePartial,
         TypeStorageFileMp4,
-        TypeStorageFileWebp
+        TypeStorageFileWebp,
+        TypeStorageFilePdf
     };
 
     StorageFileTypeObject(const StorageFileType &core, QObject *parent = 0);
@@ -96,9 +96,6 @@ inline void StorageFileTypeObject::setClassType(quint32 classType) {
     case TypeStorageFilePng:
         result = StorageFileType::typeStorageFilePng;
         break;
-    case TypeStorageFilePdf:
-        result = StorageFileType::typeStorageFilePdf;
-        break;
     case TypeStorageFileMp3:
         result = StorageFileType::typeStorageFileMp3;
         break;
@@ -113,6 +110,9 @@ inline void StorageFileTypeObject::setClassType(quint32 classType) {
         break;
     case TypeStorageFileWebp:
         result = StorageFileType::typeStorageFileWebp;
+        break;
+    case TypeStorageFilePdf:
+        result = StorageFileType::typeStorageFilePdf;
         break;
     default:
         result = StorageFileType::typeStorageFileUnknown;
@@ -140,9 +140,6 @@ inline quint32 StorageFileTypeObject::classType() const {
     case StorageFileType::typeStorageFilePng:
         result = TypeStorageFilePng;
         break;
-    case StorageFileType::typeStorageFilePdf:
-        result = TypeStorageFilePdf;
-        break;
     case StorageFileType::typeStorageFileMp3:
         result = TypeStorageFileMp3;
         break;
@@ -157,6 +154,9 @@ inline quint32 StorageFileTypeObject::classType() const {
         break;
     case StorageFileType::typeStorageFileWebp:
         result = TypeStorageFileWebp;
+        break;
+    case StorageFileType::typeStorageFilePdf:
+        result = TypeStorageFilePdf;
         break;
     default:
         result = TypeStorageFileUnknown;

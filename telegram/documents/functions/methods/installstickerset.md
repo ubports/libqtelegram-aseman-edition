@@ -7,13 +7,14 @@ TelegramCore::messagesInstallStickerSet
 ## Schema:
 
 ```c++
-messages.installStickerSet#efbbfae9 stickerset:InputStickerSet = Bool;
+messages.installStickerSet#7b30c3a6 stickerset:InputStickerSet disabled:Bool = Bool;
 ```
 ## Parameters:
 
 |Name|Type|Default|
 |----|----|-------|
 |stickerset|[InputStickerSet](../../types/inputstickerset.md)||
+|disabled|bool||
 |callBack|Callback&lt;bool&gt;|0|
 |timeout|qint32|TelegramCore::timeOut()|
 
@@ -50,7 +51,7 @@ onInstallStickerSetError(qint64 msgId, qint32 errorCode, const QString &errorTex
 ## Examples:
 
 ```c++
-tg->installStickerSet(stickerset, [=](TG_INSTALL_STICKER_SET_CALLBACK){
+tg->installStickerSet(stickerset, disabled, [=](TG_INSTALL_STICKER_SET_CALLBACK){
     ...
 }, 30000);
 ```

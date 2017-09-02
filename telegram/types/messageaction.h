@@ -15,9 +15,9 @@
 
 #include <QDataStream>
 
-#include <QString>
 #include <QtGlobal>
 #include "photo.h"
+#include <QString>
 #include <QList>
 
 class LIBQTELEGRAMSHARED_EXPORT MessageAction : public TelegramTypeObject
@@ -31,8 +31,6 @@ public:
         typeMessageActionChatDeletePhoto = 0x95e3fbef,
         typeMessageActionChatAddUser = 0x5e3cfc4b,
         typeMessageActionChatDeleteUser = 0xb2ae9b0c,
-        typeMessageActionGeoChatCreate = 0x6f038ebc,
-        typeMessageActionGeoChatCheckin = 0xc7d53de,
         typeMessageActionChatJoinedByLink = 0xf89cf5e8
     };
 
@@ -40,9 +38,6 @@ public:
     MessageAction(InboundPkt *in);
     MessageAction(const Null&);
     virtual ~MessageAction();
-
-    void setAddress(const QString &address);
-    QString address() const;
 
     void setInviterId(qint32 inviterId);
     qint32 inviterId() const;
@@ -76,7 +71,6 @@ public:
     QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
-    QString m_address;
     qint32 m_inviterId;
     Photo m_photo;
     QString m_title;
@@ -115,14 +109,6 @@ inline MessageAction::MessageAction(const Null &null) :
 }
 
 inline MessageAction::~MessageAction() {
-}
-
-inline void MessageAction::setAddress(const QString &address) {
-    m_address = address;
-}
-
-inline QString MessageAction::address() const {
-    return m_address;
 }
 
 inline void MessageAction::setInviterId(qint32 inviterId) {
@@ -167,7 +153,6 @@ inline QList<qint32> MessageAction::users() const {
 
 inline bool MessageAction::operator ==(const MessageAction &b) const {
     return m_classType == b.m_classType &&
-           m_address == b.m_address &&
            m_inviterId == b.m_inviterId &&
            m_photo == b.m_photo &&
            m_title == b.m_title &&
@@ -242,20 +227,6 @@ inline bool MessageAction::fetch(InboundPkt *in) {
     }
         break;
     
-    case typeMessageActionGeoChatCreate: {
-        m_title = in->fetchQString();
-        m_address = in->fetchQString();
-        m_classType = static_cast<MessageActionClassType>(x);
-        return true;
-    }
-        break;
-    
-    case typeMessageActionGeoChatCheckin: {
-        m_classType = static_cast<MessageActionClassType>(x);
-        return true;
-    }
-        break;
-    
     case typeMessageActionChatJoinedByLink: {
         m_inviterId = in->fetchInt();
         m_classType = static_cast<MessageActionClassType>(x);
@@ -313,18 +284,6 @@ inline bool MessageAction::push(OutboundPkt *out) const {
     
     case typeMessageActionChatDeleteUser: {
         out->appendInt(m_userId);
-        return true;
-    }
-        break;
-    
-    case typeMessageActionGeoChatCreate: {
-        out->appendQString(m_title);
-        out->appendQString(m_address);
-        return true;
-    }
-        break;
-    
-    case typeMessageActionGeoChatCheckin: {
         return true;
     }
         break;
@@ -394,20 +353,6 @@ inline QMap<QString, QVariant> MessageAction::toMap() const {
     }
         break;
     
-    case typeMessageActionGeoChatCreate: {
-        result["classType"] = "MessageAction::typeMessageActionGeoChatCreate";
-        result["title"] = QVariant::fromValue<QString>(title());
-        result["address"] = QVariant::fromValue<QString>(address());
-        return result;
-    }
-        break;
-    
-    case typeMessageActionGeoChatCheckin: {
-        result["classType"] = "MessageAction::typeMessageActionGeoChatCheckin";
-        return result;
-    }
-        break;
-    
     case typeMessageActionChatJoinedByLink: {
         result["classType"] = "MessageAction::typeMessageActionChatJoinedByLink";
         result["inviterId"] = QVariant::fromValue<qint32>(inviterId());
@@ -460,16 +405,6 @@ inline MessageAction MessageAction::fromMap(const QMap<QString, QVariant> &map) 
         result.setUserId( map.value("userId").value<qint32>() );
         return result;
     }
-    if(map.value("classType").toString() == "MessageAction::typeMessageActionGeoChatCreate") {
-        result.setClassType(typeMessageActionGeoChatCreate);
-        result.setTitle( map.value("title").value<QString>() );
-        result.setAddress( map.value("address").value<QString>() );
-        return result;
-    }
-    if(map.value("classType").toString() == "MessageAction::typeMessageActionGeoChatCheckin") {
-        result.setClassType(typeMessageActionGeoChatCheckin);
-        return result;
-    }
     if(map.value("classType").toString() == "MessageAction::typeMessageActionChatJoinedByLink") {
         result.setClassType(typeMessageActionChatJoinedByLink);
         result.setInviterId( map.value("inviterId").value<qint32>() );
@@ -509,13 +444,6 @@ inline QDataStream &operator<<(QDataStream &stream, const MessageAction &item) {
         break;
     case MessageAction::typeMessageActionChatDeleteUser:
         stream << item.userId();
-        break;
-    case MessageAction::typeMessageActionGeoChatCreate:
-        stream << item.title();
-        stream << item.address();
-        break;
-    case MessageAction::typeMessageActionGeoChatCheckin:
-        
         break;
     case MessageAction::typeMessageActionChatJoinedByLink:
         stream << item.inviterId();
@@ -568,19 +496,6 @@ inline QDataStream &operator>>(QDataStream &stream, MessageAction &item) {
         qint32 m_user_id;
         stream >> m_user_id;
         item.setUserId(m_user_id);
-    }
-        break;
-    case MessageAction::typeMessageActionGeoChatCreate: {
-        QString m_title;
-        stream >> m_title;
-        item.setTitle(m_title);
-        QString m_address;
-        stream >> m_address;
-        item.setAddress(m_address);
-    }
-        break;
-    case MessageAction::typeMessageActionGeoChatCheckin: {
-        
     }
         break;
     case MessageAction::typeMessageActionChatJoinedByLink: {
