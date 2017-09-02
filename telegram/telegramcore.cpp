@@ -430,7 +430,6 @@ void TelegramCore::onAccountRegisterDeviceAnswer(qint64 msgId, bool result, cons
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal accountRegisterDeviceAnswer";
     Q_EMIT accountRegisterDeviceAnswer(msgId, result);
 }
 
@@ -474,7 +473,6 @@ void TelegramCore::onAccountUnregisterDeviceAnswer(qint64 msgId, bool result, co
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal accountUnregisterDeviceAnswer";
     Q_EMIT accountUnregisterDeviceAnswer(msgId, result);
 }
 
@@ -518,7 +516,6 @@ void TelegramCore::onAccountUpdateNotifySettingsAnswer(qint64 msgId, bool result
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal accountUpdateNotifySettingsAnswer";
     Q_EMIT accountUpdateNotifySettingsAnswer(msgId, result);
 }
 
@@ -561,7 +558,6 @@ void TelegramCore::onAccountGetNotifySettingsAnswer(qint64 msgId, const PeerNoti
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<PeerNotifySettings >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal accountGetNotifySettingsAnswer";
     Q_EMIT accountGetNotifySettingsAnswer(msgId, result);
 }
 
@@ -603,7 +599,6 @@ void TelegramCore::onAccountResetNotifySettingsAnswer(qint64 msgId, bool result,
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal accountResetNotifySettingsAnswer";
     Q_EMIT accountResetNotifySettingsAnswer(msgId, result);
 }
 
@@ -647,7 +642,6 @@ void TelegramCore::onAccountUpdateProfileAnswer(qint64 msgId, const User &result
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<User >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal accountUpdateProfileAnswer";
     Q_EMIT accountUpdateProfileAnswer(msgId, result);
 }
 
@@ -690,7 +684,6 @@ void TelegramCore::onAccountUpdateStatusAnswer(qint64 msgId, bool result, const 
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal accountUpdateStatusAnswer";
     Q_EMIT accountUpdateStatusAnswer(msgId, result);
 }
 
@@ -732,7 +725,6 @@ void TelegramCore::onAccountGetWallPapersAnswer(qint64 msgId, const QList<WallPa
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<QList<WallPaper> >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal accountGetWallPapersAnswer";
     Q_EMIT accountGetWallPapersAnswer(msgId, result);
 }
 
@@ -775,7 +767,6 @@ void TelegramCore::onAccountCheckUsernameAnswer(qint64 msgId, bool result, const
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal accountCheckUsernameAnswer";
     Q_EMIT accountCheckUsernameAnswer(msgId, result);
 }
 
@@ -818,7 +809,6 @@ void TelegramCore::onAccountUpdateUsernameAnswer(qint64 msgId, const User &resul
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<User >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal accountUpdateUsernameAnswer";
     Q_EMIT accountUpdateUsernameAnswer(msgId, result);
 }
 
@@ -861,7 +851,6 @@ void TelegramCore::onAccountGetPrivacyAnswer(qint64 msgId, const AccountPrivacyR
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<AccountPrivacyRules >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal accountGetPrivacyAnswer";
     Q_EMIT accountGetPrivacyAnswer(msgId, result);
 }
 
@@ -905,7 +894,6 @@ void TelegramCore::onAccountSetPrivacyAnswer(qint64 msgId, const AccountPrivacyR
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<AccountPrivacyRules >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal accountSetPrivacyAnswer";
     Q_EMIT accountSetPrivacyAnswer(msgId, result);
 }
 
@@ -948,7 +936,6 @@ void TelegramCore::onAccountDeleteAccountAnswer(qint64 msgId, bool result, const
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal accountDeleteAccountAnswer";
     Q_EMIT accountDeleteAccountAnswer(msgId, result);
 }
 
@@ -990,7 +977,6 @@ void TelegramCore::onAccountGetAccountTTLAnswer(qint64 msgId, const AccountDaysT
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<AccountDaysTTL >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal accountGetAccountTTLAnswer";
     Q_EMIT accountGetAccountTTLAnswer(msgId, result);
 }
 
@@ -1033,7 +1019,6 @@ void TelegramCore::onAccountSetAccountTTLAnswer(qint64 msgId, bool result, const
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal accountSetAccountTTLAnswer";
     Q_EMIT accountSetAccountTTLAnswer(msgId, result);
 }
 
@@ -1076,7 +1061,6 @@ void TelegramCore::onAccountSendChangePhoneCodeAnswer(qint64 msgId, const Accoun
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<AccountSentChangePhoneCode >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal accountSendChangePhoneCodeAnswer";
     Q_EMIT accountSendChangePhoneCodeAnswer(msgId, result);
 }
 
@@ -1121,7 +1105,6 @@ void TelegramCore::onAccountChangePhoneAnswer(qint64 msgId, const User &result, 
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<User >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal accountChangePhoneAnswer";
     Q_EMIT accountChangePhoneAnswer(msgId, result);
 }
 
@@ -1164,7 +1147,6 @@ void TelegramCore::onAccountUpdateDeviceLockedAnswer(qint64 msgId, bool result, 
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal accountUpdateDeviceLockedAnswer";
     Q_EMIT accountUpdateDeviceLockedAnswer(msgId, result);
 }
 
@@ -1206,7 +1188,6 @@ void TelegramCore::onAccountGetAuthorizationsAnswer(qint64 msgId, const AccountA
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<AccountAuthorizations >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal accountGetAuthorizationsAnswer";
     Q_EMIT accountGetAuthorizationsAnswer(msgId, result);
 }
 
@@ -1249,7 +1230,6 @@ void TelegramCore::onAccountResetAuthorizationAnswer(qint64 msgId, bool result, 
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal accountResetAuthorizationAnswer";
     Q_EMIT accountResetAuthorizationAnswer(msgId, result);
 }
 
@@ -1291,7 +1271,6 @@ void TelegramCore::onAccountGetPasswordAnswer(qint64 msgId, const AccountPasswor
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<AccountPassword >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal accountGetPasswordAnswer";
     Q_EMIT accountGetPasswordAnswer(msgId, result);
 }
 
@@ -1334,7 +1313,6 @@ void TelegramCore::onAccountGetPasswordSettingsAnswer(qint64 msgId, const Accoun
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<AccountPasswordSettings >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal accountGetPasswordSettingsAnswer";
     Q_EMIT accountGetPasswordSettingsAnswer(msgId, result);
 }
 
@@ -1378,7 +1356,6 @@ void TelegramCore::onAccountUpdatePasswordSettingsAnswer(qint64 msgId, bool resu
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal accountUpdatePasswordSettingsAnswer";
     Q_EMIT accountUpdatePasswordSettingsAnswer(msgId, result);
 }
 
@@ -1425,7 +1402,6 @@ void TelegramCore::onAuthImportBotAuthorizationAnswer(qint64 msgId, const AuthAu
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<AuthAuthorization >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal authImportBotAuthorizationAnswer";
     Q_EMIT authImportBotAuthorizationAnswer(msgId, result);
 }
 
@@ -1468,7 +1444,6 @@ void TelegramCore::onAuthCheckPhoneAnswer(qint64 msgId, const AuthCheckedPhone &
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<AuthCheckedPhone >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal authCheckPhoneAnswer";
     Q_EMIT authCheckPhoneAnswer(msgId, result);
 }
 
@@ -1515,7 +1490,6 @@ void TelegramCore::onAuthSendCodeAnswer(qint64 msgId, const AuthSentCode &result
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<AuthSentCode >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal authSendCodeAnswer";
     Q_EMIT authSendCodeAnswer(msgId, result);
 }
 
@@ -1559,7 +1533,6 @@ void TelegramCore::onAuthSendCallAnswer(qint64 msgId, bool result, const QVarian
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal authSendCallAnswer";
     Q_EMIT authSendCallAnswer(msgId, result);
 }
 
@@ -1606,7 +1579,6 @@ void TelegramCore::onAuthSignUpAnswer(qint64 msgId, const AuthAuthorization &res
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<AuthAuthorization >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal authSignUpAnswer";
     Q_EMIT authSignUpAnswer(msgId, result);
 }
 
@@ -1651,7 +1623,6 @@ void TelegramCore::onAuthSignInAnswer(qint64 msgId, const AuthAuthorization &res
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<AuthAuthorization >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal authSignInAnswer";
     Q_EMIT authSignInAnswer(msgId, result);
 }
 
@@ -1693,7 +1664,6 @@ void TelegramCore::onAuthLogOutAnswer(qint64 msgId, bool result, const QVariant 
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal authLogOutAnswer";
     Q_EMIT authLogOutAnswer(msgId, result);
 }
 
@@ -1735,7 +1705,6 @@ void TelegramCore::onAuthResetAuthorizationsAnswer(qint64 msgId, bool result, co
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal authResetAuthorizationsAnswer";
     Q_EMIT authResetAuthorizationsAnswer(msgId, result);
 }
 
@@ -1779,7 +1748,6 @@ void TelegramCore::onAuthSendInvitesAnswer(qint64 msgId, bool result, const QVar
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal authSendInvitesAnswer";
     Q_EMIT authSendInvitesAnswer(msgId, result);
 }
 
@@ -1822,7 +1790,6 @@ void TelegramCore::onAuthExportAuthorizationAnswer(qint64 msgId, const AuthExpor
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<AuthExportedAuthorization >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal authExportAuthorizationAnswer";
     Q_EMIT authExportAuthorizationAnswer(msgId, result);
 }
 
@@ -1866,7 +1833,6 @@ void TelegramCore::onAuthImportAuthorizationAnswer(qint64 msgId, const AuthAutho
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<AuthAuthorization >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal authImportAuthorizationAnswer";
     Q_EMIT authImportAuthorizationAnswer(msgId, result);
 }
 
@@ -1912,7 +1878,6 @@ void TelegramCore::onAuthBindTempAuthKeyAnswer(qint64 msgId, bool result, const 
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal authBindTempAuthKeyAnswer";
     Q_EMIT authBindTempAuthKeyAnswer(msgId, result);
 }
 
@@ -1956,7 +1921,6 @@ void TelegramCore::onAuthSendSmsAnswer(qint64 msgId, bool result, const QVariant
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal authSendSmsAnswer";
     Q_EMIT authSendSmsAnswer(msgId, result);
 }
 
@@ -1999,7 +1963,6 @@ void TelegramCore::onAuthCheckPasswordAnswer(qint64 msgId, const AuthAuthorizati
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<AuthAuthorization >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal authCheckPasswordAnswer";
     Q_EMIT authCheckPasswordAnswer(msgId, result);
 }
 
@@ -2041,7 +2004,6 @@ void TelegramCore::onAuthRequestPasswordRecoveryAnswer(qint64 msgId, const AuthP
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<AuthPasswordRecovery >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal authRequestPasswordRecoveryAnswer";
     Q_EMIT authRequestPasswordRecoveryAnswer(msgId, result);
 }
 
@@ -2084,7 +2046,6 @@ void TelegramCore::onAuthRecoverPasswordAnswer(qint64 msgId, const AuthAuthoriza
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<AuthAuthorization >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal authRecoverPasswordAnswer";
     Q_EMIT authRecoverPasswordAnswer(msgId, result);
 }
 
@@ -2127,7 +2088,6 @@ void TelegramCore::onContactsGetStatusesAnswer(qint64 msgId, const QList<Contact
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<QList<ContactStatus> >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal contactsGetStatusesAnswer";
     Q_EMIT contactsGetStatusesAnswer(msgId, result);
 }
 
@@ -2170,7 +2130,6 @@ void TelegramCore::onContactsGetContactsAnswer(qint64 msgId, const ContactsConta
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<ContactsContacts >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal contactsGetContactsAnswer";
     Q_EMIT contactsGetContactsAnswer(msgId, result);
 }
 
@@ -2214,7 +2173,6 @@ void TelegramCore::onContactsImportContactsAnswer(qint64 msgId, const ContactsIm
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<ContactsImportedContacts >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal contactsImportContactsAnswer";
     Q_EMIT contactsImportContactsAnswer(msgId, result);
 }
 
@@ -2257,7 +2215,6 @@ void TelegramCore::onContactsGetSuggestedAnswer(qint64 msgId, const ContactsSugg
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<ContactsSuggested >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal contactsGetSuggestedAnswer";
     Q_EMIT contactsGetSuggestedAnswer(msgId, result);
 }
 
@@ -2300,7 +2257,6 @@ void TelegramCore::onContactsDeleteContactAnswer(qint64 msgId, const ContactsLin
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<ContactsLink >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal contactsDeleteContactAnswer";
     Q_EMIT contactsDeleteContactAnswer(msgId, result);
 }
 
@@ -2343,7 +2299,6 @@ void TelegramCore::onContactsDeleteContactsAnswer(qint64 msgId, bool result, con
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal contactsDeleteContactsAnswer";
     Q_EMIT contactsDeleteContactsAnswer(msgId, result);
 }
 
@@ -2386,7 +2341,6 @@ void TelegramCore::onContactsBlockAnswer(qint64 msgId, bool result, const QVaria
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal contactsBlockAnswer";
     Q_EMIT contactsBlockAnswer(msgId, result);
 }
 
@@ -2429,7 +2383,6 @@ void TelegramCore::onContactsUnblockAnswer(qint64 msgId, bool result, const QVar
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal contactsUnblockAnswer";
     Q_EMIT contactsUnblockAnswer(msgId, result);
 }
 
@@ -2473,7 +2426,6 @@ void TelegramCore::onContactsGetBlockedAnswer(qint64 msgId, const ContactsBlocke
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<ContactsBlocked >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal contactsGetBlockedAnswer";
     Q_EMIT contactsGetBlockedAnswer(msgId, result);
 }
 
@@ -2515,7 +2467,6 @@ void TelegramCore::onContactsExportCardAnswer(qint64 msgId, const QList<qint32> 
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<QList<qint32> >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal contactsExportCardAnswer";
     Q_EMIT contactsExportCardAnswer(msgId, result);
 }
 
@@ -2558,7 +2509,6 @@ void TelegramCore::onContactsImportCardAnswer(qint64 msgId, const User &result, 
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<User >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal contactsImportCardAnswer";
     Q_EMIT contactsImportCardAnswer(msgId, result);
 }
 
@@ -2602,7 +2552,6 @@ void TelegramCore::onContactsSearchAnswer(qint64 msgId, const ContactsFound &res
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<ContactsFound >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal contactsSearchAnswer";
     Q_EMIT contactsSearchAnswer(msgId, result);
 }
 
@@ -2645,7 +2594,6 @@ void TelegramCore::onContactsResolveUsernameAnswer(qint64 msgId, const User &res
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<User >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal contactsResolveUsernameAnswer";
     Q_EMIT contactsResolveUsernameAnswer(msgId, result);
 }
 
@@ -2691,7 +2639,6 @@ void TelegramCore::onGeochatsGetLocatedAnswer(qint64 msgId, const GeochatsLocate
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<GeochatsLocated >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal geochatsGetLocatedAnswer";
     Q_EMIT geochatsGetLocatedAnswer(msgId, result);
 }
 
@@ -2735,7 +2682,6 @@ void TelegramCore::onGeochatsGetRecentsAnswer(qint64 msgId, const GeochatsMessag
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<GeochatsMessages >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal geochatsGetRecentsAnswer";
     Q_EMIT geochatsGetRecentsAnswer(msgId, result);
 }
 
@@ -2778,7 +2724,6 @@ void TelegramCore::onGeochatsCheckinAnswer(qint64 msgId, const GeochatsStatedMes
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<GeochatsStatedMessage >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal geochatsCheckinAnswer";
     Q_EMIT geochatsCheckinAnswer(msgId, result);
 }
 
@@ -2821,7 +2766,6 @@ void TelegramCore::onGeochatsGetFullChatAnswer(qint64 msgId, const MessagesChatF
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<MessagesChatFull >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal geochatsGetFullChatAnswer";
     Q_EMIT geochatsGetFullChatAnswer(msgId, result);
 }
 
@@ -2866,7 +2810,6 @@ void TelegramCore::onGeochatsEditChatTitleAnswer(qint64 msgId, const GeochatsSta
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<GeochatsStatedMessage >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal geochatsEditChatTitleAnswer";
     Q_EMIT geochatsEditChatTitleAnswer(msgId, result);
 }
 
@@ -2910,7 +2853,6 @@ void TelegramCore::onGeochatsEditChatPhotoAnswer(qint64 msgId, const GeochatsSta
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<GeochatsStatedMessage >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal geochatsEditChatPhotoAnswer";
     Q_EMIT geochatsEditChatPhotoAnswer(msgId, result);
 }
 
@@ -2960,7 +2902,6 @@ void TelegramCore::onGeochatsSearchAnswer(qint64 msgId, const GeochatsMessages &
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<GeochatsMessages >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal geochatsSearchAnswer";
     Q_EMIT geochatsSearchAnswer(msgId, result);
 }
 
@@ -3006,7 +2947,6 @@ void TelegramCore::onGeochatsGetHistoryAnswer(qint64 msgId, const GeochatsMessag
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<GeochatsMessages >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal geochatsGetHistoryAnswer";
     Q_EMIT geochatsGetHistoryAnswer(msgId, result);
 }
 
@@ -3050,7 +2990,6 @@ void TelegramCore::onGeochatsSetTypingAnswer(qint64 msgId, bool result, const QV
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal geochatsSetTypingAnswer";
     Q_EMIT geochatsSetTypingAnswer(msgId, result);
 }
 
@@ -3095,7 +3034,6 @@ void TelegramCore::onGeochatsSendMessageAnswer(qint64 msgId, const GeochatsState
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<GeochatsStatedMessage >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal geochatsSendMessageAnswer";
     Q_EMIT geochatsSendMessageAnswer(msgId, result);
 }
 
@@ -3140,7 +3078,6 @@ void TelegramCore::onGeochatsSendMediaAnswer(qint64 msgId, const GeochatsStatedM
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<GeochatsStatedMessage >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal geochatsSendMediaAnswer";
     Q_EMIT geochatsSendMediaAnswer(msgId, result);
 }
 
@@ -3186,7 +3123,6 @@ void TelegramCore::onGeochatsCreateGeoChatAnswer(qint64 msgId, const GeochatsSta
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<GeochatsStatedMessage >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal geochatsCreateGeoChatAnswer";
     Q_EMIT geochatsCreateGeoChatAnswer(msgId, result);
 }
 
@@ -3229,7 +3165,6 @@ void TelegramCore::onHelpGetConfigAnswer(qint64 msgId, const Config &result, con
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<Config >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal helpGetConfigAnswer";
     Q_EMIT helpGetConfigAnswer(msgId, result);
 }
 
@@ -3271,7 +3206,6 @@ void TelegramCore::onHelpGetNearestDcAnswer(qint64 msgId, const NearestDc &resul
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<NearestDc >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal helpGetNearestDcAnswer";
     Q_EMIT helpGetNearestDcAnswer(msgId, result);
 }
 
@@ -3317,7 +3251,6 @@ void TelegramCore::onHelpGetAppUpdateAnswer(qint64 msgId, const HelpAppUpdate &r
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<HelpAppUpdate >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal helpGetAppUpdateAnswer";
     Q_EMIT helpGetAppUpdateAnswer(msgId, result);
 }
 
@@ -3360,7 +3293,6 @@ void TelegramCore::onHelpSaveAppLogAnswer(qint64 msgId, bool result, const QVari
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal helpSaveAppLogAnswer";
     Q_EMIT helpSaveAppLogAnswer(msgId, result);
 }
 
@@ -3403,7 +3335,6 @@ void TelegramCore::onHelpGetInviteTextAnswer(qint64 msgId, const HelpInviteText 
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<HelpInviteText >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal helpGetInviteTextAnswer";
     Q_EMIT helpGetInviteTextAnswer(msgId, result);
 }
 
@@ -3445,7 +3376,6 @@ void TelegramCore::onHelpGetSupportAnswer(qint64 msgId, const HelpSupport &resul
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<HelpSupport >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal helpGetSupportAnswer";
     Q_EMIT helpGetSupportAnswer(msgId, result);
 }
 
@@ -3492,7 +3422,6 @@ void TelegramCore::onMessagesStartBotAnswer(qint64 msgId, const UpdatesType &res
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<UpdatesType >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesStartBotAnswer";
     Q_EMIT messagesStartBotAnswer(msgId, result);
 }
 
@@ -3535,7 +3464,6 @@ void TelegramCore::onMessagesGetMessagesAnswer(qint64 msgId, const MessagesMessa
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<MessagesMessages >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesGetMessagesAnswer";
     Q_EMIT messagesGetMessagesAnswer(msgId, result);
 }
 
@@ -3580,7 +3508,6 @@ void TelegramCore::onMessagesGetDialogsAnswer(qint64 msgId, const MessagesDialog
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<MessagesDialogs >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesGetDialogsAnswer";
     Q_EMIT messagesGetDialogsAnswer(msgId, result);
 }
 
@@ -3626,7 +3553,6 @@ void TelegramCore::onMessagesGetHistoryAnswer(qint64 msgId, const MessagesMessag
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<MessagesMessages >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesGetHistoryAnswer";
     Q_EMIT messagesGetHistoryAnswer(msgId, result);
 }
 
@@ -3676,7 +3602,6 @@ void TelegramCore::onMessagesSearchAnswer(qint64 msgId, const MessagesMessages &
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<MessagesMessages >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesSearchAnswer";
     Q_EMIT messagesSearchAnswer(msgId, result);
 }
 
@@ -3721,7 +3646,6 @@ void TelegramCore::onMessagesReadHistoryAnswer(qint64 msgId, const MessagesAffec
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<MessagesAffectedHistory >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesReadHistoryAnswer";
     Q_EMIT messagesReadHistoryAnswer(msgId, result);
 }
 
@@ -3765,7 +3689,6 @@ void TelegramCore::onMessagesDeleteHistoryAnswer(qint64 msgId, const MessagesAff
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<MessagesAffectedHistory >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesDeleteHistoryAnswer";
     Q_EMIT messagesDeleteHistoryAnswer(msgId, result);
 }
 
@@ -3808,7 +3731,6 @@ void TelegramCore::onMessagesDeleteMessagesAnswer(qint64 msgId, const MessagesAf
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<MessagesAffectedMessages >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesDeleteMessagesAnswer";
     Q_EMIT messagesDeleteMessagesAnswer(msgId, result);
 }
 
@@ -3851,7 +3773,6 @@ void TelegramCore::onMessagesReceivedMessagesAnswer(qint64 msgId, const QList<Re
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<QList<ReceivedNotifyMessage> >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesReceivedMessagesAnswer";
     Q_EMIT messagesReceivedMessagesAnswer(msgId, result);
 }
 
@@ -3895,7 +3816,6 @@ void TelegramCore::onMessagesSetTypingAnswer(qint64 msgId, bool result, const QV
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesSetTypingAnswer";
     Q_EMIT messagesSetTypingAnswer(msgId, result);
 }
 
@@ -3942,7 +3862,6 @@ void TelegramCore::onMessagesSendMessageAnswer(qint64 msgId, const MessagesSentM
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<MessagesSentMessage >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesSendMessageAnswer";
     Q_EMIT messagesSendMessageAnswer(msgId, result);
 }
 
@@ -3989,7 +3908,6 @@ void TelegramCore::onMessagesSendMediaAnswer(qint64 msgId, const UpdatesType &re
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<UpdatesType >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesSendMediaAnswer";
     Q_EMIT messagesSendMediaAnswer(msgId, result);
 }
 
@@ -4034,7 +3952,6 @@ void TelegramCore::onMessagesForwardMessagesAnswer(qint64 msgId, const UpdatesTy
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<UpdatesType >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesForwardMessagesAnswer";
     Q_EMIT messagesForwardMessagesAnswer(msgId, result);
 }
 
@@ -4077,7 +3994,6 @@ void TelegramCore::onMessagesGetChatsAnswer(qint64 msgId, const MessagesChats &r
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<MessagesChats >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesGetChatsAnswer";
     Q_EMIT messagesGetChatsAnswer(msgId, result);
 }
 
@@ -4120,7 +4036,6 @@ void TelegramCore::onMessagesGetFullChatAnswer(qint64 msgId, const MessagesChatF
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<MessagesChatFull >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesGetFullChatAnswer";
     Q_EMIT messagesGetFullChatAnswer(msgId, result);
 }
 
@@ -4164,7 +4079,6 @@ void TelegramCore::onMessagesEditChatTitleAnswer(qint64 msgId, const UpdatesType
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<UpdatesType >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesEditChatTitleAnswer";
     Q_EMIT messagesEditChatTitleAnswer(msgId, result);
 }
 
@@ -4208,7 +4122,6 @@ void TelegramCore::onMessagesEditChatPhotoAnswer(qint64 msgId, const UpdatesType
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<UpdatesType >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesEditChatPhotoAnswer";
     Q_EMIT messagesEditChatPhotoAnswer(msgId, result);
 }
 
@@ -4253,7 +4166,6 @@ void TelegramCore::onMessagesAddChatUserAnswer(qint64 msgId, const UpdatesType &
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<UpdatesType >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesAddChatUserAnswer";
     Q_EMIT messagesAddChatUserAnswer(msgId, result);
 }
 
@@ -4297,7 +4209,6 @@ void TelegramCore::onMessagesDeleteChatUserAnswer(qint64 msgId, const UpdatesTyp
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<UpdatesType >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesDeleteChatUserAnswer";
     Q_EMIT messagesDeleteChatUserAnswer(msgId, result);
 }
 
@@ -4341,7 +4252,6 @@ void TelegramCore::onMessagesCreateChatAnswer(qint64 msgId, const UpdatesType &r
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<UpdatesType >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesCreateChatAnswer";
     Q_EMIT messagesCreateChatAnswer(msgId, result);
 }
 
@@ -4386,7 +4296,6 @@ void TelegramCore::onMessagesForwardMessageAnswer(qint64 msgId, const UpdatesTyp
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<UpdatesType >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesForwardMessageAnswer";
     Q_EMIT messagesForwardMessageAnswer(msgId, result);
 }
 
@@ -4432,7 +4341,6 @@ void TelegramCore::onMessagesSendBroadcastAnswer(qint64 msgId, const UpdatesType
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<UpdatesType >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesSendBroadcastAnswer";
     Q_EMIT messagesSendBroadcastAnswer(msgId, result);
 }
 
@@ -4476,7 +4384,6 @@ void TelegramCore::onMessagesGetDhConfigAnswer(qint64 msgId, const MessagesDhCon
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<MessagesDhConfig >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesGetDhConfigAnswer";
     Q_EMIT messagesGetDhConfigAnswer(msgId, result);
 }
 
@@ -4521,7 +4428,6 @@ void TelegramCore::onMessagesRequestEncryptionAnswer(qint64 msgId, const Encrypt
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<EncryptedChat >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesRequestEncryptionAnswer";
     Q_EMIT messagesRequestEncryptionAnswer(msgId, result);
 }
 
@@ -4566,7 +4472,6 @@ void TelegramCore::onMessagesAcceptEncryptionAnswer(qint64 msgId, const Encrypte
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<EncryptedChat >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesAcceptEncryptionAnswer";
     Q_EMIT messagesAcceptEncryptionAnswer(msgId, result);
 }
 
@@ -4609,7 +4514,6 @@ void TelegramCore::onMessagesDiscardEncryptionAnswer(qint64 msgId, bool result, 
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesDiscardEncryptionAnswer";
     Q_EMIT messagesDiscardEncryptionAnswer(msgId, result);
 }
 
@@ -4653,7 +4557,6 @@ void TelegramCore::onMessagesSetEncryptedTypingAnswer(qint64 msgId, bool result,
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesSetEncryptedTypingAnswer";
     Q_EMIT messagesSetEncryptedTypingAnswer(msgId, result);
 }
 
@@ -4697,7 +4600,6 @@ void TelegramCore::onMessagesReadEncryptedHistoryAnswer(qint64 msgId, bool resul
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesReadEncryptedHistoryAnswer";
     Q_EMIT messagesReadEncryptedHistoryAnswer(msgId, result);
 }
 
@@ -4742,7 +4644,6 @@ void TelegramCore::onMessagesSendEncryptedAnswer(qint64 msgId, const MessagesSen
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<MessagesSentEncryptedMessage >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesSendEncryptedAnswer";
     Q_EMIT messagesSendEncryptedAnswer(msgId, result);
 }
 
@@ -4788,7 +4689,6 @@ void TelegramCore::onMessagesSendEncryptedFileAnswer(qint64 msgId, const Message
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<MessagesSentEncryptedMessage >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesSendEncryptedFileAnswer";
     Q_EMIT messagesSendEncryptedFileAnswer(msgId, result);
 }
 
@@ -4833,7 +4733,6 @@ void TelegramCore::onMessagesSendEncryptedServiceAnswer(qint64 msgId, const Mess
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<MessagesSentEncryptedMessage >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesSendEncryptedServiceAnswer";
     Q_EMIT messagesSendEncryptedServiceAnswer(msgId, result);
 }
 
@@ -4876,7 +4775,6 @@ void TelegramCore::onMessagesReceivedQueueAnswer(qint64 msgId, const QList<qint6
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<QList<qint64> >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesReceivedQueueAnswer";
     Q_EMIT messagesReceivedQueueAnswer(msgId, result);
 }
 
@@ -4919,7 +4817,6 @@ void TelegramCore::onMessagesReadMessageContentsAnswer(qint64 msgId, const Messa
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<MessagesAffectedMessages >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesReadMessageContentsAnswer";
     Q_EMIT messagesReadMessageContentsAnswer(msgId, result);
 }
 
@@ -4963,7 +4860,6 @@ void TelegramCore::onMessagesGetStickersAnswer(qint64 msgId, const MessagesStick
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<MessagesStickers >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesGetStickersAnswer";
     Q_EMIT messagesGetStickersAnswer(msgId, result);
 }
 
@@ -5006,7 +4902,6 @@ void TelegramCore::onMessagesGetAllStickersAnswer(qint64 msgId, const MessagesAl
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<MessagesAllStickers >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesGetAllStickersAnswer";
     Q_EMIT messagesGetAllStickersAnswer(msgId, result);
 }
 
@@ -5049,7 +4944,6 @@ void TelegramCore::onMessagesGetWebPagePreviewAnswer(qint64 msgId, const Message
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<MessageMedia >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesGetWebPagePreviewAnswer";
     Q_EMIT messagesGetWebPagePreviewAnswer(msgId, result);
 }
 
@@ -5092,7 +4986,6 @@ void TelegramCore::onMessagesExportChatInviteAnswer(qint64 msgId, const Exported
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<ExportedChatInvite >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesExportChatInviteAnswer";
     Q_EMIT messagesExportChatInviteAnswer(msgId, result);
 }
 
@@ -5135,7 +5028,6 @@ void TelegramCore::onMessagesCheckChatInviteAnswer(qint64 msgId, const ChatInvit
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<ChatInvite >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesCheckChatInviteAnswer";
     Q_EMIT messagesCheckChatInviteAnswer(msgId, result);
 }
 
@@ -5178,7 +5070,6 @@ void TelegramCore::onMessagesImportChatInviteAnswer(qint64 msgId, const UpdatesT
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<UpdatesType >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesImportChatInviteAnswer";
     Q_EMIT messagesImportChatInviteAnswer(msgId, result);
 }
 
@@ -5221,7 +5112,6 @@ void TelegramCore::onMessagesGetStickerSetAnswer(qint64 msgId, const MessagesSti
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<MessagesStickerSet >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesGetStickerSetAnswer";
     Q_EMIT messagesGetStickerSetAnswer(msgId, result);
 }
 
@@ -5264,7 +5154,6 @@ void TelegramCore::onMessagesInstallStickerSetAnswer(qint64 msgId, bool result, 
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesInstallStickerSetAnswer";
     Q_EMIT messagesInstallStickerSetAnswer(msgId, result);
 }
 
@@ -5307,7 +5196,6 @@ void TelegramCore::onMessagesUninstallStickerSetAnswer(qint64 msgId, bool result
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal messagesUninstallStickerSetAnswer";
     Q_EMIT messagesUninstallStickerSetAnswer(msgId, result);
 }
 
@@ -5352,7 +5240,6 @@ void TelegramCore::onPhotosUpdateProfilePhotoAnswer(qint64 msgId, const UserProf
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<UserProfilePhoto >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal photosUpdateProfilePhotoAnswer";
     Q_EMIT photosUpdateProfilePhotoAnswer(msgId, result);
 }
 
@@ -5398,7 +5285,6 @@ void TelegramCore::onPhotosUploadProfilePhotoAnswer(qint64 msgId, const PhotosPh
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<PhotosPhoto >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal photosUploadProfilePhotoAnswer";
     Q_EMIT photosUploadProfilePhotoAnswer(msgId, result);
 }
 
@@ -5441,7 +5327,6 @@ void TelegramCore::onPhotosDeletePhotosAnswer(qint64 msgId, const QList<qint64> 
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<QList<qint64> >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal photosDeletePhotosAnswer";
     Q_EMIT photosDeletePhotosAnswer(msgId, result);
 }
 
@@ -5487,7 +5372,6 @@ void TelegramCore::onPhotosGetUserPhotosAnswer(qint64 msgId, const PhotosPhotos 
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<PhotosPhotos >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal photosGetUserPhotosAnswer";
     Q_EMIT photosGetUserPhotosAnswer(msgId, result);
 }
 
@@ -5530,7 +5414,6 @@ void TelegramCore::onUpdatesGetStateAnswer(qint64 msgId, const UpdatesState &res
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<UpdatesState >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal updatesGetStateAnswer";
     Q_EMIT updatesGetStateAnswer(msgId, result);
 }
 
@@ -5575,7 +5458,6 @@ void TelegramCore::onUpdatesGetDifferenceAnswer(qint64 msgId, const UpdatesDiffe
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<UpdatesDifference >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal updatesGetDifferenceAnswer";
     Q_EMIT updatesGetDifferenceAnswer(msgId, result);
 }
 
@@ -5621,7 +5503,6 @@ void TelegramCore::onUploadSaveFilePartAnswer(qint64 msgId, bool result, const Q
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal uploadSaveFilePartAnswer";
     Q_EMIT uploadSaveFilePartAnswer(msgId, result);
 }
 
@@ -5666,7 +5547,6 @@ void TelegramCore::onUploadGetFileAnswer(qint64 msgId, const UploadFile &result,
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<UploadFile >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal uploadGetFileAnswer";
     Q_EMIT uploadGetFileAnswer(msgId, result);
 }
 
@@ -5712,7 +5592,6 @@ void TelegramCore::onUploadSaveBigFilePartAnswer(qint64 msgId, bool result, cons
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<bool >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal uploadSaveBigFilePartAnswer";
     Q_EMIT uploadSaveBigFilePartAnswer(msgId, result);
 }
 
@@ -5756,7 +5635,6 @@ void TelegramCore::onUsersGetUsersAnswer(qint64 msgId, const QList<User> &result
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<QList<User> >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal usersGetUsersAnswer";
     Q_EMIT usersGetUsersAnswer(msgId, result);
 }
 
@@ -5799,7 +5677,6 @@ void TelegramCore::onUsersGetFullUserAnswer(qint64 msgId, const UserFull &result
     mLastArgs = mRecallArgs.take(msgId);
     callBackCall<UserFull >(msgId, result);
     stopTimeOut(msgId);
-    qInfo() << "Emitting signal usersGetFullUserAnswer";
     Q_EMIT usersGetFullUserAnswer(msgId, result);
 }
 
