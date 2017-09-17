@@ -135,7 +135,6 @@ public:
     qint64 contactsGetBlocked(qint32 offset = 0, qint32 limit = 0);
 
     // Working with messages
-    qint64 messagesSendMessage (const InputPeer &peer, qint64 randomId, const QString &message, int replyToMsgId = 0);
     qint64 messagesSendPhoto(const InputPeer &peer, qint64 randomId, const QByteArray &bytes, const QString &fileName, qint32 replyToMsgId = 0);
     qint64 messagesSendPhoto(const InputPeer &peer, qint64 randomId, const QString &filePath, qint32 replyToMsgId = 0);
     qint64 messagesSendGeoPoint(const InputPeer &peer, qint64 randomId, const InputGeoPoint &InputGeoPoint, qint32 replyToMsgId = 0);
@@ -193,8 +192,6 @@ public:
     // Stickers
     qint64 messagesGetStickers(const QString &emoticon, const QString &hash);
     qint64 messagesGetAllStickers(const QString &hash);
-    qint64 messagesGetStickerSet(const InputStickerSet &stickerset);
-    qint64 messagesInstallStickerSet(const InputStickerSet &stickerset);
     qint64 messagesUninstallStickerSet(const InputStickerSet &stickerset);
 
     // Invites
