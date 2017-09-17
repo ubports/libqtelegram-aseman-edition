@@ -17,6 +17,8 @@ class LIBQTELEGRAMSHARED_EXPORT DcOptionObject : public TelegramTypeQObject
     Q_PROPERTY(qint32 flags READ flags WRITE setFlags NOTIFY flagsChanged)
     Q_PROPERTY(qint32 id READ id WRITE setId NOTIFY idChanged)
     Q_PROPERTY(QString ipAddress READ ipAddress WRITE setIpAddress NOTIFY ipAddressChanged)
+    Q_PROPERTY(bool ipv6 READ ipv6 WRITE setIpv6 NOTIFY ipv6Changed)
+    Q_PROPERTY(bool mediaOnly READ mediaOnly WRITE setMediaOnly NOTIFY mediaOnlyChanged)
     Q_PROPERTY(qint32 port READ port WRITE setPort NOTIFY portChanged)
     Q_PROPERTY(DcOption core READ core WRITE setCore NOTIFY coreChanged)
     Q_PROPERTY(quint32 classType READ classType WRITE setClassType NOTIFY classTypeChanged)
@@ -39,6 +41,12 @@ public:
     void setIpAddress(const QString &ipAddress);
     QString ipAddress() const;
 
+    void setIpv6(bool ipv6);
+    bool ipv6() const;
+
+    void setMediaOnly(bool mediaOnly);
+    bool mediaOnly() const;
+
     void setPort(qint32 port);
     qint32 port() const;
 
@@ -57,6 +65,8 @@ Q_SIGNALS:
     void flagsChanged();
     void idChanged();
     void ipAddressChanged();
+    void ipv6Changed();
+    void mediaOnlyChanged();
     void portChanged();
 
 private Q_SLOTS:
@@ -113,6 +123,28 @@ inline QString DcOptionObject::ipAddress() const {
     return m_core.ipAddress();
 }
 
+inline void DcOptionObject::setIpv6(bool ipv6) {
+    if(m_core.ipv6() == ipv6) return;
+    m_core.setIpv6(ipv6);
+    Q_EMIT ipv6Changed();
+    Q_EMIT coreChanged();
+}
+
+inline bool DcOptionObject::ipv6() const {
+    return m_core.ipv6();
+}
+
+inline void DcOptionObject::setMediaOnly(bool mediaOnly) {
+    if(m_core.mediaOnly() == mediaOnly) return;
+    m_core.setMediaOnly(mediaOnly);
+    Q_EMIT mediaOnlyChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool DcOptionObject::mediaOnly() const {
+    return m_core.mediaOnly();
+}
+
 inline void DcOptionObject::setPort(qint32 port) {
     if(m_core.port() == port) return;
     m_core.setPort(port);
@@ -131,6 +163,8 @@ inline DcOptionObject &DcOptionObject::operator =(const DcOption &b) {
     Q_EMIT flagsChanged();
     Q_EMIT idChanged();
     Q_EMIT ipAddressChanged();
+    Q_EMIT ipv6Changed();
+    Q_EMIT mediaOnlyChanged();
     Q_EMIT portChanged();
     Q_EMIT coreChanged();
     return *this;

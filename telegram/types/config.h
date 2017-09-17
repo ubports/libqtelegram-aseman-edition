@@ -24,16 +24,13 @@ class LIBQTELEGRAMSHARED_EXPORT Config : public TelegramTypeObject
 {
 public:
     enum ConfigClassType {
-        typeConfig = 0x4e32b894
+        typeConfig = 0x6cb6e65e
     };
 
     Config(ConfigClassType classType = typeConfig, InboundPkt *in = 0);
     Config(InboundPkt *in);
     Config(const Null&);
     virtual ~Config();
-
-    void setBroadcastSizeMax(qint32 broadcastSizeMax);
-    qint32 broadcastSizeMax() const;
 
     void setChatBigSize(qint32 chatBigSize);
     qint32 chatBigSize() const;
@@ -55,6 +52,9 @@ public:
 
     void setForwardedCountMax(qint32 forwardedCountMax);
     qint32 forwardedCountMax() const;
+
+    void setMegagroupSizeMax(qint32 megagroupSizeMax);
+    qint32 megagroupSizeMax() const;
 
     void setNotifyCloudDelayMs(qint32 notifyCloudDelayMs);
     qint32 notifyCloudDelayMs() const;
@@ -103,7 +103,6 @@ public:
     QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
-    qint32 m_broadcastSizeMax;
     qint32 m_chatBigSize;
     qint32 m_chatSizeMax;
     qint32 m_date;
@@ -111,6 +110,7 @@ private:
     QList<DisabledFeature> m_disabledFeatures;
     qint32 m_expires;
     qint32 m_forwardedCountMax;
+    qint32 m_megagroupSizeMax;
     qint32 m_notifyCloudDelayMs;
     qint32 m_notifyDefaultDelayMs;
     qint32 m_offlineBlurTimeoutMs;
@@ -130,12 +130,12 @@ QDataStream LIBQTELEGRAMSHARED_EXPORT &operator<<(QDataStream &stream, const Con
 QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, Config &item);
 
 inline Config::Config(ConfigClassType classType, InboundPkt *in) :
-    m_broadcastSizeMax(0),
     m_chatBigSize(0),
     m_chatSizeMax(0),
     m_date(0),
     m_expires(0),
     m_forwardedCountMax(0),
+    m_megagroupSizeMax(0),
     m_notifyCloudDelayMs(0),
     m_notifyDefaultDelayMs(0),
     m_offlineBlurTimeoutMs(0),
@@ -152,12 +152,12 @@ inline Config::Config(ConfigClassType classType, InboundPkt *in) :
 }
 
 inline Config::Config(InboundPkt *in) :
-    m_broadcastSizeMax(0),
     m_chatBigSize(0),
     m_chatSizeMax(0),
     m_date(0),
     m_expires(0),
     m_forwardedCountMax(0),
+    m_megagroupSizeMax(0),
     m_notifyCloudDelayMs(0),
     m_notifyDefaultDelayMs(0),
     m_offlineBlurTimeoutMs(0),
@@ -175,12 +175,12 @@ inline Config::Config(InboundPkt *in) :
 
 inline Config::Config(const Null &null) :
     TelegramTypeObject(null),
-    m_broadcastSizeMax(0),
     m_chatBigSize(0),
     m_chatSizeMax(0),
     m_date(0),
     m_expires(0),
     m_forwardedCountMax(0),
+    m_megagroupSizeMax(0),
     m_notifyCloudDelayMs(0),
     m_notifyDefaultDelayMs(0),
     m_offlineBlurTimeoutMs(0),
@@ -196,14 +196,6 @@ inline Config::Config(const Null &null) :
 }
 
 inline Config::~Config() {
-}
-
-inline void Config::setBroadcastSizeMax(qint32 broadcastSizeMax) {
-    m_broadcastSizeMax = broadcastSizeMax;
-}
-
-inline qint32 Config::broadcastSizeMax() const {
-    return m_broadcastSizeMax;
 }
 
 inline void Config::setChatBigSize(qint32 chatBigSize) {
@@ -260,6 +252,14 @@ inline void Config::setForwardedCountMax(qint32 forwardedCountMax) {
 
 inline qint32 Config::forwardedCountMax() const {
     return m_forwardedCountMax;
+}
+
+inline void Config::setMegagroupSizeMax(qint32 megagroupSizeMax) {
+    m_megagroupSizeMax = megagroupSizeMax;
+}
+
+inline qint32 Config::megagroupSizeMax() const {
+    return m_megagroupSizeMax;
 }
 
 inline void Config::setNotifyCloudDelayMs(qint32 notifyCloudDelayMs) {
@@ -344,7 +344,6 @@ inline qint32 Config::thisDc() const {
 
 inline bool Config::operator ==(const Config &b) const {
     return m_classType == b.m_classType &&
-           m_broadcastSizeMax == b.m_broadcastSizeMax &&
            m_chatBigSize == b.m_chatBigSize &&
            m_chatSizeMax == b.m_chatSizeMax &&
            m_date == b.m_date &&
@@ -352,6 +351,7 @@ inline bool Config::operator ==(const Config &b) const {
            m_disabledFeatures == b.m_disabledFeatures &&
            m_expires == b.m_expires &&
            m_forwardedCountMax == b.m_forwardedCountMax &&
+           m_megagroupSizeMax == b.m_megagroupSizeMax &&
            m_notifyCloudDelayMs == b.m_notifyCloudDelayMs &&
            m_notifyDefaultDelayMs == b.m_notifyDefaultDelayMs &&
            m_offlineBlurTimeoutMs == b.m_offlineBlurTimeoutMs &&
@@ -390,7 +390,7 @@ inline bool Config::fetch(InboundPkt *in) {
             m_dcOptions.append(type);
         }
         m_chatSizeMax = in->fetchInt();
-        m_broadcastSizeMax = in->fetchInt();
+        m_megagroupSizeMax = in->fetchInt();
         m_forwardedCountMax = in->fetchInt();
         m_onlineUpdatePeriodMs = in->fetchInt();
         m_offlineBlurTimeoutMs = in->fetchInt();
@@ -434,7 +434,7 @@ inline bool Config::push(OutboundPkt *out) const {
             m_dcOptions[i].push(out);
         }
         out->appendInt(m_chatSizeMax);
-        out->appendInt(m_broadcastSizeMax);
+        out->appendInt(m_megagroupSizeMax);
         out->appendInt(m_forwardedCountMax);
         out->appendInt(m_onlineUpdatePeriodMs);
         out->appendInt(m_offlineBlurTimeoutMs);
@@ -473,7 +473,7 @@ inline QMap<QString, QVariant> Config::toMap() const {
             _dcOptions << m__type.toMap();
         result["dcOptions"] = _dcOptions;
         result["chatSizeMax"] = QVariant::fromValue<qint32>(chatSizeMax());
-        result["broadcastSizeMax"] = QVariant::fromValue<qint32>(broadcastSizeMax());
+        result["megagroupSizeMax"] = QVariant::fromValue<qint32>(megagroupSizeMax());
         result["forwardedCountMax"] = QVariant::fromValue<qint32>(forwardedCountMax());
         result["onlineUpdatePeriodMs"] = QVariant::fromValue<qint32>(onlineUpdatePeriodMs());
         result["offlineBlurTimeoutMs"] = QVariant::fromValue<qint32>(offlineBlurTimeoutMs());
@@ -511,7 +511,7 @@ inline Config Config::fromMap(const QMap<QString, QVariant> &map) {
             _dcOptions << DcOption::fromMap(var.toMap());
         result.setDcOptions(_dcOptions);
         result.setChatSizeMax( map.value("chatSizeMax").value<qint32>() );
-        result.setBroadcastSizeMax( map.value("broadcastSizeMax").value<qint32>() );
+        result.setMegagroupSizeMax( map.value("megagroupSizeMax").value<qint32>() );
         result.setForwardedCountMax( map.value("forwardedCountMax").value<qint32>() );
         result.setOnlineUpdatePeriodMs( map.value("onlineUpdatePeriodMs").value<qint32>() );
         result.setOfflineBlurTimeoutMs( map.value("offlineBlurTimeoutMs").value<qint32>() );
@@ -549,7 +549,7 @@ inline QDataStream &operator<<(QDataStream &stream, const Config &item) {
         stream << item.thisDc();
         stream << item.dcOptions();
         stream << item.chatSizeMax();
-        stream << item.broadcastSizeMax();
+        stream << item.megagroupSizeMax();
         stream << item.forwardedCountMax();
         stream << item.onlineUpdatePeriodMs();
         stream << item.offlineBlurTimeoutMs();
@@ -590,9 +590,9 @@ inline QDataStream &operator>>(QDataStream &stream, Config &item) {
         qint32 m_chat_size_max;
         stream >> m_chat_size_max;
         item.setChatSizeMax(m_chat_size_max);
-        qint32 m_broadcast_size_max;
-        stream >> m_broadcast_size_max;
-        item.setBroadcastSizeMax(m_broadcast_size_max);
+        qint32 m_megagroup_size_max;
+        stream >> m_megagroup_size_max;
+        item.setMegagroupSizeMax(m_megagroup_size_max);
         qint32 m_forwarded_count_max;
         stream >> m_forwarded_count_max;
         item.setForwardedCountMax(m_forwarded_count_max);

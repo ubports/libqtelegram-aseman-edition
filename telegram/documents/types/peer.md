@@ -4,6 +4,7 @@
 
 * [typePeerUser](#peertypepeeruser)
 * [typePeerChat](#peertypepeerchat)
+* [typePeerChannel](#peertypepeerchannel)
 
 ## Peer::typePeerUser
 
@@ -32,4 +33,18 @@ peerChat#bad0e5bb chat_id:int = Peer;
 |Name|Type|
 |----|----|
 |chatId|qint32|
+
+## Peer::typePeerChannel
+
+#### Schema:
+
+```c++
+peerChannel#bddde532 channel_id:int = Peer;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|channelId|qint32|
 

@@ -14,6 +14,7 @@ class LIBQTELEGRAMSHARED_EXPORT PeerObject : public TelegramTypeQObject
 {
     Q_OBJECT
     Q_ENUMS(PeerClassType)
+    Q_PROPERTY(qint32 channelId READ channelId WRITE setChannelId NOTIFY channelIdChanged)
     Q_PROPERTY(qint32 chatId READ chatId WRITE setChatId NOTIFY chatIdChanged)
     Q_PROPERTY(qint32 userId READ userId WRITE setUserId NOTIFY userIdChanged)
     Q_PROPERTY(Peer core READ core WRITE setCore NOTIFY coreChanged)
@@ -22,12 +23,16 @@ class LIBQTELEGRAMSHARED_EXPORT PeerObject : public TelegramTypeQObject
 public:
     enum PeerClassType {
         TypePeerUser,
-        TypePeerChat
+        TypePeerChat,
+        TypePeerChannel
     };
 
     PeerObject(const Peer &core, QObject *parent = 0);
     PeerObject(QObject *parent = 0);
     virtual ~PeerObject();
+
+    void setChannelId(qint32 channelId);
+    qint32 channelId() const;
 
     void setChatId(qint32 chatId);
     qint32 chatId() const;
@@ -47,6 +52,7 @@ public:
 Q_SIGNALS:
     void coreChanged();
     void classTypeChanged();
+    void channelIdChanged();
     void chatIdChanged();
     void userIdChanged();
 
@@ -69,6 +75,17 @@ inline PeerObject::PeerObject(QObject *parent) :
 }
 
 inline PeerObject::~PeerObject() {
+}
+
+inline void PeerObject::setChannelId(qint32 channelId) {
+    if(m_core.channelId() == channelId) return;
+    m_core.setChannelId(channelId);
+    Q_EMIT channelIdChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 PeerObject::channelId() const {
+    return m_core.channelId();
 }
 
 inline void PeerObject::setChatId(qint32 chatId) {
@@ -97,6 +114,7 @@ inline PeerObject &PeerObject::operator =(const Peer &b) {
     if(m_core == b) return *this;
     m_core = b;
 
+    Q_EMIT channelIdChanged();
     Q_EMIT chatIdChanged();
     Q_EMIT userIdChanged();
     Q_EMIT coreChanged();
@@ -115,6 +133,9 @@ inline void PeerObject::setClassType(quint32 classType) {
         break;
     case TypePeerChat:
         result = Peer::typePeerChat;
+        break;
+    case TypePeerChannel:
+        result = Peer::typePeerChannel;
         break;
     default:
         result = Peer::typePeerUser;
@@ -135,6 +156,9 @@ inline quint32 PeerObject::classType() const {
         break;
     case Peer::typePeerChat:
         result = TypePeerChat;
+        break;
+    case Peer::typePeerChannel:
+        result = TypePeerChannel;
         break;
     default:
         result = TypePeerUser;

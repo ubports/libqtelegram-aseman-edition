@@ -15,7 +15,10 @@ class LIBQTELEGRAMSHARED_EXPORT ReplyMarkupObject : public TelegramTypeQObject
     Q_OBJECT
     Q_ENUMS(ReplyMarkupClassType)
     Q_PROPERTY(qint32 flags READ flags WRITE setFlags NOTIFY flagsChanged)
+    Q_PROPERTY(bool resize READ resize WRITE setResize NOTIFY resizeChanged)
     Q_PROPERTY(QList<KeyboardButtonRow> rows READ rows WRITE setRows NOTIFY rowsChanged)
+    Q_PROPERTY(bool selective READ selective WRITE setSelective NOTIFY selectiveChanged)
+    Q_PROPERTY(bool singleUse READ singleUse WRITE setSingleUse NOTIFY singleUseChanged)
     Q_PROPERTY(ReplyMarkup core READ core WRITE setCore NOTIFY coreChanged)
     Q_PROPERTY(quint32 classType READ classType WRITE setClassType NOTIFY classTypeChanged)
 
@@ -33,8 +36,17 @@ public:
     void setFlags(qint32 flags);
     qint32 flags() const;
 
+    void setResize(bool resize);
+    bool resize() const;
+
     void setRows(const QList<KeyboardButtonRow> &rows);
     QList<KeyboardButtonRow> rows() const;
+
+    void setSelective(bool selective);
+    bool selective() const;
+
+    void setSingleUse(bool singleUse);
+    bool singleUse() const;
 
     void setClassType(quint32 classType);
     quint32 classType() const;
@@ -49,7 +61,10 @@ Q_SIGNALS:
     void coreChanged();
     void classTypeChanged();
     void flagsChanged();
+    void resizeChanged();
     void rowsChanged();
+    void selectiveChanged();
+    void singleUseChanged();
 
 private Q_SLOTS:
 
@@ -83,6 +98,17 @@ inline qint32 ReplyMarkupObject::flags() const {
     return m_core.flags();
 }
 
+inline void ReplyMarkupObject::setResize(bool resize) {
+    if(m_core.resize() == resize) return;
+    m_core.setResize(resize);
+    Q_EMIT resizeChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool ReplyMarkupObject::resize() const {
+    return m_core.resize();
+}
+
 inline void ReplyMarkupObject::setRows(const QList<KeyboardButtonRow> &rows) {
     if(m_core.rows() == rows) return;
     m_core.setRows(rows);
@@ -94,12 +120,37 @@ inline QList<KeyboardButtonRow> ReplyMarkupObject::rows() const {
     return m_core.rows();
 }
 
+inline void ReplyMarkupObject::setSelective(bool selective) {
+    if(m_core.selective() == selective) return;
+    m_core.setSelective(selective);
+    Q_EMIT selectiveChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool ReplyMarkupObject::selective() const {
+    return m_core.selective();
+}
+
+inline void ReplyMarkupObject::setSingleUse(bool singleUse) {
+    if(m_core.singleUse() == singleUse) return;
+    m_core.setSingleUse(singleUse);
+    Q_EMIT singleUseChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool ReplyMarkupObject::singleUse() const {
+    return m_core.singleUse();
+}
+
 inline ReplyMarkupObject &ReplyMarkupObject::operator =(const ReplyMarkup &b) {
     if(m_core == b) return *this;
     m_core = b;
 
     Q_EMIT flagsChanged();
+    Q_EMIT resizeChanged();
     Q_EMIT rowsChanged();
+    Q_EMIT selectiveChanged();
+    Q_EMIT singleUseChanged();
     Q_EMIT coreChanged();
     return *this;
 }

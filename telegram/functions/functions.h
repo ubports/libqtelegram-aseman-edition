@@ -6,6 +6,7 @@
 #include "telegramfunctionobject.h"
 #include "account.h"
 #include "auth.h"
+#include "channels.h"
 #include "contacts.h"
 #include "help.h"
 #include "messages.h"

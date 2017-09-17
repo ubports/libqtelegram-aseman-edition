@@ -22,6 +22,7 @@
 #include "telegram/types/inputuser.h"
 #include "telegram/types/contactsblocked.h"
 #include "telegram/types/user.h"
+#include "telegram/types/contactsresolvedpeer.h"
 #include "telegram/types/contactssuggested.h"
 
 namespace Tg {
@@ -42,7 +43,7 @@ public:
         fncContactsGetBlocked = 0xf57c350f,
         fncContactsExportCard = 0x84e53737,
         fncContactsImportCard = 0x4fe196fe,
-        fncContactsResolveUsername = 0xbf0131c,
+        fncContactsResolveUsername = 0xf93ccba3,
         fncContactsGetSuggested = 0xcd773428
     };
 
@@ -83,7 +84,7 @@ public:
     static User importCardResult(InboundPkt *in);
 
     static bool resolveUsername(OutboundPkt *out, const QString &username);
-    static User resolveUsernameResult(InboundPkt *in);
+    static ContactsResolvedPeer resolveUsernameResult(InboundPkt *in);
 
     static bool getSuggested(OutboundPkt *out, qint32 limit);
     static ContactsSuggested getSuggestedResult(InboundPkt *in);
@@ -262,8 +263,8 @@ inline bool Functions::Contacts::resolveUsername(OutboundPkt *out, const QString
     return true;
 }
 
-inline User Functions::Contacts::resolveUsernameResult(InboundPkt *in) {
-    User result;
+inline ContactsResolvedPeer Functions::Contacts::resolveUsernameResult(InboundPkt *in) {
+    ContactsResolvedPeer result;
     if(!result.fetch(in)) return result;
     return result;
 }

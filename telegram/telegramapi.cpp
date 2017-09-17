@@ -109,6 +109,57 @@ TelegramApi::TelegramApi(Session *session, Settings *settings, CryptoUtils *cryp
     authImportBotAuthorizationMethods.onAnswer = &TelegramApi::onAuthImportBotAuthorizationAnswer;
     authImportBotAuthorizationMethods.onError = &TelegramApi::onAuthImportBotAuthorizationError;
     
+    channelsGetDialogsMethods.onAnswer = &TelegramApi::onChannelsGetDialogsAnswer;
+    channelsGetDialogsMethods.onError = &TelegramApi::onChannelsGetDialogsError;
+    channelsGetImportantHistoryMethods.onAnswer = &TelegramApi::onChannelsGetImportantHistoryAnswer;
+    channelsGetImportantHistoryMethods.onError = &TelegramApi::onChannelsGetImportantHistoryError;
+    channelsReadHistoryMethods.onAnswer = &TelegramApi::onChannelsReadHistoryAnswer;
+    channelsReadHistoryMethods.onError = &TelegramApi::onChannelsReadHistoryError;
+    channelsDeleteMessagesMethods.onAnswer = &TelegramApi::onChannelsDeleteMessagesAnswer;
+    channelsDeleteMessagesMethods.onError = &TelegramApi::onChannelsDeleteMessagesError;
+    channelsDeleteUserHistoryMethods.onAnswer = &TelegramApi::onChannelsDeleteUserHistoryAnswer;
+    channelsDeleteUserHistoryMethods.onError = &TelegramApi::onChannelsDeleteUserHistoryError;
+    channelsReportSpamMethods.onAnswer = &TelegramApi::onChannelsReportSpamAnswer;
+    channelsReportSpamMethods.onError = &TelegramApi::onChannelsReportSpamError;
+    channelsGetMessagesMethods.onAnswer = &TelegramApi::onChannelsGetMessagesAnswer;
+    channelsGetMessagesMethods.onError = &TelegramApi::onChannelsGetMessagesError;
+    channelsGetParticipantsMethods.onAnswer = &TelegramApi::onChannelsGetParticipantsAnswer;
+    channelsGetParticipantsMethods.onError = &TelegramApi::onChannelsGetParticipantsError;
+    channelsGetParticipantMethods.onAnswer = &TelegramApi::onChannelsGetParticipantAnswer;
+    channelsGetParticipantMethods.onError = &TelegramApi::onChannelsGetParticipantError;
+    channelsGetChannelsMethods.onAnswer = &TelegramApi::onChannelsGetChannelsAnswer;
+    channelsGetChannelsMethods.onError = &TelegramApi::onChannelsGetChannelsError;
+    channelsGetFullChannelMethods.onAnswer = &TelegramApi::onChannelsGetFullChannelAnswer;
+    channelsGetFullChannelMethods.onError = &TelegramApi::onChannelsGetFullChannelError;
+    channelsCreateChannelMethods.onAnswer = &TelegramApi::onChannelsCreateChannelAnswer;
+    channelsCreateChannelMethods.onError = &TelegramApi::onChannelsCreateChannelError;
+    channelsEditAboutMethods.onAnswer = &TelegramApi::onChannelsEditAboutAnswer;
+    channelsEditAboutMethods.onError = &TelegramApi::onChannelsEditAboutError;
+    channelsEditAdminMethods.onAnswer = &TelegramApi::onChannelsEditAdminAnswer;
+    channelsEditAdminMethods.onError = &TelegramApi::onChannelsEditAdminError;
+    channelsEditTitleMethods.onAnswer = &TelegramApi::onChannelsEditTitleAnswer;
+    channelsEditTitleMethods.onError = &TelegramApi::onChannelsEditTitleError;
+    channelsEditPhotoMethods.onAnswer = &TelegramApi::onChannelsEditPhotoAnswer;
+    channelsEditPhotoMethods.onError = &TelegramApi::onChannelsEditPhotoError;
+    channelsToggleCommentsMethods.onAnswer = &TelegramApi::onChannelsToggleCommentsAnswer;
+    channelsToggleCommentsMethods.onError = &TelegramApi::onChannelsToggleCommentsError;
+    channelsCheckUsernameMethods.onAnswer = &TelegramApi::onChannelsCheckUsernameAnswer;
+    channelsCheckUsernameMethods.onError = &TelegramApi::onChannelsCheckUsernameError;
+    channelsUpdateUsernameMethods.onAnswer = &TelegramApi::onChannelsUpdateUsernameAnswer;
+    channelsUpdateUsernameMethods.onError = &TelegramApi::onChannelsUpdateUsernameError;
+    channelsJoinChannelMethods.onAnswer = &TelegramApi::onChannelsJoinChannelAnswer;
+    channelsJoinChannelMethods.onError = &TelegramApi::onChannelsJoinChannelError;
+    channelsLeaveChannelMethods.onAnswer = &TelegramApi::onChannelsLeaveChannelAnswer;
+    channelsLeaveChannelMethods.onError = &TelegramApi::onChannelsLeaveChannelError;
+    channelsInviteToChannelMethods.onAnswer = &TelegramApi::onChannelsInviteToChannelAnswer;
+    channelsInviteToChannelMethods.onError = &TelegramApi::onChannelsInviteToChannelError;
+    channelsKickFromChannelMethods.onAnswer = &TelegramApi::onChannelsKickFromChannelAnswer;
+    channelsKickFromChannelMethods.onError = &TelegramApi::onChannelsKickFromChannelError;
+    channelsExportInviteMethods.onAnswer = &TelegramApi::onChannelsExportInviteAnswer;
+    channelsExportInviteMethods.onError = &TelegramApi::onChannelsExportInviteError;
+    channelsDeleteChannelMethods.onAnswer = &TelegramApi::onChannelsDeleteChannelAnswer;
+    channelsDeleteChannelMethods.onError = &TelegramApi::onChannelsDeleteChannelError;
+    
     contactsGetStatusesMethods.onAnswer = &TelegramApi::onContactsGetStatusesAnswer;
     contactsGetStatusesMethods.onError = &TelegramApi::onContactsGetStatusesError;
     contactsGetContactsMethods.onAnswer = &TelegramApi::onContactsGetContactsAnswer;
@@ -235,6 +286,18 @@ TelegramApi::TelegramApi(Session *session, Settings *settings, CryptoUtils *cryp
     messagesUninstallStickerSetMethods.onError = &TelegramApi::onMessagesUninstallStickerSetError;
     messagesStartBotMethods.onAnswer = &TelegramApi::onMessagesStartBotAnswer;
     messagesStartBotMethods.onError = &TelegramApi::onMessagesStartBotError;
+    messagesReportSpamMethods.onAnswer = &TelegramApi::onMessagesReportSpamAnswer;
+    messagesReportSpamMethods.onError = &TelegramApi::onMessagesReportSpamError;
+    messagesGetMessagesViewsMethods.onAnswer = &TelegramApi::onMessagesGetMessagesViewsAnswer;
+    messagesGetMessagesViewsMethods.onError = &TelegramApi::onMessagesGetMessagesViewsError;
+    messagesToggleChatAdminsMethods.onAnswer = &TelegramApi::onMessagesToggleChatAdminsAnswer;
+    messagesToggleChatAdminsMethods.onError = &TelegramApi::onMessagesToggleChatAdminsError;
+    messagesEditChatAdminMethods.onAnswer = &TelegramApi::onMessagesEditChatAdminAnswer;
+    messagesEditChatAdminMethods.onError = &TelegramApi::onMessagesEditChatAdminError;
+    messagesMigrateChatMethods.onAnswer = &TelegramApi::onMessagesMigrateChatAnswer;
+    messagesMigrateChatMethods.onError = &TelegramApi::onMessagesMigrateChatError;
+    messagesSearchGlobalMethods.onAnswer = &TelegramApi::onMessagesSearchGlobalAnswer;
+    messagesSearchGlobalMethods.onError = &TelegramApi::onMessagesSearchGlobalError;
     
     photosUpdateProfilePhotoMethods.onAnswer = &TelegramApi::onPhotosUpdateProfilePhotoAnswer;
     photosUpdateProfilePhotoMethods.onError = &TelegramApi::onPhotosUpdateProfilePhotoError;
@@ -249,6 +312,8 @@ TelegramApi::TelegramApi(Session *session, Settings *settings, CryptoUtils *cryp
     updatesGetStateMethods.onError = &TelegramApi::onUpdatesGetStateError;
     updatesGetDifferenceMethods.onAnswer = &TelegramApi::onUpdatesGetDifferenceAnswer;
     updatesGetDifferenceMethods.onError = &TelegramApi::onUpdatesGetDifferenceError;
+    updatesGetChannelDifferenceMethods.onAnswer = &TelegramApi::onUpdatesGetChannelDifferenceAnswer;
+    updatesGetChannelDifferenceMethods.onError = &TelegramApi::onUpdatesGetChannelDifferenceError;
     
     uploadSaveFilePartMethods.onAnswer = &TelegramApi::onUploadSaveFilePartAnswer;
     uploadSaveFilePartMethods.onError = &TelegramApi::onUploadSaveFilePartError;
@@ -1190,6 +1255,614 @@ void TelegramApi::onAuthImportBotAuthorizationError(Query *q, qint32 errorCode, 
 }
 
 
+qint64 TelegramApi::channelsGetDialogs(qint32 offset, qint32 limit, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Channels::getDialogs(&p, offset, limit);
+    return session->sendQuery(p, &channelsGetDialogsMethods, attachedData, "Channels->getDialogs" );
+}
+
+void TelegramApi::onChannelsGetDialogsAnswer(Query *q, InboundPkt &inboundPkt) {
+    const MessagesDialogs &result = Functions::Channels::getDialogsResult(&inboundPkt);
+    if(result.error())
+        onChannelsGetDialogsError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT channelsGetDialogsAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onChannelsGetDialogsError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT channelsGetDialogsError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::channelsGetImportantHistory(const InputChannel &channel, qint32 offset_id, qint32 add_offset, qint32 limit, qint32 max_id, qint32 min_id, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Channels::getImportantHistory(&p, channel, offset_id, add_offset, limit, max_id, min_id);
+    return session->sendQuery(p, &channelsGetImportantHistoryMethods, attachedData, "Channels->getImportantHistory" );
+}
+
+void TelegramApi::onChannelsGetImportantHistoryAnswer(Query *q, InboundPkt &inboundPkt) {
+    const MessagesMessages &result = Functions::Channels::getImportantHistoryResult(&inboundPkt);
+    if(result.error())
+        onChannelsGetImportantHistoryError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT channelsGetImportantHistoryAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onChannelsGetImportantHistoryError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT channelsGetImportantHistoryError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::channelsReadHistory(const InputChannel &channel, qint32 max_id, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Channels::readHistory(&p, channel, max_id);
+    return session->sendQuery(p, &channelsReadHistoryMethods, attachedData, "Channels->readHistory" );
+}
+
+void TelegramApi::onChannelsReadHistoryAnswer(Query *q, InboundPkt &inboundPkt) {
+    const bool result = Functions::Channels::readHistoryResult(&inboundPkt);
+    Q_EMIT channelsReadHistoryAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onChannelsReadHistoryError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT channelsReadHistoryError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::channelsDeleteMessages(const InputChannel &channel, const QList<qint32> &id, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Channels::deleteMessages(&p, channel, id);
+    return session->sendQuery(p, &channelsDeleteMessagesMethods, attachedData, "Channels->deleteMessages" );
+}
+
+void TelegramApi::onChannelsDeleteMessagesAnswer(Query *q, InboundPkt &inboundPkt) {
+    const MessagesAffectedMessages &result = Functions::Channels::deleteMessagesResult(&inboundPkt);
+    if(result.error())
+        onChannelsDeleteMessagesError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT channelsDeleteMessagesAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onChannelsDeleteMessagesError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT channelsDeleteMessagesError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::channelsDeleteUserHistory(const InputChannel &channel, const InputUser &user_id, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Channels::deleteUserHistory(&p, channel, user_id);
+    return session->sendQuery(p, &channelsDeleteUserHistoryMethods, attachedData, "Channels->deleteUserHistory" );
+}
+
+void TelegramApi::onChannelsDeleteUserHistoryAnswer(Query *q, InboundPkt &inboundPkt) {
+    const MessagesAffectedHistory &result = Functions::Channels::deleteUserHistoryResult(&inboundPkt);
+    if(result.error())
+        onChannelsDeleteUserHistoryError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT channelsDeleteUserHistoryAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onChannelsDeleteUserHistoryError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT channelsDeleteUserHistoryError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::channelsReportSpam(const InputChannel &channel, const InputUser &user_id, const QList<qint32> &id, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Channels::reportSpam(&p, channel, user_id, id);
+    return session->sendQuery(p, &channelsReportSpamMethods, attachedData, "Channels->reportSpam" );
+}
+
+void TelegramApi::onChannelsReportSpamAnswer(Query *q, InboundPkt &inboundPkt) {
+    const bool result = Functions::Channels::reportSpamResult(&inboundPkt);
+    Q_EMIT channelsReportSpamAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onChannelsReportSpamError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT channelsReportSpamError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::channelsGetMessages(const InputChannel &channel, const QList<qint32> &id, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Channels::getMessages(&p, channel, id);
+    return session->sendQuery(p, &channelsGetMessagesMethods, attachedData, "Channels->getMessages" );
+}
+
+void TelegramApi::onChannelsGetMessagesAnswer(Query *q, InboundPkt &inboundPkt) {
+    const MessagesMessages &result = Functions::Channels::getMessagesResult(&inboundPkt);
+    if(result.error())
+        onChannelsGetMessagesError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT channelsGetMessagesAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onChannelsGetMessagesError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT channelsGetMessagesError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::channelsGetParticipants(const InputChannel &channel, const ChannelParticipantsFilter &filter, qint32 offset, qint32 limit, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Channels::getParticipants(&p, channel, filter, offset, limit);
+    return session->sendQuery(p, &channelsGetParticipantsMethods, attachedData, "Channels->getParticipants" );
+}
+
+void TelegramApi::onChannelsGetParticipantsAnswer(Query *q, InboundPkt &inboundPkt) {
+    const ChannelsChannelParticipants &result = Functions::Channels::getParticipantsResult(&inboundPkt);
+    if(result.error())
+        onChannelsGetParticipantsError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT channelsGetParticipantsAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onChannelsGetParticipantsError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT channelsGetParticipantsError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::channelsGetParticipant(const InputChannel &channel, const InputUser &user_id, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Channels::getParticipant(&p, channel, user_id);
+    return session->sendQuery(p, &channelsGetParticipantMethods, attachedData, "Channels->getParticipant" );
+}
+
+void TelegramApi::onChannelsGetParticipantAnswer(Query *q, InboundPkt &inboundPkt) {
+    const ChannelsChannelParticipant &result = Functions::Channels::getParticipantResult(&inboundPkt);
+    if(result.error())
+        onChannelsGetParticipantError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT channelsGetParticipantAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onChannelsGetParticipantError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT channelsGetParticipantError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::channelsGetChannels(const QList<InputChannel> &id, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Channels::getChannels(&p, id);
+    return session->sendQuery(p, &channelsGetChannelsMethods, attachedData, "Channels->getChannels" );
+}
+
+void TelegramApi::onChannelsGetChannelsAnswer(Query *q, InboundPkt &inboundPkt) {
+    const MessagesChats &result = Functions::Channels::getChannelsResult(&inboundPkt);
+    if(result.error())
+        onChannelsGetChannelsError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT channelsGetChannelsAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onChannelsGetChannelsError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT channelsGetChannelsError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::channelsGetFullChannel(const InputChannel &channel, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Channels::getFullChannel(&p, channel);
+    return session->sendQuery(p, &channelsGetFullChannelMethods, attachedData, "Channels->getFullChannel" );
+}
+
+void TelegramApi::onChannelsGetFullChannelAnswer(Query *q, InboundPkt &inboundPkt) {
+    const MessagesChatFull &result = Functions::Channels::getFullChannelResult(&inboundPkt);
+    if(result.error())
+        onChannelsGetFullChannelError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT channelsGetFullChannelAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onChannelsGetFullChannelError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT channelsGetFullChannelError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::channelsCreateChannel(bool broadcast, bool megagroup, const QString &title, const QString &about, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Channels::createChannel(&p, broadcast, megagroup, title, about);
+    return session->sendQuery(p, &channelsCreateChannelMethods, attachedData, "Channels->createChannel" );
+}
+
+void TelegramApi::onChannelsCreateChannelAnswer(Query *q, InboundPkt &inboundPkt) {
+    const UpdatesType &result = Functions::Channels::createChannelResult(&inboundPkt);
+    if(result.error())
+        onChannelsCreateChannelError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT channelsCreateChannelAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onChannelsCreateChannelError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT channelsCreateChannelError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::channelsEditAbout(const InputChannel &channel, const QString &about, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Channels::editAbout(&p, channel, about);
+    return session->sendQuery(p, &channelsEditAboutMethods, attachedData, "Channels->editAbout" );
+}
+
+void TelegramApi::onChannelsEditAboutAnswer(Query *q, InboundPkt &inboundPkt) {
+    const bool result = Functions::Channels::editAboutResult(&inboundPkt);
+    Q_EMIT channelsEditAboutAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onChannelsEditAboutError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT channelsEditAboutError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::channelsEditAdmin(const InputChannel &channel, const InputUser &user_id, const ChannelParticipantRole &role, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Channels::editAdmin(&p, channel, user_id, role);
+    return session->sendQuery(p, &channelsEditAdminMethods, attachedData, "Channels->editAdmin" );
+}
+
+void TelegramApi::onChannelsEditAdminAnswer(Query *q, InboundPkt &inboundPkt) {
+    const bool result = Functions::Channels::editAdminResult(&inboundPkt);
+    Q_EMIT channelsEditAdminAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onChannelsEditAdminError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT channelsEditAdminError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::channelsEditTitle(const InputChannel &channel, const QString &title, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Channels::editTitle(&p, channel, title);
+    return session->sendQuery(p, &channelsEditTitleMethods, attachedData, "Channels->editTitle" );
+}
+
+void TelegramApi::onChannelsEditTitleAnswer(Query *q, InboundPkt &inboundPkt) {
+    const UpdatesType &result = Functions::Channels::editTitleResult(&inboundPkt);
+    if(result.error())
+        onChannelsEditTitleError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT channelsEditTitleAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onChannelsEditTitleError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT channelsEditTitleError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::channelsEditPhoto(const InputChannel &channel, const InputChatPhoto &photo, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Channels::editPhoto(&p, channel, photo);
+    return session->sendQuery(p, &channelsEditPhotoMethods, attachedData, "Channels->editPhoto" );
+}
+
+void TelegramApi::onChannelsEditPhotoAnswer(Query *q, InboundPkt &inboundPkt) {
+    const UpdatesType &result = Functions::Channels::editPhotoResult(&inboundPkt);
+    if(result.error())
+        onChannelsEditPhotoError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT channelsEditPhotoAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onChannelsEditPhotoError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT channelsEditPhotoError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::channelsToggleComments(const InputChannel &channel, bool enabled, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Channels::toggleComments(&p, channel, enabled);
+    return session->sendQuery(p, &channelsToggleCommentsMethods, attachedData, "Channels->toggleComments" );
+}
+
+void TelegramApi::onChannelsToggleCommentsAnswer(Query *q, InboundPkt &inboundPkt) {
+    const UpdatesType &result = Functions::Channels::toggleCommentsResult(&inboundPkt);
+    if(result.error())
+        onChannelsToggleCommentsError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT channelsToggleCommentsAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onChannelsToggleCommentsError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT channelsToggleCommentsError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::channelsCheckUsername(const InputChannel &channel, const QString &username, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Channels::checkUsername(&p, channel, username);
+    return session->sendQuery(p, &channelsCheckUsernameMethods, attachedData, "Channels->checkUsername" );
+}
+
+void TelegramApi::onChannelsCheckUsernameAnswer(Query *q, InboundPkt &inboundPkt) {
+    const bool result = Functions::Channels::checkUsernameResult(&inboundPkt);
+    Q_EMIT channelsCheckUsernameAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onChannelsCheckUsernameError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT channelsCheckUsernameError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::channelsUpdateUsername(const InputChannel &channel, const QString &username, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Channels::updateUsername(&p, channel, username);
+    return session->sendQuery(p, &channelsUpdateUsernameMethods, attachedData, "Channels->updateUsername" );
+}
+
+void TelegramApi::onChannelsUpdateUsernameAnswer(Query *q, InboundPkt &inboundPkt) {
+    const bool result = Functions::Channels::updateUsernameResult(&inboundPkt);
+    Q_EMIT channelsUpdateUsernameAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onChannelsUpdateUsernameError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT channelsUpdateUsernameError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::channelsJoinChannel(const InputChannel &channel, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Channels::joinChannel(&p, channel);
+    return session->sendQuery(p, &channelsJoinChannelMethods, attachedData, "Channels->joinChannel" );
+}
+
+void TelegramApi::onChannelsJoinChannelAnswer(Query *q, InboundPkt &inboundPkt) {
+    const UpdatesType &result = Functions::Channels::joinChannelResult(&inboundPkt);
+    if(result.error())
+        onChannelsJoinChannelError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT channelsJoinChannelAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onChannelsJoinChannelError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT channelsJoinChannelError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::channelsLeaveChannel(const InputChannel &channel, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Channels::leaveChannel(&p, channel);
+    return session->sendQuery(p, &channelsLeaveChannelMethods, attachedData, "Channels->leaveChannel" );
+}
+
+void TelegramApi::onChannelsLeaveChannelAnswer(Query *q, InboundPkt &inboundPkt) {
+    const UpdatesType &result = Functions::Channels::leaveChannelResult(&inboundPkt);
+    if(result.error())
+        onChannelsLeaveChannelError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT channelsLeaveChannelAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onChannelsLeaveChannelError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT channelsLeaveChannelError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::channelsInviteToChannel(const InputChannel &channel, const QList<InputUser> &users, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Channels::inviteToChannel(&p, channel, users);
+    return session->sendQuery(p, &channelsInviteToChannelMethods, attachedData, "Channels->inviteToChannel" );
+}
+
+void TelegramApi::onChannelsInviteToChannelAnswer(Query *q, InboundPkt &inboundPkt) {
+    const UpdatesType &result = Functions::Channels::inviteToChannelResult(&inboundPkt);
+    if(result.error())
+        onChannelsInviteToChannelError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT channelsInviteToChannelAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onChannelsInviteToChannelError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT channelsInviteToChannelError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::channelsKickFromChannel(const InputChannel &channel, const InputUser &user_id, bool kicked, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Channels::kickFromChannel(&p, channel, user_id, kicked);
+    return session->sendQuery(p, &channelsKickFromChannelMethods, attachedData, "Channels->kickFromChannel" );
+}
+
+void TelegramApi::onChannelsKickFromChannelAnswer(Query *q, InboundPkt &inboundPkt) {
+    const UpdatesType &result = Functions::Channels::kickFromChannelResult(&inboundPkt);
+    if(result.error())
+        onChannelsKickFromChannelError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT channelsKickFromChannelAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onChannelsKickFromChannelError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT channelsKickFromChannelError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::channelsExportInvite(const InputChannel &channel, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Channels::exportInvite(&p, channel);
+    return session->sendQuery(p, &channelsExportInviteMethods, attachedData, "Channels->exportInvite" );
+}
+
+void TelegramApi::onChannelsExportInviteAnswer(Query *q, InboundPkt &inboundPkt) {
+    const ExportedChatInvite &result = Functions::Channels::exportInviteResult(&inboundPkt);
+    if(result.error())
+        onChannelsExportInviteError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT channelsExportInviteAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onChannelsExportInviteError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT channelsExportInviteError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::channelsDeleteChannel(const InputChannel &channel, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Channels::deleteChannel(&p, channel);
+    return session->sendQuery(p, &channelsDeleteChannelMethods, attachedData, "Channels->deleteChannel" );
+}
+
+void TelegramApi::onChannelsDeleteChannelAnswer(Query *q, InboundPkt &inboundPkt) {
+    const UpdatesType &result = Functions::Channels::deleteChannelResult(&inboundPkt);
+    if(result.error())
+        onChannelsDeleteChannelError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT channelsDeleteChannelAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onChannelsDeleteChannelError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT channelsDeleteChannelError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+
 qint64 TelegramApi::contactsGetStatuses(const QVariant &attachedData, Session *session) {
     if(!session) session = mMainSession;
     CHECK_SESSION(session)
@@ -1461,7 +2134,7 @@ qint64 TelegramApi::contactsResolveUsername(const QString &username, const QVari
 }
 
 void TelegramApi::onContactsResolveUsernameAnswer(Query *q, InboundPkt &inboundPkt) {
-    const User &result = Functions::Contacts::resolveUsernameResult(&inboundPkt);
+    const ContactsResolvedPeer &result = Functions::Contacts::resolveUsernameResult(&inboundPkt);
     if(result.error())
         onContactsResolveUsernameError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
     else
@@ -1699,13 +2372,13 @@ void TelegramApi::onMessagesGetMessagesError(Query *q, qint32 errorCode, const Q
         Q_EMIT messagesGetMessagesError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
-qint64 TelegramApi::messagesGetDialogs(qint32 offset, qint32 max_id, qint32 limit, const QVariant &attachedData, Session *session) {
+qint64 TelegramApi::messagesGetDialogs(qint32 offset, qint32 limit, const QVariant &attachedData, Session *session) {
     if(!session) session = mMainSession;
     CHECK_SESSION(session)
     DEBUG_FUNCTION
     OutboundPkt p(mSettings);
     INIT_MAIN_CONNECTION(session)
-    Functions::Messages::getDialogs(&p, offset, max_id, limit);
+    Functions::Messages::getDialogs(&p, offset, limit);
     return session->sendQuery(p, &messagesGetDialogsMethods, attachedData, "Messages->getDialogs" );
 }
 
@@ -1724,13 +2397,13 @@ void TelegramApi::onMessagesGetDialogsError(Query *q, qint32 errorCode, const QS
         Q_EMIT messagesGetDialogsError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
-qint64 TelegramApi::messagesGetHistory(const InputPeer &peer, qint32 offset, qint32 max_id, qint32 limit, const QVariant &attachedData, Session *session) {
+qint64 TelegramApi::messagesGetHistory(const InputPeer &peer, qint32 offset_id, qint32 add_offset, qint32 limit, qint32 max_id, qint32 min_id, const QVariant &attachedData, Session *session) {
     if(!session) session = mMainSession;
     CHECK_SESSION(session)
     DEBUG_FUNCTION
     OutboundPkt p(mSettings);
     INIT_MAIN_CONNECTION(session)
-    Functions::Messages::getHistory(&p, peer, offset, max_id, limit);
+    Functions::Messages::getHistory(&p, peer, offset_id, add_offset, limit, max_id, min_id);
     return session->sendQuery(p, &messagesGetHistoryMethods, attachedData, "Messages->getHistory" );
 }
 
@@ -1749,13 +2422,13 @@ void TelegramApi::onMessagesGetHistoryError(Query *q, qint32 errorCode, const QS
         Q_EMIT messagesGetHistoryError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
-qint64 TelegramApi::messagesSearch(const InputPeer &peer, const QString &q, const MessagesFilter &filter, qint32 min_date, qint32 max_date, qint32 offset, qint32 max_id, qint32 limit, const QVariant &attachedData, Session *session) {
+qint64 TelegramApi::messagesSearch(bool important_only, const InputPeer &peer, const QString &q, const MessagesFilter &filter, qint32 min_date, qint32 max_date, qint32 offset, qint32 max_id, qint32 limit, const QVariant &attachedData, Session *session) {
     if(!session) session = mMainSession;
     CHECK_SESSION(session)
     DEBUG_FUNCTION
     OutboundPkt p(mSettings);
     INIT_MAIN_CONNECTION(session)
-    Functions::Messages::search(&p, peer, q, filter, min_date, max_date, offset, max_id, limit);
+    Functions::Messages::search(&p, important_only, peer, q, filter, min_date, max_date, offset, max_id, limit);
     return session->sendQuery(p, &messagesSearchMethods, attachedData, "Messages->search" );
 }
 
@@ -1774,18 +2447,18 @@ void TelegramApi::onMessagesSearchError(Query *q, qint32 errorCode, const QStrin
         Q_EMIT messagesSearchError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
-qint64 TelegramApi::messagesReadHistory(const InputPeer &peer, qint32 max_id, qint32 offset, const QVariant &attachedData, Session *session) {
+qint64 TelegramApi::messagesReadHistory(const InputPeer &peer, qint32 max_id, const QVariant &attachedData, Session *session) {
     if(!session) session = mMainSession;
     CHECK_SESSION(session)
     DEBUG_FUNCTION
     OutboundPkt p(mSettings);
     INIT_MAIN_CONNECTION(session)
-    Functions::Messages::readHistory(&p, peer, max_id, offset);
+    Functions::Messages::readHistory(&p, peer, max_id);
     return session->sendQuery(p, &messagesReadHistoryMethods, attachedData, "Messages->readHistory" );
 }
 
 void TelegramApi::onMessagesReadHistoryAnswer(Query *q, InboundPkt &inboundPkt) {
-    const MessagesAffectedHistory &result = Functions::Messages::readHistoryResult(&inboundPkt);
+    const MessagesAffectedMessages &result = Functions::Messages::readHistoryResult(&inboundPkt);
     if(result.error())
         onMessagesReadHistoryError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
     else
@@ -1799,13 +2472,13 @@ void TelegramApi::onMessagesReadHistoryError(Query *q, qint32 errorCode, const Q
         Q_EMIT messagesReadHistoryError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
-qint64 TelegramApi::messagesDeleteHistory(const InputPeer &peer, qint32 offset, const QVariant &attachedData, Session *session) {
+qint64 TelegramApi::messagesDeleteHistory(const InputPeer &peer, qint32 max_id, const QVariant &attachedData, Session *session) {
     if(!session) session = mMainSession;
     CHECK_SESSION(session)
     DEBUG_FUNCTION
     OutboundPkt p(mSettings);
     INIT_MAIN_CONNECTION(session)
-    Functions::Messages::deleteHistory(&p, peer, offset);
+    Functions::Messages::deleteHistory(&p, peer, max_id);
     return session->sendQuery(p, &messagesDeleteHistoryMethods, attachedData, "Messages->deleteHistory" );
 }
 
@@ -1893,13 +2566,13 @@ void TelegramApi::onMessagesSetTypingError(Query *q, qint32 errorCode, const QSt
         Q_EMIT messagesSetTypingError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
-qint64 TelegramApi::messagesSendMessage(const InputPeer &peer, qint32 reply_to_msg_id, const QString &message, qint64 random_id, const ReplyMarkup &reply_markup, const QList<MessageEntity> &entities, const QVariant &attachedData, Session *session) {
+qint64 TelegramApi::messagesSendMessage(bool no_webpage, bool broadcast, const InputPeer &peer, qint32 reply_to_msg_id, const QString &message, qint64 random_id, const ReplyMarkup &reply_markup, const QList<MessageEntity> &entities, const QVariant &attachedData, Session *session) {
     if(!session) session = mMainSession;
     CHECK_SESSION(session)
     DEBUG_FUNCTION
     OutboundPkt p(mSettings);
     INIT_MAIN_CONNECTION(session)
-    Functions::Messages::sendMessage(&p, peer, reply_to_msg_id, message, random_id, reply_markup, entities);
+    Functions::Messages::sendMessage(&p, no_webpage, broadcast, peer, reply_to_msg_id, message, random_id, reply_markup, entities);
     return session->sendQuery(p, &messagesSendMessageMethods, attachedData, "Messages->sendMessage" );
 }
 
@@ -1918,13 +2591,13 @@ void TelegramApi::onMessagesSendMessageError(Query *q, qint32 errorCode, const Q
         Q_EMIT messagesSendMessageError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
-qint64 TelegramApi::messagesSendMedia(const InputPeer &peer, qint32 reply_to_msg_id, const InputMedia &media, qint64 random_id, const ReplyMarkup &reply_markup, const QVariant &attachedData, Session *session) {
+qint64 TelegramApi::messagesSendMedia(bool broadcast, const InputPeer &peer, qint32 reply_to_msg_id, const InputMedia &media, qint64 random_id, const ReplyMarkup &reply_markup, const QVariant &attachedData, Session *session) {
     if(!session) session = mMainSession;
     CHECK_SESSION(session)
     DEBUG_FUNCTION
     OutboundPkt p(mSettings);
     INIT_MAIN_CONNECTION(session)
-    Functions::Messages::sendMedia(&p, peer, reply_to_msg_id, media, random_id, reply_markup);
+    Functions::Messages::sendMedia(&p, broadcast, peer, reply_to_msg_id, media, random_id, reply_markup);
     return session->sendQuery(p, &messagesSendMediaMethods, attachedData, "Messages->sendMedia" );
 }
 
@@ -1943,13 +2616,13 @@ void TelegramApi::onMessagesSendMediaError(Query *q, qint32 errorCode, const QSt
         Q_EMIT messagesSendMediaError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
-qint64 TelegramApi::messagesForwardMessages(const InputPeer &peer, const QList<qint32> &id, const QList<qint64> &random_id, const QVariant &attachedData, Session *session) {
+qint64 TelegramApi::messagesForwardMessages(bool broadcast, const InputPeer &from_peer, const QList<qint32> &id, const QList<qint64> &random_id, const InputPeer &to_peer, const QVariant &attachedData, Session *session) {
     if(!session) session = mMainSession;
     CHECK_SESSION(session)
     DEBUG_FUNCTION
     OutboundPkt p(mSettings);
     INIT_MAIN_CONNECTION(session)
-    Functions::Messages::forwardMessages(&p, peer, id, random_id);
+    Functions::Messages::forwardMessages(&p, broadcast, from_peer, id, random_id, to_peer);
     return session->sendQuery(p, &messagesForwardMessagesMethods, attachedData, "Messages->forwardMessages" );
 }
 
@@ -2675,13 +3348,13 @@ void TelegramApi::onMessagesUninstallStickerSetError(Query *q, qint32 errorCode,
         Q_EMIT messagesUninstallStickerSetError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
-qint64 TelegramApi::messagesStartBot(const InputUser &bot, qint32 chat_id, qint64 random_id, const QString &start_param, const QVariant &attachedData, Session *session) {
+qint64 TelegramApi::messagesStartBot(const InputUser &bot, const InputPeer &peer, qint64 random_id, const QString &start_param, const QVariant &attachedData, Session *session) {
     if(!session) session = mMainSession;
     CHECK_SESSION(session)
     DEBUG_FUNCTION
     OutboundPkt p(mSettings);
     INIT_MAIN_CONNECTION(session)
-    Functions::Messages::startBot(&p, bot, chat_id, random_id, start_param);
+    Functions::Messages::startBot(&p, bot, peer, random_id, start_param);
     return session->sendQuery(p, &messagesStartBotMethods, attachedData, "Messages->startBot" );
 }
 
@@ -2698,6 +3371,147 @@ void TelegramApi::onMessagesStartBotError(Query *q, qint32 errorCode, const QStr
     onError(q, errorCode, errorText, q->extra(), accepted);
     if(!accepted)
         Q_EMIT messagesStartBotError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::messagesReportSpam(const InputPeer &peer, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Messages::reportSpam(&p, peer);
+    return session->sendQuery(p, &messagesReportSpamMethods, attachedData, "Messages->reportSpam" );
+}
+
+void TelegramApi::onMessagesReportSpamAnswer(Query *q, InboundPkt &inboundPkt) {
+    const bool result = Functions::Messages::reportSpamResult(&inboundPkt);
+    Q_EMIT messagesReportSpamAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onMessagesReportSpamError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT messagesReportSpamError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::messagesGetMessagesViews(const InputPeer &peer, const QList<qint32> &id, bool increment, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Messages::getMessagesViews(&p, peer, id, increment);
+    return session->sendQuery(p, &messagesGetMessagesViewsMethods, attachedData, "Messages->getMessagesViews" );
+}
+
+void TelegramApi::onMessagesGetMessagesViewsAnswer(Query *q, InboundPkt &inboundPkt) {
+    const QList<qint32> &result = Functions::Messages::getMessagesViewsResult(&inboundPkt);
+    Q_EMIT messagesGetMessagesViewsAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onMessagesGetMessagesViewsError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT messagesGetMessagesViewsError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::messagesToggleChatAdmins(qint32 chat_id, bool enabled, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Messages::toggleChatAdmins(&p, chat_id, enabled);
+    return session->sendQuery(p, &messagesToggleChatAdminsMethods, attachedData, "Messages->toggleChatAdmins" );
+}
+
+void TelegramApi::onMessagesToggleChatAdminsAnswer(Query *q, InboundPkt &inboundPkt) {
+    const UpdatesType &result = Functions::Messages::toggleChatAdminsResult(&inboundPkt);
+    if(result.error())
+        onMessagesToggleChatAdminsError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT messagesToggleChatAdminsAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onMessagesToggleChatAdminsError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT messagesToggleChatAdminsError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::messagesEditChatAdmin(qint32 chat_id, const InputUser &user_id, bool is_admin, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Messages::editChatAdmin(&p, chat_id, user_id, is_admin);
+    return session->sendQuery(p, &messagesEditChatAdminMethods, attachedData, "Messages->editChatAdmin" );
+}
+
+void TelegramApi::onMessagesEditChatAdminAnswer(Query *q, InboundPkt &inboundPkt) {
+    const bool result = Functions::Messages::editChatAdminResult(&inboundPkt);
+    Q_EMIT messagesEditChatAdminAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onMessagesEditChatAdminError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT messagesEditChatAdminError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::messagesMigrateChat(qint32 chat_id, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Messages::migrateChat(&p, chat_id);
+    return session->sendQuery(p, &messagesMigrateChatMethods, attachedData, "Messages->migrateChat" );
+}
+
+void TelegramApi::onMessagesMigrateChatAnswer(Query *q, InboundPkt &inboundPkt) {
+    const UpdatesType &result = Functions::Messages::migrateChatResult(&inboundPkt);
+    if(result.error())
+        onMessagesMigrateChatError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT messagesMigrateChatAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onMessagesMigrateChatError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT messagesMigrateChatError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::messagesSearchGlobal(const QString &q, qint32 offset_date, const InputPeer &offset_peer, qint32 offset_id, qint32 limit, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Messages::searchGlobal(&p, q, offset_date, offset_peer, offset_id, limit);
+    return session->sendQuery(p, &messagesSearchGlobalMethods, attachedData, "Messages->searchGlobal" );
+}
+
+void TelegramApi::onMessagesSearchGlobalAnswer(Query *q, InboundPkt &inboundPkt) {
+    const MessagesMessages &result = Functions::Messages::searchGlobalResult(&inboundPkt);
+    if(result.error())
+        onMessagesSearchGlobalError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT messagesSearchGlobalAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onMessagesSearchGlobalError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT messagesSearchGlobalError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
 
@@ -2847,6 +3661,31 @@ void TelegramApi::onUpdatesGetDifferenceError(Query *q, qint32 errorCode, const 
     onError(q, errorCode, errorText, q->extra(), accepted);
     if(!accepted)
         Q_EMIT updatesGetDifferenceError(q->mainMsgId(), errorCode, errorText, q->extra());
+}
+
+qint64 TelegramApi::updatesGetChannelDifference(const InputChannel &channel, const ChannelMessagesFilter &filter, qint32 pts, qint32 limit, const QVariant &attachedData, Session *session) {
+    if(!session) session = mMainSession;
+    CHECK_SESSION(session)
+    DEBUG_FUNCTION
+    OutboundPkt p(mSettings);
+    INIT_MAIN_CONNECTION(session)
+    Functions::Updates::getChannelDifference(&p, channel, filter, pts, limit);
+    return session->sendQuery(p, &updatesGetChannelDifferenceMethods, attachedData, "Updates->getChannelDifference" );
+}
+
+void TelegramApi::onUpdatesGetChannelDifferenceAnswer(Query *q, InboundPkt &inboundPkt) {
+    const UpdatesChannelDifference &result = Functions::Updates::getChannelDifferenceResult(&inboundPkt);
+    if(result.error())
+        onUpdatesGetChannelDifferenceError(q, -1, "LIBQTELEGRAM_INTERNAL_ERROR");
+    else
+        Q_EMIT updatesGetChannelDifferenceAnswer(q->mainMsgId(), result, q->extra());
+}
+
+void TelegramApi::onUpdatesGetChannelDifferenceError(Query *q, qint32 errorCode, const QString &errorText) {
+    bool accepted = false;
+    onError(q, errorCode, errorText, q->extra(), accepted);
+    if(!accepted)
+        Q_EMIT updatesGetChannelDifferenceError(q->mainMsgId(), errorCode, errorText, q->extra());
 }
 
 

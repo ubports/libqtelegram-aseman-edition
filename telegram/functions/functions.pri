@@ -8,6 +8,7 @@ HEADERS += \
     $$PWD/telegramfunctionobject.h \
     $$PWD/account.h \
     $$PWD/auth.h \
+    $$PWD/channels.h \
     $$PWD/contacts.h \
     $$PWD/help.h \
     $$PWD/messages.h \

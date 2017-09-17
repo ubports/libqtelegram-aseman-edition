@@ -15,8 +15,11 @@ class LIBQTELEGRAMSHARED_EXPORT MessagesMessagesObject : public TelegramTypeQObj
     Q_OBJECT
     Q_ENUMS(MessagesMessagesClassType)
     Q_PROPERTY(QList<Chat> chats READ chats WRITE setChats NOTIFY chatsChanged)
+    Q_PROPERTY(QList<MessageGroup> collapsed READ collapsed WRITE setCollapsed NOTIFY collapsedChanged)
     Q_PROPERTY(qint32 count READ count WRITE setCount NOTIFY countChanged)
+    Q_PROPERTY(qint32 flags READ flags WRITE setFlags NOTIFY flagsChanged)
     Q_PROPERTY(QList<Message> messages READ messages WRITE setMessages NOTIFY messagesChanged)
+    Q_PROPERTY(qint32 pts READ pts WRITE setPts NOTIFY ptsChanged)
     Q_PROPERTY(QList<User> users READ users WRITE setUsers NOTIFY usersChanged)
     Q_PROPERTY(MessagesMessages core READ core WRITE setCore NOTIFY coreChanged)
     Q_PROPERTY(quint32 classType READ classType WRITE setClassType NOTIFY classTypeChanged)
@@ -24,7 +27,8 @@ class LIBQTELEGRAMSHARED_EXPORT MessagesMessagesObject : public TelegramTypeQObj
 public:
     enum MessagesMessagesClassType {
         TypeMessagesMessages,
-        TypeMessagesMessagesSlice
+        TypeMessagesMessagesSlice,
+        TypeMessagesChannelMessages
     };
 
     MessagesMessagesObject(const MessagesMessages &core, QObject *parent = 0);
@@ -34,11 +38,20 @@ public:
     void setChats(const QList<Chat> &chats);
     QList<Chat> chats() const;
 
+    void setCollapsed(const QList<MessageGroup> &collapsed);
+    QList<MessageGroup> collapsed() const;
+
     void setCount(qint32 count);
     qint32 count() const;
 
+    void setFlags(qint32 flags);
+    qint32 flags() const;
+
     void setMessages(const QList<Message> &messages);
     QList<Message> messages() const;
+
+    void setPts(qint32 pts);
+    qint32 pts() const;
 
     void setUsers(const QList<User> &users);
     QList<User> users() const;
@@ -56,8 +69,11 @@ Q_SIGNALS:
     void coreChanged();
     void classTypeChanged();
     void chatsChanged();
+    void collapsedChanged();
     void countChanged();
+    void flagsChanged();
     void messagesChanged();
+    void ptsChanged();
     void usersChanged();
 
 private Q_SLOTS:
@@ -92,6 +108,17 @@ inline QList<Chat> MessagesMessagesObject::chats() const {
     return m_core.chats();
 }
 
+inline void MessagesMessagesObject::setCollapsed(const QList<MessageGroup> &collapsed) {
+    if(m_core.collapsed() == collapsed) return;
+    m_core.setCollapsed(collapsed);
+    Q_EMIT collapsedChanged();
+    Q_EMIT coreChanged();
+}
+
+inline QList<MessageGroup> MessagesMessagesObject::collapsed() const {
+    return m_core.collapsed();
+}
+
 inline void MessagesMessagesObject::setCount(qint32 count) {
     if(m_core.count() == count) return;
     m_core.setCount(count);
@@ -103,6 +130,17 @@ inline qint32 MessagesMessagesObject::count() const {
     return m_core.count();
 }
 
+inline void MessagesMessagesObject::setFlags(qint32 flags) {
+    if(m_core.flags() == flags) return;
+    m_core.setFlags(flags);
+    Q_EMIT flagsChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 MessagesMessagesObject::flags() const {
+    return m_core.flags();
+}
+
 inline void MessagesMessagesObject::setMessages(const QList<Message> &messages) {
     if(m_core.messages() == messages) return;
     m_core.setMessages(messages);
@@ -112,6 +150,17 @@ inline void MessagesMessagesObject::setMessages(const QList<Message> &messages) 
 
 inline QList<Message> MessagesMessagesObject::messages() const {
     return m_core.messages();
+}
+
+inline void MessagesMessagesObject::setPts(qint32 pts) {
+    if(m_core.pts() == pts) return;
+    m_core.setPts(pts);
+    Q_EMIT ptsChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 MessagesMessagesObject::pts() const {
+    return m_core.pts();
 }
 
 inline void MessagesMessagesObject::setUsers(const QList<User> &users) {
@@ -130,8 +179,11 @@ inline MessagesMessagesObject &MessagesMessagesObject::operator =(const Messages
     m_core = b;
 
     Q_EMIT chatsChanged();
+    Q_EMIT collapsedChanged();
     Q_EMIT countChanged();
+    Q_EMIT flagsChanged();
     Q_EMIT messagesChanged();
+    Q_EMIT ptsChanged();
     Q_EMIT usersChanged();
     Q_EMIT coreChanged();
     return *this;
@@ -149,6 +201,9 @@ inline void MessagesMessagesObject::setClassType(quint32 classType) {
         break;
     case TypeMessagesMessagesSlice:
         result = MessagesMessages::typeMessagesMessagesSlice;
+        break;
+    case TypeMessagesChannelMessages:
+        result = MessagesMessages::typeMessagesChannelMessages;
         break;
     default:
         result = MessagesMessages::typeMessagesMessages;
@@ -169,6 +224,9 @@ inline quint32 MessagesMessagesObject::classType() const {
         break;
     case MessagesMessages::typeMessagesMessagesSlice:
         result = TypeMessagesMessagesSlice;
+        break;
+    case MessagesMessages::typeMessagesChannelMessages:
+        result = TypeMessagesChannelMessages;
         break;
     default:
         result = TypeMessagesMessages;

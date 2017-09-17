@@ -30,6 +30,15 @@
 * [typeUpdateReadHistoryOutbox](#updatetypeupdatereadhistoryoutbox)
 * [typeUpdateWebPage](#updatetypeupdatewebpage)
 * [typeUpdateReadMessagesContents](#updatetypeupdatereadmessagescontents)
+* [typeUpdateChannelTooLong](#updatetypeupdatechanneltoolong)
+* [typeUpdateChannel](#updatetypeupdatechannel)
+* [typeUpdateChannelGroup](#updatetypeupdatechannelgroup)
+* [typeUpdateNewChannelMessage](#updatetypeupdatenewchannelmessage)
+* [typeUpdateReadChannelInbox](#updatetypeupdatereadchannelinbox)
+* [typeUpdateDeleteChannelMessages](#updatetypeupdatedeletechannelmessages)
+* [typeUpdateChannelMessageViews](#updatetypeupdatechannelmessageviews)
+* [typeUpdateChatAdmins](#updatetypeupdatechatadmins)
+* [typeUpdateChatParticipantAdmin](#updatetypeupdatechatparticipantadmin)
 
 ## Update::typeUpdateNewMessage
 
@@ -285,7 +294,7 @@ updateEncryptedMessagesRead#38fe25b7 chat_id:int max_date:int date:int = Update;
 #### Schema:
 
 ```c++
-updateChatParticipantAdd#3a0eeb22 chat_id:int user_id:int inviter_id:int version:int = Update;
+updateChatParticipantAdd#ea4b0e5c chat_id:int user_id:int inviter_id:int date:int version:int = Update;
 ```
 
 #### Parameters:
@@ -295,6 +304,7 @@ updateChatParticipantAdd#3a0eeb22 chat_id:int user_id:int inviter_id:int version
 |chatId|qint32|
 |userId|qint32|
 |inviterId|qint32|
+|date|qint32|
 |version|qint32|
 
 ## Update::typeUpdateChatParticipantDelete
@@ -443,7 +453,7 @@ updateReadHistoryOutbox#2f2f21bf peer:Peer max_id:int pts:int pts_count:int = Up
 #### Schema:
 
 ```c++
-updateWebPage#2cc36971 webpage:WebPage = Update;
+updateWebPage#7f891213 webpage:WebPage pts:int pts_count:int = Update;
 ```
 
 #### Parameters:
@@ -451,6 +461,8 @@ updateWebPage#2cc36971 webpage:WebPage = Update;
 |Name|Type|
 |----|----|
 |webpage|[WebPage](webpage.md)|
+|pts|qint32|
+|ptsCount|qint32|
 
 ## Update::typeUpdateReadMessagesContents
 
@@ -467,4 +479,144 @@ updateReadMessagesContents#68c13933 messages:Vector<int> pts:int pts_count:int =
 |messages|QList&lt;qint32&gt;|
 |pts|qint32|
 |ptsCount|qint32|
+
+## Update::typeUpdateChannelTooLong
+
+#### Schema:
+
+```c++
+updateChannelTooLong#60946422 channel_id:int = Update;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|channelId|qint32|
+
+## Update::typeUpdateChannel
+
+#### Schema:
+
+```c++
+updateChannel#b6d45656 channel_id:int = Update;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|channelId|qint32|
+
+## Update::typeUpdateChannelGroup
+
+#### Schema:
+
+```c++
+updateChannelGroup#c36c1e3c channel_id:int group:MessageGroup = Update;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|channelId|qint32|
+|group|[MessageGroup](messagegroup.md)|
+
+## Update::typeUpdateNewChannelMessage
+
+#### Schema:
+
+```c++
+updateNewChannelMessage#62ba04d9 message:Message pts:int pts_count:int = Update;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|message|[Message](message.md)|
+|pts|qint32|
+|ptsCount|qint32|
+
+## Update::typeUpdateReadChannelInbox
+
+#### Schema:
+
+```c++
+updateReadChannelInbox#4214f37f channel_id:int max_id:int = Update;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|channelId|qint32|
+|maxId|qint32|
+
+## Update::typeUpdateDeleteChannelMessages
+
+#### Schema:
+
+```c++
+updateDeleteChannelMessages#c37521c9 channel_id:int messages:Vector<int> pts:int pts_count:int = Update;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|channelId|qint32|
+|messages|QList&lt;qint32&gt;|
+|pts|qint32|
+|ptsCount|qint32|
+
+## Update::typeUpdateChannelMessageViews
+
+#### Schema:
+
+```c++
+updateChannelMessageViews#98a12b4b channel_id:int id:int views:int = Update;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|channelId|qint32|
+|id|qint32|
+|views|qint32|
+
+## Update::typeUpdateChatAdmins
+
+#### Schema:
+
+```c++
+updateChatAdmins#6e947941 chat_id:int enabled:Bool version:int = Update;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|chatId|qint32|
+|enabled|bool|
+|version|qint32|
+
+## Update::typeUpdateChatParticipantAdmin
+
+#### Schema:
+
+```c++
+updateChatParticipantAdmin#b6901959 chat_id:int user_id:int is_admin:Bool version:int = Update;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|chatId|qint32|
+|userId|qint32|
+|isAdmin|bool|
+|version|qint32|
 

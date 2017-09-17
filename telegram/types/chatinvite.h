@@ -16,6 +16,7 @@
 #include <QDataStream>
 
 #include "chat.h"
+#include <QtGlobal>
 #include <QString>
 
 class LIBQTELEGRAMSHARED_EXPORT ChatInvite : public TelegramTypeObject
@@ -23,7 +24,7 @@ class LIBQTELEGRAMSHARED_EXPORT ChatInvite : public TelegramTypeObject
 public:
     enum ChatInviteClassType {
         typeChatInviteAlready = 0x5a686d7c,
-        typeChatInvite = 0xce917dcd
+        typeChatInvite = 0x93e99b60
     };
 
     ChatInvite(ChatInviteClassType classType = typeChatInviteAlready, InboundPkt *in = 0);
@@ -31,8 +32,23 @@ public:
     ChatInvite(const Null&);
     virtual ~ChatInvite();
 
+    void setBroadcast(bool broadcast);
+    bool broadcast() const;
+
+    void setChannel(bool channel);
+    bool channel() const;
+
     void setChat(const Chat &chat);
     Chat chat() const;
+
+    void setFlags(qint32 flags);
+    qint32 flags() const;
+
+    void setMegagroup(bool megagroup);
+    bool megagroup() const;
+
+    void setPublicValue(bool publicValue);
+    bool publicValue() const;
 
     void setTitle(const QString &title);
     QString title() const;
@@ -55,6 +71,7 @@ public:
 
 private:
     Chat m_chat;
+    qint32 m_flags;
     QString m_title;
     ChatInviteClassType m_classType;
 };
@@ -65,12 +82,14 @@ QDataStream LIBQTELEGRAMSHARED_EXPORT &operator<<(QDataStream &stream, const Cha
 QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, ChatInvite &item);
 
 inline ChatInvite::ChatInvite(ChatInviteClassType classType, InboundPkt *in) :
+    m_flags(0),
     m_classType(classType)
 {
     if(in) fetch(in);
 }
 
 inline ChatInvite::ChatInvite(InboundPkt *in) :
+    m_flags(0),
     m_classType(typeChatInviteAlready)
 {
     fetch(in);
@@ -78,11 +97,30 @@ inline ChatInvite::ChatInvite(InboundPkt *in) :
 
 inline ChatInvite::ChatInvite(const Null &null) :
     TelegramTypeObject(null),
+    m_flags(0),
     m_classType(typeChatInviteAlready)
 {
 }
 
 inline ChatInvite::~ChatInvite() {
+}
+
+inline void ChatInvite::setBroadcast(bool broadcast) {
+    if(broadcast) m_flags = (m_flags | (1<<1));
+    else m_flags = (m_flags & ~(1<<1));
+}
+
+inline bool ChatInvite::broadcast() const {
+    return (m_flags & 1<<1);
+}
+
+inline void ChatInvite::setChannel(bool channel) {
+    if(channel) m_flags = (m_flags | (1<<0));
+    else m_flags = (m_flags & ~(1<<0));
+}
+
+inline bool ChatInvite::channel() const {
+    return (m_flags & 1<<0);
 }
 
 inline void ChatInvite::setChat(const Chat &chat) {
@@ -91,6 +129,32 @@ inline void ChatInvite::setChat(const Chat &chat) {
 
 inline Chat ChatInvite::chat() const {
     return m_chat;
+}
+
+inline void ChatInvite::setFlags(qint32 flags) {
+    m_flags = flags;
+}
+
+inline qint32 ChatInvite::flags() const {
+    return m_flags;
+}
+
+inline void ChatInvite::setMegagroup(bool megagroup) {
+    if(megagroup) m_flags = (m_flags | (1<<3));
+    else m_flags = (m_flags & ~(1<<3));
+}
+
+inline bool ChatInvite::megagroup() const {
+    return (m_flags & 1<<3);
+}
+
+inline void ChatInvite::setPublicValue(bool publicValue) {
+    if(publicValue) m_flags = (m_flags | (1<<2));
+    else m_flags = (m_flags & ~(1<<2));
+}
+
+inline bool ChatInvite::publicValue() const {
+    return (m_flags & 1<<2);
 }
 
 inline void ChatInvite::setTitle(const QString &title) {
@@ -104,6 +168,7 @@ inline QString ChatInvite::title() const {
 inline bool ChatInvite::operator ==(const ChatInvite &b) const {
     return m_classType == b.m_classType &&
            m_chat == b.m_chat &&
+           m_flags == b.m_flags &&
            m_title == b.m_title;
 }
 
@@ -127,6 +192,7 @@ inline bool ChatInvite::fetch(InboundPkt *in) {
         break;
     
     case typeChatInvite: {
+        m_flags = in->fetchInt();
         m_title = in->fetchQString();
         m_classType = static_cast<ChatInviteClassType>(x);
         return true;
@@ -149,6 +215,7 @@ inline bool ChatInvite::push(OutboundPkt *out) const {
         break;
     
     case typeChatInvite: {
+        out->appendInt(m_flags);
         out->appendQString(m_title);
         return true;
     }
@@ -171,6 +238,10 @@ inline QMap<QString, QVariant> ChatInvite::toMap() const {
     
     case typeChatInvite: {
         result["classType"] = "ChatInvite::typeChatInvite";
+        result["channel"] = QVariant::fromValue<bool>(channel());
+        result["broadcast"] = QVariant::fromValue<bool>(broadcast());
+        result["publicValue"] = QVariant::fromValue<bool>(publicValue());
+        result["megagroup"] = QVariant::fromValue<bool>(megagroup());
         result["title"] = QVariant::fromValue<QString>(title());
         return result;
     }
@@ -190,6 +261,10 @@ inline ChatInvite ChatInvite::fromMap(const QMap<QString, QVariant> &map) {
     }
     if(map.value("classType").toString() == "ChatInvite::typeChatInvite") {
         result.setClassType(typeChatInvite);
+        result.setChannel( map.value("channel").value<bool>() );
+        result.setBroadcast( map.value("broadcast").value<bool>() );
+        result.setPublicValue( map.value("publicValue").value<bool>() );
+        result.setMegagroup( map.value("megagroup").value<bool>() );
         result.setTitle( map.value("title").value<QString>() );
         return result;
     }
@@ -210,6 +285,7 @@ inline QDataStream &operator<<(QDataStream &stream, const ChatInvite &item) {
         stream << item.chat();
         break;
     case ChatInvite::typeChatInvite:
+        stream << item.flags();
         stream << item.title();
         break;
     }
@@ -228,6 +304,9 @@ inline QDataStream &operator>>(QDataStream &stream, ChatInvite &item) {
     }
         break;
     case ChatInvite::typeChatInvite: {
+        qint32 m_flags;
+        stream >> m_flags;
+        item.setFlags(m_flags);
         QString m_title;
         stream >> m_title;
         item.setTitle(m_title);

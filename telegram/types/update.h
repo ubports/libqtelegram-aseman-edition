@@ -22,6 +22,7 @@
 #include "dcoption.h"
 #include <QString>
 #include "contactlink.h"
+#include "messagegroup.h"
 #include "privacykey.h"
 #include "messagemedia.h"
 #include "encryptedmessage.h"
@@ -55,7 +56,7 @@ public:
         typeUpdateEncryptedChatTyping = 0x1710f156,
         typeUpdateEncryption = 0xb4a2e88d,
         typeUpdateEncryptedMessagesRead = 0x38fe25b7,
-        typeUpdateChatParticipantAdd = 0x3a0eeb22,
+        typeUpdateChatParticipantAdd = 0xea4b0e5c,
         typeUpdateChatParticipantDelete = 0x6e5f8c22,
         typeUpdateDcOptions = 0x8e5e9873,
         typeUpdateUserBlocked = 0x80ece81a,
@@ -65,8 +66,17 @@ public:
         typeUpdateUserPhone = 0x12b9417b,
         typeUpdateReadHistoryInbox = 0x9961fd5c,
         typeUpdateReadHistoryOutbox = 0x2f2f21bf,
-        typeUpdateWebPage = 0x2cc36971,
-        typeUpdateReadMessagesContents = 0x68c13933
+        typeUpdateWebPage = 0x7f891213,
+        typeUpdateReadMessagesContents = 0x68c13933,
+        typeUpdateChannelTooLong = 0x60946422,
+        typeUpdateChannel = 0xb6d45656,
+        typeUpdateChannelGroup = 0xc36c1e3c,
+        typeUpdateNewChannelMessage = 0x62ba04d9,
+        typeUpdateReadChannelInbox = 0x4214f37f,
+        typeUpdateDeleteChannelMessages = 0xc37521c9,
+        typeUpdateChannelMessageViews = 0x98a12b4b,
+        typeUpdateChatAdmins = 0x6e947941,
+        typeUpdateChatParticipantAdmin = 0xb6901959
     };
 
     Update(UpdateClassType classType = typeUpdateNewMessage, InboundPkt *in = 0);
@@ -83,6 +93,9 @@ public:
     void setBlocked(bool blocked);
     bool blocked() const;
 
+    void setChannelId(qint32 channelId);
+    qint32 channelId() const;
+
     void setChat(const EncryptedChat &chat);
     EncryptedChat chat() const;
 
@@ -98,17 +111,26 @@ public:
     void setDevice(const QString &device);
     QString device() const;
 
+    void setEnabled(bool enabled);
+    bool enabled() const;
+
     void setFirstName(const QString &firstName);
     QString firstName() const;
 
     void setForeignLink(const ContactLink &foreignLink);
     ContactLink foreignLink() const;
 
+    void setGroup(const MessageGroup &group);
+    MessageGroup group() const;
+
     void setId(qint32 id);
     qint32 id() const;
 
     void setInviterId(qint32 inviterId);
     qint32 inviterId() const;
+
+    void setIsAdmin(bool isAdmin);
+    bool isAdmin() const;
 
     void setKey(const PrivacyKey &key);
     PrivacyKey key() const;
@@ -197,6 +219,9 @@ public:
     void setVersion(qint32 version);
     qint32 version() const;
 
+    void setViews(qint32 views);
+    qint32 views() const;
+
     void setWebpage(const WebPage &webpage);
     WebPage webpage() const;
 
@@ -220,15 +245,19 @@ private:
     SendMessageAction m_action;
     qint64 m_authKeyId;
     bool m_blocked;
+    qint32 m_channelId;
     EncryptedChat m_chat;
     qint32 m_chatId;
     qint32 m_date;
     QList<DcOption> m_dcOptions;
     QString m_device;
+    bool m_enabled;
     QString m_firstName;
     ContactLink m_foreignLink;
+    MessageGroup m_group;
     qint32 m_id;
     qint32 m_inviterId;
+    bool m_isAdmin;
     PrivacyKey m_key;
     QString m_lastName;
     QString m_location;
@@ -258,6 +287,7 @@ private:
     qint32 m_userId;
     QString m_username;
     qint32 m_version;
+    qint32 m_views;
     WebPage m_webpage;
     UpdateClassType m_classType;
 };
@@ -270,10 +300,13 @@ QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, Update &i
 inline Update::Update(UpdateClassType classType, InboundPkt *in) :
     m_authKeyId(0),
     m_blocked(false),
+    m_channelId(0),
     m_chatId(0),
     m_date(0),
+    m_enabled(false),
     m_id(0),
     m_inviterId(0),
+    m_isAdmin(false),
     m_maxDate(0),
     m_maxId(0),
     m_popup(false),
@@ -284,6 +317,7 @@ inline Update::Update(UpdateClassType classType, InboundPkt *in) :
     m_randomId(0),
     m_userId(0),
     m_version(0),
+    m_views(0),
     m_classType(classType)
 {
     if(in) fetch(in);
@@ -292,10 +326,13 @@ inline Update::Update(UpdateClassType classType, InboundPkt *in) :
 inline Update::Update(InboundPkt *in) :
     m_authKeyId(0),
     m_blocked(false),
+    m_channelId(0),
     m_chatId(0),
     m_date(0),
+    m_enabled(false),
     m_id(0),
     m_inviterId(0),
+    m_isAdmin(false),
     m_maxDate(0),
     m_maxId(0),
     m_popup(false),
@@ -306,6 +343,7 @@ inline Update::Update(InboundPkt *in) :
     m_randomId(0),
     m_userId(0),
     m_version(0),
+    m_views(0),
     m_classType(typeUpdateNewMessage)
 {
     fetch(in);
@@ -315,10 +353,13 @@ inline Update::Update(const Null &null) :
     TelegramTypeObject(null),
     m_authKeyId(0),
     m_blocked(false),
+    m_channelId(0),
     m_chatId(0),
     m_date(0),
+    m_enabled(false),
     m_id(0),
     m_inviterId(0),
+    m_isAdmin(false),
     m_maxDate(0),
     m_maxId(0),
     m_popup(false),
@@ -329,6 +370,7 @@ inline Update::Update(const Null &null) :
     m_randomId(0),
     m_userId(0),
     m_version(0),
+    m_views(0),
     m_classType(typeUpdateNewMessage)
 {
 }
@@ -358,6 +400,14 @@ inline void Update::setBlocked(bool blocked) {
 
 inline bool Update::blocked() const {
     return m_blocked;
+}
+
+inline void Update::setChannelId(qint32 channelId) {
+    m_channelId = channelId;
+}
+
+inline qint32 Update::channelId() const {
+    return m_channelId;
 }
 
 inline void Update::setChat(const EncryptedChat &chat) {
@@ -400,6 +450,14 @@ inline QString Update::device() const {
     return m_device;
 }
 
+inline void Update::setEnabled(bool enabled) {
+    m_enabled = enabled;
+}
+
+inline bool Update::enabled() const {
+    return m_enabled;
+}
+
 inline void Update::setFirstName(const QString &firstName) {
     m_firstName = firstName;
 }
@@ -416,6 +474,14 @@ inline ContactLink Update::foreignLink() const {
     return m_foreignLink;
 }
 
+inline void Update::setGroup(const MessageGroup &group) {
+    m_group = group;
+}
+
+inline MessageGroup Update::group() const {
+    return m_group;
+}
+
 inline void Update::setId(qint32 id) {
     m_id = id;
 }
@@ -430,6 +496,14 @@ inline void Update::setInviterId(qint32 inviterId) {
 
 inline qint32 Update::inviterId() const {
     return m_inviterId;
+}
+
+inline void Update::setIsAdmin(bool isAdmin) {
+    m_isAdmin = isAdmin;
+}
+
+inline bool Update::isAdmin() const {
+    return m_isAdmin;
 }
 
 inline void Update::setKey(const PrivacyKey &key) {
@@ -664,6 +738,14 @@ inline qint32 Update::version() const {
     return m_version;
 }
 
+inline void Update::setViews(qint32 views) {
+    m_views = views;
+}
+
+inline qint32 Update::views() const {
+    return m_views;
+}
+
 inline void Update::setWebpage(const WebPage &webpage) {
     m_webpage = webpage;
 }
@@ -677,15 +759,19 @@ inline bool Update::operator ==(const Update &b) const {
            m_action == b.m_action &&
            m_authKeyId == b.m_authKeyId &&
            m_blocked == b.m_blocked &&
+           m_channelId == b.m_channelId &&
            m_chat == b.m_chat &&
            m_chatId == b.m_chatId &&
            m_date == b.m_date &&
            m_dcOptions == b.m_dcOptions &&
            m_device == b.m_device &&
+           m_enabled == b.m_enabled &&
            m_firstName == b.m_firstName &&
            m_foreignLink == b.m_foreignLink &&
+           m_group == b.m_group &&
            m_id == b.m_id &&
            m_inviterId == b.m_inviterId &&
+           m_isAdmin == b.m_isAdmin &&
            m_key == b.m_key &&
            m_lastName == b.m_lastName &&
            m_location == b.m_location &&
@@ -715,6 +801,7 @@ inline bool Update::operator ==(const Update &b) const {
            m_userId == b.m_userId &&
            m_username == b.m_username &&
            m_version == b.m_version &&
+           m_views == b.m_views &&
            m_webpage == b.m_webpage;
 }
 
@@ -878,6 +965,7 @@ inline bool Update::fetch(InboundPkt *in) {
         m_chatId = in->fetchInt();
         m_userId = in->fetchInt();
         m_inviterId = in->fetchInt();
+        m_date = in->fetchInt();
         m_version = in->fetchInt();
         m_classType = static_cast<UpdateClassType>(x);
         return true;
@@ -978,6 +1066,8 @@ inline bool Update::fetch(InboundPkt *in) {
     
     case typeUpdateWebPage: {
         m_webpage.fetch(in);
+        m_pts = in->fetchInt();
+        m_ptsCount = in->fetchInt();
         m_classType = static_cast<UpdateClassType>(x);
         return true;
     }
@@ -994,6 +1084,90 @@ inline bool Update::fetch(InboundPkt *in) {
         }
         m_pts = in->fetchInt();
         m_ptsCount = in->fetchInt();
+        m_classType = static_cast<UpdateClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeUpdateChannelTooLong: {
+        m_channelId = in->fetchInt();
+        m_classType = static_cast<UpdateClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeUpdateChannel: {
+        m_channelId = in->fetchInt();
+        m_classType = static_cast<UpdateClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeUpdateChannelGroup: {
+        m_channelId = in->fetchInt();
+        m_group.fetch(in);
+        m_classType = static_cast<UpdateClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeUpdateNewChannelMessage: {
+        m_message.fetch(in);
+        m_pts = in->fetchInt();
+        m_ptsCount = in->fetchInt();
+        m_classType = static_cast<UpdateClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeUpdateReadChannelInbox: {
+        m_channelId = in->fetchInt();
+        m_maxId = in->fetchInt();
+        m_classType = static_cast<UpdateClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeUpdateDeleteChannelMessages: {
+        m_channelId = in->fetchInt();
+        if(in->fetchInt() != (qint32)CoreTypes::typeVector) return false;
+        qint32 m_messages_length = in->fetchInt();
+        m_messages.clear();
+        for (qint32 i = 0; i < m_messages_length; i++) {
+            qint32 type;
+            type = in->fetchInt();
+            m_messages.append(type);
+        }
+        m_pts = in->fetchInt();
+        m_ptsCount = in->fetchInt();
+        m_classType = static_cast<UpdateClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeUpdateChannelMessageViews: {
+        m_channelId = in->fetchInt();
+        m_id = in->fetchInt();
+        m_views = in->fetchInt();
+        m_classType = static_cast<UpdateClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeUpdateChatAdmins: {
+        m_chatId = in->fetchInt();
+        m_enabled = in->fetchBool();
+        m_version = in->fetchInt();
+        m_classType = static_cast<UpdateClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeUpdateChatParticipantAdmin: {
+        m_chatId = in->fetchInt();
+        m_userId = in->fetchInt();
+        m_isAdmin = in->fetchBool();
+        m_version = in->fetchInt();
         m_classType = static_cast<UpdateClassType>(x);
         return true;
     }
@@ -1137,6 +1311,7 @@ inline bool Update::push(OutboundPkt *out) const {
         out->appendInt(m_chatId);
         out->appendInt(m_userId);
         out->appendInt(m_inviterId);
+        out->appendInt(m_date);
         out->appendInt(m_version);
         return true;
     }
@@ -1221,6 +1396,8 @@ inline bool Update::push(OutboundPkt *out) const {
     
     case typeUpdateWebPage: {
         m_webpage.push(out);
+        out->appendInt(m_pts);
+        out->appendInt(m_ptsCount);
         return true;
     }
         break;
@@ -1233,6 +1410,78 @@ inline bool Update::push(OutboundPkt *out) const {
         }
         out->appendInt(m_pts);
         out->appendInt(m_ptsCount);
+        return true;
+    }
+        break;
+    
+    case typeUpdateChannelTooLong: {
+        out->appendInt(m_channelId);
+        return true;
+    }
+        break;
+    
+    case typeUpdateChannel: {
+        out->appendInt(m_channelId);
+        return true;
+    }
+        break;
+    
+    case typeUpdateChannelGroup: {
+        out->appendInt(m_channelId);
+        m_group.push(out);
+        return true;
+    }
+        break;
+    
+    case typeUpdateNewChannelMessage: {
+        m_message.push(out);
+        out->appendInt(m_pts);
+        out->appendInt(m_ptsCount);
+        return true;
+    }
+        break;
+    
+    case typeUpdateReadChannelInbox: {
+        out->appendInt(m_channelId);
+        out->appendInt(m_maxId);
+        return true;
+    }
+        break;
+    
+    case typeUpdateDeleteChannelMessages: {
+        out->appendInt(m_channelId);
+        out->appendInt(CoreTypes::typeVector);
+        out->appendInt(m_messages.count());
+        for (qint32 i = 0; i < m_messages.count(); i++) {
+            out->appendInt(m_messages[i]);
+        }
+        out->appendInt(m_pts);
+        out->appendInt(m_ptsCount);
+        return true;
+    }
+        break;
+    
+    case typeUpdateChannelMessageViews: {
+        out->appendInt(m_channelId);
+        out->appendInt(m_id);
+        out->appendInt(m_views);
+        return true;
+    }
+        break;
+    
+    case typeUpdateChatAdmins: {
+        out->appendInt(m_chatId);
+        out->appendBool(m_enabled);
+        out->appendInt(m_version);
+        return true;
+    }
+        break;
+    
+    case typeUpdateChatParticipantAdmin: {
+        out->appendInt(m_chatId);
+        out->appendInt(m_userId);
+        out->appendBool(m_isAdmin);
+        out->appendInt(m_version);
         return true;
     }
         break;
@@ -1390,6 +1639,7 @@ inline QMap<QString, QVariant> Update::toMap() const {
         result["chatId"] = QVariant::fromValue<qint32>(chatId());
         result["userId"] = QVariant::fromValue<qint32>(userId());
         result["inviterId"] = QVariant::fromValue<qint32>(inviterId());
+        result["date"] = QVariant::fromValue<qint32>(date());
         result["version"] = QVariant::fromValue<qint32>(version());
         return result;
     }
@@ -1482,6 +1732,8 @@ inline QMap<QString, QVariant> Update::toMap() const {
     case typeUpdateWebPage: {
         result["classType"] = "Update::typeUpdateWebPage";
         result["webpage"] = m_webpage.toMap();
+        result["pts"] = QVariant::fromValue<qint32>(pts());
+        result["ptsCount"] = QVariant::fromValue<qint32>(ptsCount());
         return result;
     }
         break;
@@ -1494,6 +1746,86 @@ inline QMap<QString, QVariant> Update::toMap() const {
         result["messages"] = _messages;
         result["pts"] = QVariant::fromValue<qint32>(pts());
         result["ptsCount"] = QVariant::fromValue<qint32>(ptsCount());
+        return result;
+    }
+        break;
+    
+    case typeUpdateChannelTooLong: {
+        result["classType"] = "Update::typeUpdateChannelTooLong";
+        result["channelId"] = QVariant::fromValue<qint32>(channelId());
+        return result;
+    }
+        break;
+    
+    case typeUpdateChannel: {
+        result["classType"] = "Update::typeUpdateChannel";
+        result["channelId"] = QVariant::fromValue<qint32>(channelId());
+        return result;
+    }
+        break;
+    
+    case typeUpdateChannelGroup: {
+        result["classType"] = "Update::typeUpdateChannelGroup";
+        result["channelId"] = QVariant::fromValue<qint32>(channelId());
+        result["group"] = m_group.toMap();
+        return result;
+    }
+        break;
+    
+    case typeUpdateNewChannelMessage: {
+        result["classType"] = "Update::typeUpdateNewChannelMessage";
+        result["message"] = m_message.toMap();
+        result["pts"] = QVariant::fromValue<qint32>(pts());
+        result["ptsCount"] = QVariant::fromValue<qint32>(ptsCount());
+        return result;
+    }
+        break;
+    
+    case typeUpdateReadChannelInbox: {
+        result["classType"] = "Update::typeUpdateReadChannelInbox";
+        result["channelId"] = QVariant::fromValue<qint32>(channelId());
+        result["maxId"] = QVariant::fromValue<qint32>(maxId());
+        return result;
+    }
+        break;
+    
+    case typeUpdateDeleteChannelMessages: {
+        result["classType"] = "Update::typeUpdateDeleteChannelMessages";
+        result["channelId"] = QVariant::fromValue<qint32>(channelId());
+        QList<QVariant> _messages;
+        Q_FOREACH(const qint32 &m__type, m_messages)
+            _messages << QVariant::fromValue<qint32>(m__type);
+        result["messages"] = _messages;
+        result["pts"] = QVariant::fromValue<qint32>(pts());
+        result["ptsCount"] = QVariant::fromValue<qint32>(ptsCount());
+        return result;
+    }
+        break;
+    
+    case typeUpdateChannelMessageViews: {
+        result["classType"] = "Update::typeUpdateChannelMessageViews";
+        result["channelId"] = QVariant::fromValue<qint32>(channelId());
+        result["id"] = QVariant::fromValue<qint32>(id());
+        result["views"] = QVariant::fromValue<qint32>(views());
+        return result;
+    }
+        break;
+    
+    case typeUpdateChatAdmins: {
+        result["classType"] = "Update::typeUpdateChatAdmins";
+        result["chatId"] = QVariant::fromValue<qint32>(chatId());
+        result["enabled"] = QVariant::fromValue<bool>(enabled());
+        result["version"] = QVariant::fromValue<qint32>(version());
+        return result;
+    }
+        break;
+    
+    case typeUpdateChatParticipantAdmin: {
+        result["classType"] = "Update::typeUpdateChatParticipantAdmin";
+        result["chatId"] = QVariant::fromValue<qint32>(chatId());
+        result["userId"] = QVariant::fromValue<qint32>(userId());
+        result["isAdmin"] = QVariant::fromValue<bool>(isAdmin());
+        result["version"] = QVariant::fromValue<qint32>(version());
         return result;
     }
         break;
@@ -1619,6 +1951,7 @@ inline Update Update::fromMap(const QMap<QString, QVariant> &map) {
         result.setChatId( map.value("chatId").value<qint32>() );
         result.setUserId( map.value("userId").value<qint32>() );
         result.setInviterId( map.value("inviterId").value<qint32>() );
+        result.setDate( map.value("date").value<qint32>() );
         result.setVersion( map.value("version").value<qint32>() );
         return result;
     }
@@ -1693,6 +2026,8 @@ inline Update Update::fromMap(const QMap<QString, QVariant> &map) {
     if(map.value("classType").toString() == "Update::typeUpdateWebPage") {
         result.setClassType(typeUpdateWebPage);
         result.setWebpage( WebPage::fromMap(map.value("webpage").toMap()) );
+        result.setPts( map.value("pts").value<qint32>() );
+        result.setPtsCount( map.value("ptsCount").value<qint32>() );
         return result;
     }
     if(map.value("classType").toString() == "Update::typeUpdateReadMessagesContents") {
@@ -1704,6 +2039,69 @@ inline Update Update::fromMap(const QMap<QString, QVariant> &map) {
         result.setMessages(_messages);
         result.setPts( map.value("pts").value<qint32>() );
         result.setPtsCount( map.value("ptsCount").value<qint32>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "Update::typeUpdateChannelTooLong") {
+        result.setClassType(typeUpdateChannelTooLong);
+        result.setChannelId( map.value("channelId").value<qint32>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "Update::typeUpdateChannel") {
+        result.setClassType(typeUpdateChannel);
+        result.setChannelId( map.value("channelId").value<qint32>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "Update::typeUpdateChannelGroup") {
+        result.setClassType(typeUpdateChannelGroup);
+        result.setChannelId( map.value("channelId").value<qint32>() );
+        result.setGroup( MessageGroup::fromMap(map.value("group").toMap()) );
+        return result;
+    }
+    if(map.value("classType").toString() == "Update::typeUpdateNewChannelMessage") {
+        result.setClassType(typeUpdateNewChannelMessage);
+        result.setMessage( Message::fromMap(map.value("message").toMap()) );
+        result.setPts( map.value("pts").value<qint32>() );
+        result.setPtsCount( map.value("ptsCount").value<qint32>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "Update::typeUpdateReadChannelInbox") {
+        result.setClassType(typeUpdateReadChannelInbox);
+        result.setChannelId( map.value("channelId").value<qint32>() );
+        result.setMaxId( map.value("maxId").value<qint32>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "Update::typeUpdateDeleteChannelMessages") {
+        result.setClassType(typeUpdateDeleteChannelMessages);
+        result.setChannelId( map.value("channelId").value<qint32>() );
+        QList<QVariant> map_messages = map["messages"].toList();
+        QList<qint32> _messages;
+        Q_FOREACH(const QVariant &var, map_messages)
+            _messages << var.value<qint32>();;
+        result.setMessages(_messages);
+        result.setPts( map.value("pts").value<qint32>() );
+        result.setPtsCount( map.value("ptsCount").value<qint32>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "Update::typeUpdateChannelMessageViews") {
+        result.setClassType(typeUpdateChannelMessageViews);
+        result.setChannelId( map.value("channelId").value<qint32>() );
+        result.setId( map.value("id").value<qint32>() );
+        result.setViews( map.value("views").value<qint32>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "Update::typeUpdateChatAdmins") {
+        result.setClassType(typeUpdateChatAdmins);
+        result.setChatId( map.value("chatId").value<qint32>() );
+        result.setEnabled( map.value("enabled").value<bool>() );
+        result.setVersion( map.value("version").value<qint32>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "Update::typeUpdateChatParticipantAdmin") {
+        result.setClassType(typeUpdateChatParticipantAdmin);
+        result.setChatId( map.value("chatId").value<qint32>() );
+        result.setUserId( map.value("userId").value<qint32>() );
+        result.setIsAdmin( map.value("isAdmin").value<bool>() );
+        result.setVersion( map.value("version").value<qint32>() );
         return result;
     }
     return result;
@@ -1796,6 +2194,7 @@ inline QDataStream &operator<<(QDataStream &stream, const Update &item) {
         stream << item.chatId();
         stream << item.userId();
         stream << item.inviterId();
+        stream << item.date();
         stream << item.version();
         break;
     case Update::typeUpdateChatParticipantDelete:
@@ -1842,11 +2241,54 @@ inline QDataStream &operator<<(QDataStream &stream, const Update &item) {
         break;
     case Update::typeUpdateWebPage:
         stream << item.webpage();
+        stream << item.pts();
+        stream << item.ptsCount();
         break;
     case Update::typeUpdateReadMessagesContents:
         stream << item.messages();
         stream << item.pts();
         stream << item.ptsCount();
+        break;
+    case Update::typeUpdateChannelTooLong:
+        stream << item.channelId();
+        break;
+    case Update::typeUpdateChannel:
+        stream << item.channelId();
+        break;
+    case Update::typeUpdateChannelGroup:
+        stream << item.channelId();
+        stream << item.group();
+        break;
+    case Update::typeUpdateNewChannelMessage:
+        stream << item.message();
+        stream << item.pts();
+        stream << item.ptsCount();
+        break;
+    case Update::typeUpdateReadChannelInbox:
+        stream << item.channelId();
+        stream << item.maxId();
+        break;
+    case Update::typeUpdateDeleteChannelMessages:
+        stream << item.channelId();
+        stream << item.messages();
+        stream << item.pts();
+        stream << item.ptsCount();
+        break;
+    case Update::typeUpdateChannelMessageViews:
+        stream << item.channelId();
+        stream << item.id();
+        stream << item.views();
+        break;
+    case Update::typeUpdateChatAdmins:
+        stream << item.chatId();
+        stream << item.enabled();
+        stream << item.version();
+        break;
+    case Update::typeUpdateChatParticipantAdmin:
+        stream << item.chatId();
+        stream << item.userId();
+        stream << item.isAdmin();
+        stream << item.version();
         break;
     }
     return stream;
@@ -2038,6 +2480,9 @@ inline QDataStream &operator>>(QDataStream &stream, Update &item) {
         qint32 m_inviter_id;
         stream >> m_inviter_id;
         item.setInviterId(m_inviter_id);
+        qint32 m_date;
+        stream >> m_date;
+        item.setDate(m_date);
         qint32 m_version;
         stream >> m_version;
         item.setVersion(m_version);
@@ -2146,6 +2591,12 @@ inline QDataStream &operator>>(QDataStream &stream, Update &item) {
         WebPage m_webpage;
         stream >> m_webpage;
         item.setWebpage(m_webpage);
+        qint32 m_pts;
+        stream >> m_pts;
+        item.setPts(m_pts);
+        qint32 m_pts_count;
+        stream >> m_pts_count;
+        item.setPtsCount(m_pts_count);
     }
         break;
     case Update::typeUpdateReadMessagesContents: {
@@ -2158,6 +2609,102 @@ inline QDataStream &operator>>(QDataStream &stream, Update &item) {
         qint32 m_pts_count;
         stream >> m_pts_count;
         item.setPtsCount(m_pts_count);
+    }
+        break;
+    case Update::typeUpdateChannelTooLong: {
+        qint32 m_channel_id;
+        stream >> m_channel_id;
+        item.setChannelId(m_channel_id);
+    }
+        break;
+    case Update::typeUpdateChannel: {
+        qint32 m_channel_id;
+        stream >> m_channel_id;
+        item.setChannelId(m_channel_id);
+    }
+        break;
+    case Update::typeUpdateChannelGroup: {
+        qint32 m_channel_id;
+        stream >> m_channel_id;
+        item.setChannelId(m_channel_id);
+        MessageGroup m_group;
+        stream >> m_group;
+        item.setGroup(m_group);
+    }
+        break;
+    case Update::typeUpdateNewChannelMessage: {
+        Message m_message;
+        stream >> m_message;
+        item.setMessage(m_message);
+        qint32 m_pts;
+        stream >> m_pts;
+        item.setPts(m_pts);
+        qint32 m_pts_count;
+        stream >> m_pts_count;
+        item.setPtsCount(m_pts_count);
+    }
+        break;
+    case Update::typeUpdateReadChannelInbox: {
+        qint32 m_channel_id;
+        stream >> m_channel_id;
+        item.setChannelId(m_channel_id);
+        qint32 m_max_id;
+        stream >> m_max_id;
+        item.setMaxId(m_max_id);
+    }
+        break;
+    case Update::typeUpdateDeleteChannelMessages: {
+        qint32 m_channel_id;
+        stream >> m_channel_id;
+        item.setChannelId(m_channel_id);
+        QList<qint32> m_messages;
+        stream >> m_messages;
+        item.setMessages(m_messages);
+        qint32 m_pts;
+        stream >> m_pts;
+        item.setPts(m_pts);
+        qint32 m_pts_count;
+        stream >> m_pts_count;
+        item.setPtsCount(m_pts_count);
+    }
+        break;
+    case Update::typeUpdateChannelMessageViews: {
+        qint32 m_channel_id;
+        stream >> m_channel_id;
+        item.setChannelId(m_channel_id);
+        qint32 m_id;
+        stream >> m_id;
+        item.setId(m_id);
+        qint32 m_views;
+        stream >> m_views;
+        item.setViews(m_views);
+    }
+        break;
+    case Update::typeUpdateChatAdmins: {
+        qint32 m_chat_id;
+        stream >> m_chat_id;
+        item.setChatId(m_chat_id);
+        bool m_enabled;
+        stream >> m_enabled;
+        item.setEnabled(m_enabled);
+        qint32 m_version;
+        stream >> m_version;
+        item.setVersion(m_version);
+    }
+        break;
+    case Update::typeUpdateChatParticipantAdmin: {
+        qint32 m_chat_id;
+        stream >> m_chat_id;
+        item.setChatId(m_chat_id);
+        qint32 m_user_id;
+        stream >> m_user_id;
+        item.setUserId(m_user_id);
+        bool m_is_admin;
+        stream >> m_is_admin;
+        item.setIsAdmin(m_is_admin);
+        qint32 m_version;
+        stream >> m_version;
+        item.setVersion(m_version);
     }
         break;
     }

@@ -11,6 +11,10 @@ HEADERS += \
     $$PWD/authorization.h \
     $$PWD/botcommand.h \
     $$PWD/botinfo.h \
+    $$PWD/channelmessagesfilter.h \
+    $$PWD/channelparticipant.h \
+    $$PWD/channelparticipantrole.h \
+    $$PWD/channelparticipantsfilter.h \
     $$PWD/chat.h \
     $$PWD/chatfull.h \
     $$PWD/chatinvite.h \
@@ -20,7 +24,6 @@ HEADERS += \
     $$PWD/config.h \
     $$PWD/contact.h \
     $$PWD/contactblocked.h \
-    $$PWD/contactfound.h \
     $$PWD/contactlink.h \
     $$PWD/contactstatus.h \
     $$PWD/contactsuggested.h \
@@ -42,6 +45,7 @@ HEADERS += \
     $$PWD/importedcontact.h \
     $$PWD/inputappevent.h \
     $$PWD/inputaudio.h \
+    $$PWD/inputchannel.h \
     $$PWD/inputchatphoto.h \
     $$PWD/inputcontact.h \
     $$PWD/inputdocument.h \
@@ -67,7 +71,9 @@ HEADERS += \
     $$PWD/message.h \
     $$PWD/messageaction.h \
     $$PWD/messageentity.h \
+    $$PWD/messagegroup.h \
     $$PWD/messagemedia.h \
+    $$PWD/messagerange.h \
     $$PWD/messagesfilter.h \
     $$PWD/nearestdc.h \
     $$PWD/notifypeer.h \
@@ -84,6 +90,7 @@ HEADERS += \
     $$PWD/sendmessageaction.h \
     $$PWD/stickerpack.h \
     $$PWD/stickerset.h \
+    $$PWD/true.h \
     $$PWD/update.h \
     $$PWD/updatestype.h \
     $$PWD/user.h \
@@ -104,11 +111,14 @@ HEADERS += \
     $$PWD/authexportedauthorization.h \
     $$PWD/authpasswordrecovery.h \
     $$PWD/authsentcode.h \
+    $$PWD/channelschannelparticipant.h \
+    $$PWD/channelschannelparticipants.h \
     $$PWD/contactsblocked.h \
     $$PWD/contactscontacts.h \
     $$PWD/contactsfound.h \
     $$PWD/contactsimportedcontacts.h \
     $$PWD/contactslink.h \
+    $$PWD/contactsresolvedpeer.h \
     $$PWD/contactssuggested.h \
     $$PWD/helpappchangelog.h \
     $$PWD/helpappupdate.h \
@@ -128,6 +138,7 @@ HEADERS += \
     $$PWD/photosphoto.h \
     $$PWD/photosphotos.h \
     $$PWD/storagefiletype.h \
+    $$PWD/updateschanneldifference.h \
     $$PWD/updatesdifference.h \
     $$PWD/updatesstate.h \
     $$PWD/uploadfile.h

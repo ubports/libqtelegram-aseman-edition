@@ -7,14 +7,14 @@ TelegramCore::contactsResolveUsername
 ## Schema:
 
 ```c++
-contacts.resolveUsername#bf0131c username:string = User;
+contacts.resolveUsername#f93ccba3 username:string = contacts.ResolvedPeer;
 ```
 ## Parameters:
 
 |Name|Type|Default|
 |----|----|-------|
 |username|QString||
-|callBack|Callback&lt;[User](../../types/user.md)&gt;|0|
+|callBack|Callback&lt;[ContactsResolvedPeer](../../types/contactsresolvedpeer.md)&gt;|0|
 |timeout|qint32|TelegramCore::timeOut()|
 
 ## Callback Result:
@@ -22,13 +22,13 @@ contacts.resolveUsername#bf0131c username:string = User;
 |Name|Type|
 |----|----|
 |msgId|qint64|
-|result|[User](../../types/user.md)|
+|result|[ContactsResolvedPeer](../../types/contactsresolvedpeer.md)|
 |error|TelegramCore::CallbackError|
 
 ## Signals:
 
 ```c++
-resolveUsernameAnswer(qint64 msgId, const User & result)
+resolveUsernameAnswer(qint64 msgId, const ContactsResolvedPeer & result)
 ```
 ```c++
 resolveUsernameError(qint64 msgId, qint32 errorCode, const QString &errorText)
@@ -37,7 +37,7 @@ resolveUsernameError(qint64 msgId, qint32 errorCode, const QString &errorText)
 ## Events:
 
 ```c++
-onResolveUsernameAnswer(qint64 msgId, const User & result)
+onResolveUsernameAnswer(qint64 msgId, const ContactsResolvedPeer & result)
 ```
 ```c++
 onResolveUsernameError(qint64 msgId, qint32 errorCode, const QString &errorText)

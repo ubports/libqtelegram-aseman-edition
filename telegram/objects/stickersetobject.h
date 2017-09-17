@@ -16,9 +16,12 @@ class LIBQTELEGRAMSHARED_EXPORT StickerSetObject : public TelegramTypeQObject
     Q_ENUMS(StickerSetClassType)
     Q_PROPERTY(qint64 accessHash READ accessHash WRITE setAccessHash NOTIFY accessHashChanged)
     Q_PROPERTY(qint32 count READ count WRITE setCount NOTIFY countChanged)
+    Q_PROPERTY(bool disabled READ disabled WRITE setDisabled NOTIFY disabledChanged)
     Q_PROPERTY(qint32 flags READ flags WRITE setFlags NOTIFY flagsChanged)
     Q_PROPERTY(qint32 hash READ hash WRITE setHash NOTIFY hashChanged)
     Q_PROPERTY(qint64 id READ id WRITE setId NOTIFY idChanged)
+    Q_PROPERTY(bool installed READ installed WRITE setInstalled NOTIFY installedChanged)
+    Q_PROPERTY(bool official READ official WRITE setOfficial NOTIFY officialChanged)
     Q_PROPERTY(QString shortName READ shortName WRITE setShortName NOTIFY shortNameChanged)
     Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY titleChanged)
     Q_PROPERTY(StickerSet core READ core WRITE setCore NOTIFY coreChanged)
@@ -39,6 +42,9 @@ public:
     void setCount(qint32 count);
     qint32 count() const;
 
+    void setDisabled(bool disabled);
+    bool disabled() const;
+
     void setFlags(qint32 flags);
     qint32 flags() const;
 
@@ -47,6 +53,12 @@ public:
 
     void setId(qint64 id);
     qint64 id() const;
+
+    void setInstalled(bool installed);
+    bool installed() const;
+
+    void setOfficial(bool official);
+    bool official() const;
 
     void setShortName(const QString &shortName);
     QString shortName() const;
@@ -68,9 +80,12 @@ Q_SIGNALS:
     void classTypeChanged();
     void accessHashChanged();
     void countChanged();
+    void disabledChanged();
     void flagsChanged();
     void hashChanged();
     void idChanged();
+    void installedChanged();
+    void officialChanged();
     void shortNameChanged();
     void titleChanged();
 
@@ -117,6 +132,17 @@ inline qint32 StickerSetObject::count() const {
     return m_core.count();
 }
 
+inline void StickerSetObject::setDisabled(bool disabled) {
+    if(m_core.disabled() == disabled) return;
+    m_core.setDisabled(disabled);
+    Q_EMIT disabledChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool StickerSetObject::disabled() const {
+    return m_core.disabled();
+}
+
 inline void StickerSetObject::setFlags(qint32 flags) {
     if(m_core.flags() == flags) return;
     m_core.setFlags(flags);
@@ -150,6 +176,28 @@ inline qint64 StickerSetObject::id() const {
     return m_core.id();
 }
 
+inline void StickerSetObject::setInstalled(bool installed) {
+    if(m_core.installed() == installed) return;
+    m_core.setInstalled(installed);
+    Q_EMIT installedChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool StickerSetObject::installed() const {
+    return m_core.installed();
+}
+
+inline void StickerSetObject::setOfficial(bool official) {
+    if(m_core.official() == official) return;
+    m_core.setOfficial(official);
+    Q_EMIT officialChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool StickerSetObject::official() const {
+    return m_core.official();
+}
+
 inline void StickerSetObject::setShortName(const QString &shortName) {
     if(m_core.shortName() == shortName) return;
     m_core.setShortName(shortName);
@@ -178,9 +226,12 @@ inline StickerSetObject &StickerSetObject::operator =(const StickerSet &b) {
 
     Q_EMIT accessHashChanged();
     Q_EMIT countChanged();
+    Q_EMIT disabledChanged();
     Q_EMIT flagsChanged();
     Q_EMIT hashChanged();
     Q_EMIT idChanged();
+    Q_EMIT installedChanged();
+    Q_EMIT officialChanged();
     Q_EMIT shortNameChanged();
     Q_EMIT titleChanged();
     Q_EMIT coreChanged();

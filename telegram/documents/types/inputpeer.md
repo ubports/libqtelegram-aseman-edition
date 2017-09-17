@@ -6,6 +6,7 @@
 * [typeInputPeerSelf](#inputpeertypeinputpeerself)
 * [typeInputPeerChat](#inputpeertypeinputpeerchat)
 * [typeInputPeerUser](#inputpeertypeinputpeeruser)
+* [typeInputPeerChannel](#inputpeertypeinputpeerchannel)
 
 ## InputPeer::typeInputPeerEmpty
 
@@ -56,5 +57,20 @@ inputPeerUser#7b8e7de6 user_id:int access_hash:long = InputPeer;
 |Name|Type|
 |----|----|
 |userId|qint32|
+|accessHash|qint64|
+
+## InputPeer::typeInputPeerChannel
+
+#### Schema:
+
+```c++
+inputPeerChannel#20adaef8 channel_id:int access_hash:long = InputPeer;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|channelId|qint32|
 |accessHash|qint64|
 

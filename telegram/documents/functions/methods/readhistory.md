@@ -7,7 +7,7 @@ TelegramCore::messagesReadHistory
 ## Schema:
 
 ```c++
-messages.readHistory#b04f2510 peer:InputPeer max_id:int offset:int = messages.AffectedHistory;
+messages.readHistory#e306d3a peer:InputPeer max_id:int = messages.AffectedMessages;
 ```
 ## Parameters:
 
@@ -15,8 +15,7 @@ messages.readHistory#b04f2510 peer:InputPeer max_id:int offset:int = messages.Af
 |----|----|-------|
 |peer|[InputPeer](../../types/inputpeer.md)||
 |maxId|qint32||
-|offset|qint32||
-|callBack|Callback&lt;[MessagesAffectedHistory](../../types/messagesaffectedhistory.md)&gt;|0|
+|callBack|Callback&lt;[MessagesAffectedMessages](../../types/messagesaffectedmessages.md)&gt;|0|
 |timeout|qint32|TelegramCore::timeOut()|
 
 ## Callback Result:
@@ -24,13 +23,13 @@ messages.readHistory#b04f2510 peer:InputPeer max_id:int offset:int = messages.Af
 |Name|Type|
 |----|----|
 |msgId|qint64|
-|result|[MessagesAffectedHistory](../../types/messagesaffectedhistory.md)|
+|result|[MessagesAffectedMessages](../../types/messagesaffectedmessages.md)|
 |error|TelegramCore::CallbackError|
 
 ## Signals:
 
 ```c++
-readHistoryAnswer(qint64 msgId, const MessagesAffectedHistory & result)
+readHistoryAnswer(qint64 msgId, const MessagesAffectedMessages & result)
 ```
 ```c++
 readHistoryError(qint64 msgId, qint32 errorCode, const QString &errorText)
@@ -39,7 +38,7 @@ readHistoryError(qint64 msgId, qint32 errorCode, const QString &errorText)
 ## Events:
 
 ```c++
-onReadHistoryAnswer(qint64 msgId, const MessagesAffectedHistory & result)
+onReadHistoryAnswer(qint64 msgId, const MessagesAffectedMessages & result)
 ```
 ```c++
 onReadHistoryError(qint64 msgId, qint32 errorCode, const QString &errorText)
@@ -52,7 +51,7 @@ onReadHistoryError(qint64 msgId, qint32 errorCode, const QString &errorText)
 ## Examples:
 
 ```c++
-tg->readHistory(peer, max_id, offset, [=](TG_READ_HISTORY_CALLBACK){
+tg->readHistory(peer, max_id, [=](TG_READ_HISTORY_CALLBACK){
     ...
 }, 30000);
 ```

@@ -22,7 +22,9 @@ class LIBQTELEGRAMSHARED_EXPORT ChatParticipantObject : public TelegramTypeQObje
 
 public:
     enum ChatParticipantClassType {
-        TypeChatParticipant
+        TypeChatParticipant,
+        TypeChatParticipantCreator,
+        TypeChatParticipantAdmin
     };
 
     ChatParticipantObject(const ChatParticipant &core, QObject *parent = 0);
@@ -129,6 +131,12 @@ inline void ChatParticipantObject::setClassType(quint32 classType) {
     case TypeChatParticipant:
         result = ChatParticipant::typeChatParticipant;
         break;
+    case TypeChatParticipantCreator:
+        result = ChatParticipant::typeChatParticipantCreator;
+        break;
+    case TypeChatParticipantAdmin:
+        result = ChatParticipant::typeChatParticipantAdmin;
+        break;
     default:
         result = ChatParticipant::typeChatParticipant;
         break;
@@ -145,6 +153,12 @@ inline quint32 ChatParticipantObject::classType() const {
     switch(static_cast<qint64>(m_core.classType())) {
     case ChatParticipant::typeChatParticipant:
         result = TypeChatParticipant;
+        break;
+    case ChatParticipant::typeChatParticipantCreator:
+        result = TypeChatParticipantCreator;
+        break;
+    case ChatParticipant::typeChatParticipantAdmin:
+        result = TypeChatParticipantAdmin;
         break;
     default:
         result = TypeChatParticipant;

@@ -9,14 +9,16 @@
 #include "telegram/types/chatparticipants.h"
 
 #include <QPointer>
+#include "chatparticipantobject.h"
 
 class LIBQTELEGRAMSHARED_EXPORT ChatParticipantsObject : public TelegramTypeQObject
 {
     Q_OBJECT
     Q_ENUMS(ChatParticipantsClassType)
-    Q_PROPERTY(qint32 adminId READ adminId WRITE setAdminId NOTIFY adminIdChanged)
     Q_PROPERTY(qint32 chatId READ chatId WRITE setChatId NOTIFY chatIdChanged)
+    Q_PROPERTY(qint32 flags READ flags WRITE setFlags NOTIFY flagsChanged)
     Q_PROPERTY(QList<ChatParticipant> participants READ participants WRITE setParticipants NOTIFY participantsChanged)
+    Q_PROPERTY(ChatParticipantObject* selfParticipant READ selfParticipant WRITE setSelfParticipant NOTIFY selfParticipantChanged)
     Q_PROPERTY(qint32 version READ version WRITE setVersion NOTIFY versionChanged)
     Q_PROPERTY(ChatParticipants core READ core WRITE setCore NOTIFY coreChanged)
     Q_PROPERTY(quint32 classType READ classType WRITE setClassType NOTIFY classTypeChanged)
@@ -31,14 +33,17 @@ public:
     ChatParticipantsObject(QObject *parent = 0);
     virtual ~ChatParticipantsObject();
 
-    void setAdminId(qint32 adminId);
-    qint32 adminId() const;
-
     void setChatId(qint32 chatId);
     qint32 chatId() const;
 
+    void setFlags(qint32 flags);
+    qint32 flags() const;
+
     void setParticipants(const QList<ChatParticipant> &participants);
     QList<ChatParticipant> participants() const;
+
+    void setSelfParticipant(ChatParticipantObject* selfParticipant);
+    ChatParticipantObject* selfParticipant() const;
 
     void setVersion(qint32 version);
     qint32 version() const;
@@ -55,41 +60,39 @@ public:
 Q_SIGNALS:
     void coreChanged();
     void classTypeChanged();
-    void adminIdChanged();
     void chatIdChanged();
+    void flagsChanged();
     void participantsChanged();
+    void selfParticipantChanged();
     void versionChanged();
 
 private Q_SLOTS:
+    void coreSelfParticipantChanged();
 
 private:
+    QPointer<ChatParticipantObject> m_selfParticipant;
     ChatParticipants m_core;
 };
 
 inline ChatParticipantsObject::ChatParticipantsObject(const ChatParticipants &core, QObject *parent) :
     TelegramTypeQObject(parent),
+    m_selfParticipant(0),
     m_core(core)
 {
+    m_selfParticipant = new ChatParticipantObject(m_core.selfParticipant(), this);
+    connect(m_selfParticipant.data(), &ChatParticipantObject::coreChanged, this, &ChatParticipantsObject::coreSelfParticipantChanged);
 }
 
 inline ChatParticipantsObject::ChatParticipantsObject(QObject *parent) :
     TelegramTypeQObject(parent),
+    m_selfParticipant(0),
     m_core()
 {
+    m_selfParticipant = new ChatParticipantObject(m_core.selfParticipant(), this);
+    connect(m_selfParticipant.data(), &ChatParticipantObject::coreChanged, this, &ChatParticipantsObject::coreSelfParticipantChanged);
 }
 
 inline ChatParticipantsObject::~ChatParticipantsObject() {
-}
-
-inline void ChatParticipantsObject::setAdminId(qint32 adminId) {
-    if(m_core.adminId() == adminId) return;
-    m_core.setAdminId(adminId);
-    Q_EMIT adminIdChanged();
-    Q_EMIT coreChanged();
-}
-
-inline qint32 ChatParticipantsObject::adminId() const {
-    return m_core.adminId();
 }
 
 inline void ChatParticipantsObject::setChatId(qint32 chatId) {
@@ -103,6 +106,17 @@ inline qint32 ChatParticipantsObject::chatId() const {
     return m_core.chatId();
 }
 
+inline void ChatParticipantsObject::setFlags(qint32 flags) {
+    if(m_core.flags() == flags) return;
+    m_core.setFlags(flags);
+    Q_EMIT flagsChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 ChatParticipantsObject::flags() const {
+    return m_core.flags();
+}
+
 inline void ChatParticipantsObject::setParticipants(const QList<ChatParticipant> &participants) {
     if(m_core.participants() == participants) return;
     m_core.setParticipants(participants);
@@ -112,6 +126,23 @@ inline void ChatParticipantsObject::setParticipants(const QList<ChatParticipant>
 
 inline QList<ChatParticipant> ChatParticipantsObject::participants() const {
     return m_core.participants();
+}
+
+inline void ChatParticipantsObject::setSelfParticipant(ChatParticipantObject* selfParticipant) {
+    if(m_selfParticipant == selfParticipant) return;
+    if(m_selfParticipant) delete m_selfParticipant;
+    m_selfParticipant = selfParticipant;
+    if(m_selfParticipant) {
+        m_selfParticipant->setParent(this);
+        m_core.setSelfParticipant(m_selfParticipant->core());
+        connect(m_selfParticipant.data(), &ChatParticipantObject::coreChanged, this, &ChatParticipantsObject::coreSelfParticipantChanged);
+    }
+    Q_EMIT selfParticipantChanged();
+    Q_EMIT coreChanged();
+}
+
+inline ChatParticipantObject*  ChatParticipantsObject::selfParticipant() const {
+    return m_selfParticipant;
 }
 
 inline void ChatParticipantsObject::setVersion(qint32 version) {
@@ -128,10 +159,12 @@ inline qint32 ChatParticipantsObject::version() const {
 inline ChatParticipantsObject &ChatParticipantsObject::operator =(const ChatParticipants &b) {
     if(m_core == b) return *this;
     m_core = b;
+    m_selfParticipant->setCore(b.selfParticipant());
 
-    Q_EMIT adminIdChanged();
     Q_EMIT chatIdChanged();
+    Q_EMIT flagsChanged();
     Q_EMIT participantsChanged();
+    Q_EMIT selfParticipantChanged();
     Q_EMIT versionChanged();
     Q_EMIT coreChanged();
     return *this;
@@ -184,6 +217,13 @@ inline void ChatParticipantsObject::setCore(const ChatParticipants &core) {
 
 inline ChatParticipants ChatParticipantsObject::core() const {
     return m_core;
+}
+
+inline void ChatParticipantsObject::coreSelfParticipantChanged() {
+    if(m_core.selfParticipant() == m_selfParticipant->core()) return;
+    m_core.setSelfParticipant(m_selfParticipant->core());
+    Q_EMIT selfParticipantChanged();
+    Q_EMIT coreChanged();
 }
 
 #endif // LQTG_TYPE_CHATPARTICIPANTS_OBJECT

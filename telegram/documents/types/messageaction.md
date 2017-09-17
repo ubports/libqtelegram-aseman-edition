@@ -10,6 +10,9 @@
 * [typeMessageActionChatAddUser](#messageactiontypemessageactionchatadduser)
 * [typeMessageActionChatDeleteUser](#messageactiontypemessageactionchatdeleteuser)
 * [typeMessageActionChatJoinedByLink](#messageactiontypemessageactionchatjoinedbylink)
+* [typeMessageActionChannelCreate](#messageactiontypemessageactionchannelcreate)
+* [typeMessageActionChatMigrateTo](#messageactiontypemessageactionchatmigrateto)
+* [typeMessageActionChannelMigrateFrom](#messageactiontypemessageactionchannelmigratefrom)
 
 ## MessageAction::typeMessageActionEmpty
 
@@ -81,14 +84,14 @@ messageActionChatDeletePhoto#95e3fbef = MessageAction;
 #### Schema:
 
 ```c++
-messageActionChatAddUser#5e3cfc4b user_id:int = MessageAction;
+messageActionChatAddUser#488a7337 users:Vector<int> = MessageAction;
 ```
 
 #### Parameters:
 
 |Name|Type|
 |----|----|
-|userId|qint32|
+|users|QList&lt;qint32&gt;|
 
 ## MessageAction::typeMessageActionChatDeleteUser
 
@@ -117,4 +120,47 @@ messageActionChatJoinedByLink#f89cf5e8 inviter_id:int = MessageAction;
 |Name|Type|
 |----|----|
 |inviterId|qint32|
+
+## MessageAction::typeMessageActionChannelCreate
+
+#### Schema:
+
+```c++
+messageActionChannelCreate#95d2ac92 title:string = MessageAction;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|title|QString|
+
+## MessageAction::typeMessageActionChatMigrateTo
+
+#### Schema:
+
+```c++
+messageActionChatMigrateTo#51bdb021 channel_id:int = MessageAction;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|channelId|qint32|
+
+## MessageAction::typeMessageActionChannelMigrateFrom
+
+#### Schema:
+
+```c++
+messageActionChannelMigrateFrom#b055eaee title:string chat_id:int = MessageAction;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|title|QString|
+|chatId|qint32|
 

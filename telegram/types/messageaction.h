@@ -29,15 +29,24 @@ public:
         typeMessageActionChatEditTitle = 0xb5a1ce5a,
         typeMessageActionChatEditPhoto = 0x7fcb13a8,
         typeMessageActionChatDeletePhoto = 0x95e3fbef,
-        typeMessageActionChatAddUser = 0x5e3cfc4b,
+        typeMessageActionChatAddUser = 0x488a7337,
         typeMessageActionChatDeleteUser = 0xb2ae9b0c,
-        typeMessageActionChatJoinedByLink = 0xf89cf5e8
+        typeMessageActionChatJoinedByLink = 0xf89cf5e8,
+        typeMessageActionChannelCreate = 0x95d2ac92,
+        typeMessageActionChatMigrateTo = 0x51bdb021,
+        typeMessageActionChannelMigrateFrom = 0xb055eaee
     };
 
     MessageAction(MessageActionClassType classType = typeMessageActionEmpty, InboundPkt *in = 0);
     MessageAction(InboundPkt *in);
     MessageAction(const Null&);
     virtual ~MessageAction();
+
+    void setChannelId(qint32 channelId);
+    qint32 channelId() const;
+
+    void setChatId(qint32 chatId);
+    qint32 chatId() const;
 
     void setInviterId(qint32 inviterId);
     qint32 inviterId() const;
@@ -71,6 +80,8 @@ public:
     QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
+    qint32 m_channelId;
+    qint32 m_chatId;
     qint32 m_inviterId;
     Photo m_photo;
     QString m_title;
@@ -85,6 +96,8 @@ QDataStream LIBQTELEGRAMSHARED_EXPORT &operator<<(QDataStream &stream, const Mes
 QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, MessageAction &item);
 
 inline MessageAction::MessageAction(MessageActionClassType classType, InboundPkt *in) :
+    m_channelId(0),
+    m_chatId(0),
     m_inviterId(0),
     m_userId(0),
     m_classType(classType)
@@ -93,6 +106,8 @@ inline MessageAction::MessageAction(MessageActionClassType classType, InboundPkt
 }
 
 inline MessageAction::MessageAction(InboundPkt *in) :
+    m_channelId(0),
+    m_chatId(0),
     m_inviterId(0),
     m_userId(0),
     m_classType(typeMessageActionEmpty)
@@ -102,6 +117,8 @@ inline MessageAction::MessageAction(InboundPkt *in) :
 
 inline MessageAction::MessageAction(const Null &null) :
     TelegramTypeObject(null),
+    m_channelId(0),
+    m_chatId(0),
     m_inviterId(0),
     m_userId(0),
     m_classType(typeMessageActionEmpty)
@@ -109,6 +126,22 @@ inline MessageAction::MessageAction(const Null &null) :
 }
 
 inline MessageAction::~MessageAction() {
+}
+
+inline void MessageAction::setChannelId(qint32 channelId) {
+    m_channelId = channelId;
+}
+
+inline qint32 MessageAction::channelId() const {
+    return m_channelId;
+}
+
+inline void MessageAction::setChatId(qint32 chatId) {
+    m_chatId = chatId;
+}
+
+inline qint32 MessageAction::chatId() const {
+    return m_chatId;
 }
 
 inline void MessageAction::setInviterId(qint32 inviterId) {
@@ -153,6 +186,8 @@ inline QList<qint32> MessageAction::users() const {
 
 inline bool MessageAction::operator ==(const MessageAction &b) const {
     return m_classType == b.m_classType &&
+           m_channelId == b.m_channelId &&
+           m_chatId == b.m_chatId &&
            m_inviterId == b.m_inviterId &&
            m_photo == b.m_photo &&
            m_title == b.m_title &&
@@ -214,7 +249,14 @@ inline bool MessageAction::fetch(InboundPkt *in) {
         break;
     
     case typeMessageActionChatAddUser: {
-        m_userId = in->fetchInt();
+        if(in->fetchInt() != (qint32)CoreTypes::typeVector) return false;
+        qint32 m_users_length = in->fetchInt();
+        m_users.clear();
+        for (qint32 i = 0; i < m_users_length; i++) {
+            qint32 type;
+            type = in->fetchInt();
+            m_users.append(type);
+        }
         m_classType = static_cast<MessageActionClassType>(x);
         return true;
     }
@@ -229,6 +271,28 @@ inline bool MessageAction::fetch(InboundPkt *in) {
     
     case typeMessageActionChatJoinedByLink: {
         m_inviterId = in->fetchInt();
+        m_classType = static_cast<MessageActionClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeMessageActionChannelCreate: {
+        m_title = in->fetchQString();
+        m_classType = static_cast<MessageActionClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeMessageActionChatMigrateTo: {
+        m_channelId = in->fetchInt();
+        m_classType = static_cast<MessageActionClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeMessageActionChannelMigrateFrom: {
+        m_title = in->fetchQString();
+        m_chatId = in->fetchInt();
         m_classType = static_cast<MessageActionClassType>(x);
         return true;
     }
@@ -277,7 +341,11 @@ inline bool MessageAction::push(OutboundPkt *out) const {
         break;
     
     case typeMessageActionChatAddUser: {
-        out->appendInt(m_userId);
+        out->appendInt(CoreTypes::typeVector);
+        out->appendInt(m_users.count());
+        for (qint32 i = 0; i < m_users.count(); i++) {
+            out->appendInt(m_users[i]);
+        }
         return true;
     }
         break;
@@ -290,6 +358,25 @@ inline bool MessageAction::push(OutboundPkt *out) const {
     
     case typeMessageActionChatJoinedByLink: {
         out->appendInt(m_inviterId);
+        return true;
+    }
+        break;
+    
+    case typeMessageActionChannelCreate: {
+        out->appendQString(m_title);
+        return true;
+    }
+        break;
+    
+    case typeMessageActionChatMigrateTo: {
+        out->appendInt(m_channelId);
+        return true;
+    }
+        break;
+    
+    case typeMessageActionChannelMigrateFrom: {
+        out->appendQString(m_title);
+        out->appendInt(m_chatId);
         return true;
     }
         break;
@@ -341,7 +428,10 @@ inline QMap<QString, QVariant> MessageAction::toMap() const {
     
     case typeMessageActionChatAddUser: {
         result["classType"] = "MessageAction::typeMessageActionChatAddUser";
-        result["userId"] = QVariant::fromValue<qint32>(userId());
+        QList<QVariant> _users;
+        Q_FOREACH(const qint32 &m__type, m_users)
+            _users << QVariant::fromValue<qint32>(m__type);
+        result["users"] = _users;
         return result;
     }
         break;
@@ -356,6 +446,28 @@ inline QMap<QString, QVariant> MessageAction::toMap() const {
     case typeMessageActionChatJoinedByLink: {
         result["classType"] = "MessageAction::typeMessageActionChatJoinedByLink";
         result["inviterId"] = QVariant::fromValue<qint32>(inviterId());
+        return result;
+    }
+        break;
+    
+    case typeMessageActionChannelCreate: {
+        result["classType"] = "MessageAction::typeMessageActionChannelCreate";
+        result["title"] = QVariant::fromValue<QString>(title());
+        return result;
+    }
+        break;
+    
+    case typeMessageActionChatMigrateTo: {
+        result["classType"] = "MessageAction::typeMessageActionChatMigrateTo";
+        result["channelId"] = QVariant::fromValue<qint32>(channelId());
+        return result;
+    }
+        break;
+    
+    case typeMessageActionChannelMigrateFrom: {
+        result["classType"] = "MessageAction::typeMessageActionChannelMigrateFrom";
+        result["title"] = QVariant::fromValue<QString>(title());
+        result["chatId"] = QVariant::fromValue<qint32>(chatId());
         return result;
     }
         break;
@@ -397,7 +509,11 @@ inline MessageAction MessageAction::fromMap(const QMap<QString, QVariant> &map) 
     }
     if(map.value("classType").toString() == "MessageAction::typeMessageActionChatAddUser") {
         result.setClassType(typeMessageActionChatAddUser);
-        result.setUserId( map.value("userId").value<qint32>() );
+        QList<QVariant> map_users = map["users"].toList();
+        QList<qint32> _users;
+        Q_FOREACH(const QVariant &var, map_users)
+            _users << var.value<qint32>();;
+        result.setUsers(_users);
         return result;
     }
     if(map.value("classType").toString() == "MessageAction::typeMessageActionChatDeleteUser") {
@@ -408,6 +524,22 @@ inline MessageAction MessageAction::fromMap(const QMap<QString, QVariant> &map) 
     if(map.value("classType").toString() == "MessageAction::typeMessageActionChatJoinedByLink") {
         result.setClassType(typeMessageActionChatJoinedByLink);
         result.setInviterId( map.value("inviterId").value<qint32>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "MessageAction::typeMessageActionChannelCreate") {
+        result.setClassType(typeMessageActionChannelCreate);
+        result.setTitle( map.value("title").value<QString>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "MessageAction::typeMessageActionChatMigrateTo") {
+        result.setClassType(typeMessageActionChatMigrateTo);
+        result.setChannelId( map.value("channelId").value<qint32>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "MessageAction::typeMessageActionChannelMigrateFrom") {
+        result.setClassType(typeMessageActionChannelMigrateFrom);
+        result.setTitle( map.value("title").value<QString>() );
+        result.setChatId( map.value("chatId").value<qint32>() );
         return result;
     }
     return result;
@@ -440,13 +572,23 @@ inline QDataStream &operator<<(QDataStream &stream, const MessageAction &item) {
         
         break;
     case MessageAction::typeMessageActionChatAddUser:
-        stream << item.userId();
+        stream << item.users();
         break;
     case MessageAction::typeMessageActionChatDeleteUser:
         stream << item.userId();
         break;
     case MessageAction::typeMessageActionChatJoinedByLink:
         stream << item.inviterId();
+        break;
+    case MessageAction::typeMessageActionChannelCreate:
+        stream << item.title();
+        break;
+    case MessageAction::typeMessageActionChatMigrateTo:
+        stream << item.channelId();
+        break;
+    case MessageAction::typeMessageActionChannelMigrateFrom:
+        stream << item.title();
+        stream << item.chatId();
         break;
     }
     return stream;
@@ -487,9 +629,9 @@ inline QDataStream &operator>>(QDataStream &stream, MessageAction &item) {
     }
         break;
     case MessageAction::typeMessageActionChatAddUser: {
-        qint32 m_user_id;
-        stream >> m_user_id;
-        item.setUserId(m_user_id);
+        QList<qint32> m_users;
+        stream >> m_users;
+        item.setUsers(m_users);
     }
         break;
     case MessageAction::typeMessageActionChatDeleteUser: {
@@ -502,6 +644,27 @@ inline QDataStream &operator>>(QDataStream &stream, MessageAction &item) {
         qint32 m_inviter_id;
         stream >> m_inviter_id;
         item.setInviterId(m_inviter_id);
+    }
+        break;
+    case MessageAction::typeMessageActionChannelCreate: {
+        QString m_title;
+        stream >> m_title;
+        item.setTitle(m_title);
+    }
+        break;
+    case MessageAction::typeMessageActionChatMigrateTo: {
+        qint32 m_channel_id;
+        stream >> m_channel_id;
+        item.setChannelId(m_channel_id);
+    }
+        break;
+    case MessageAction::typeMessageActionChannelMigrateFrom: {
+        QString m_title;
+        stream >> m_title;
+        item.setTitle(m_title);
+        qint32 m_chat_id;
+        stream >> m_chat_id;
+        item.setChatId(m_chat_id);
     }
         break;
     }

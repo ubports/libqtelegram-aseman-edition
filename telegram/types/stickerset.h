@@ -36,6 +36,9 @@ public:
     void setCount(qint32 count);
     qint32 count() const;
 
+    void setDisabled(bool disabled);
+    bool disabled() const;
+
     void setFlags(qint32 flags);
     qint32 flags() const;
 
@@ -44,6 +47,12 @@ public:
 
     void setId(qint64 id);
     qint64 id() const;
+
+    void setInstalled(bool installed);
+    bool installed() const;
+
+    void setOfficial(bool official);
+    bool official() const;
 
     void setShortName(const QString &shortName);
     QString shortName() const;
@@ -135,6 +144,15 @@ inline qint32 StickerSet::count() const {
     return m_count;
 }
 
+inline void StickerSet::setDisabled(bool disabled) {
+    if(disabled) m_flags = (m_flags | (1<<1));
+    else m_flags = (m_flags & ~(1<<1));
+}
+
+inline bool StickerSet::disabled() const {
+    return (m_flags & 1<<1);
+}
+
 inline void StickerSet::setFlags(qint32 flags) {
     m_flags = flags;
 }
@@ -157,6 +175,24 @@ inline void StickerSet::setId(qint64 id) {
 
 inline qint64 StickerSet::id() const {
     return m_id;
+}
+
+inline void StickerSet::setInstalled(bool installed) {
+    if(installed) m_flags = (m_flags | (1<<0));
+    else m_flags = (m_flags & ~(1<<0));
+}
+
+inline bool StickerSet::installed() const {
+    return (m_flags & 1<<0);
+}
+
+inline void StickerSet::setOfficial(bool official) {
+    if(official) m_flags = (m_flags | (1<<2));
+    else m_flags = (m_flags & ~(1<<2));
+}
+
+inline bool StickerSet::official() const {
+    return (m_flags & 1<<2);
 }
 
 inline void StickerSet::setShortName(const QString &shortName) {
@@ -242,6 +278,9 @@ inline QMap<QString, QVariant> StickerSet::toMap() const {
     switch(static_cast<int>(m_classType)) {
     case typeStickerSet: {
         result["classType"] = "StickerSet::typeStickerSet";
+        result["installed"] = QVariant::fromValue<bool>(installed());
+        result["disabled"] = QVariant::fromValue<bool>(disabled());
+        result["official"] = QVariant::fromValue<bool>(official());
         result["id"] = QVariant::fromValue<qint64>(id());
         result["accessHash"] = QVariant::fromValue<qint64>(accessHash());
         result["title"] = QVariant::fromValue<QString>(title());
@@ -261,6 +300,9 @@ inline StickerSet StickerSet::fromMap(const QMap<QString, QVariant> &map) {
     StickerSet result;
     if(map.value("classType").toString() == "StickerSet::typeStickerSet") {
         result.setClassType(typeStickerSet);
+        result.setInstalled( map.value("installed").value<bool>() );
+        result.setDisabled( map.value("disabled").value<bool>() );
+        result.setOfficial( map.value("official").value<bool>() );
         result.setId( map.value("id").value<qint64>() );
         result.setAccessHash( map.value("accessHash").value<qint64>() );
         result.setTitle( map.value("title").value<QString>() );

@@ -17,8 +17,8 @@
 #include "telegram/types/inputpeer.h"
 #include <QString>
 #include "telegram/types/messagesfilter.h"
-#include "telegram/types/messagesaffectedhistory.h"
 #include "telegram/types/messagesaffectedmessages.h"
+#include "telegram/types/messagesaffectedhistory.h"
 #include "telegram/types/receivednotifymessage.h"
 #include "telegram/types/sendmessageaction.h"
 #include "telegram/types/updatestype.h"
@@ -51,17 +51,17 @@ class LIBQTELEGRAMSHARED_EXPORT Messages : public TelegramFunctionObject
 public:
     enum MessagesFunction {
         fncMessagesGetMessages = 0x4222fa74,
-        fncMessagesGetDialogs = 0xeccf1df6,
-        fncMessagesGetHistory = 0x92a1df2f,
-        fncMessagesSearch = 0x7e9f2ab,
-        fncMessagesReadHistory = 0xb04f2510,
-        fncMessagesDeleteHistory = 0xf4f8fb61,
+        fncMessagesGetDialogs = 0x859b3d3c,
+        fncMessagesGetHistory = 0x8a8ec2da,
+        fncMessagesSearch = 0xd4569248,
+        fncMessagesReadHistory = 0xe306d3a,
+        fncMessagesDeleteHistory = 0xb7c13bd9,
         fncMessagesDeleteMessages = 0xa5f18925,
         fncMessagesReceivedMessages = 0x5a954c0,
         fncMessagesSetTyping = 0xa3825e50,
         fncMessagesSendMessage = 0xfa88427a,
         fncMessagesSendMedia = 0xc8f16791,
-        fncMessagesForwardMessages = 0x55e1728d,
+        fncMessagesForwardMessages = 0x708e0195,
         fncMessagesGetChats = 0x3c6aa187,
         fncMessagesGetFullChat = 0x3b831c66,
         fncMessagesEditChatTitle = 0xdc452855,
@@ -91,7 +91,13 @@ public:
         fncMessagesGetStickerSet = 0x2619a90e,
         fncMessagesInstallStickerSet = 0x7b30c3a6,
         fncMessagesUninstallStickerSet = 0xf96e55de,
-        fncMessagesStartBot = 0x1b3e0ffc
+        fncMessagesStartBot = 0xe6df7378,
+        fncMessagesReportSpam = 0xcf1592db,
+        fncMessagesGetMessagesViews = 0xc4c8a55d,
+        fncMessagesToggleChatAdmins = 0xec8bd9e1,
+        fncMessagesEditChatAdmin = 0xa9e69f2e,
+        fncMessagesMigrateChat = 0x15a3b8e3,
+        fncMessagesSearchGlobal = 0x9e3cacb0
     };
 
     Messages();
@@ -100,19 +106,19 @@ public:
     static bool getMessages(OutboundPkt *out, const QList<qint32> &id);
     static MessagesMessages getMessagesResult(InboundPkt *in);
 
-    static bool getDialogs(OutboundPkt *out, qint32 offset, qint32 maxId, qint32 limit);
+    static bool getDialogs(OutboundPkt *out, qint32 offset, qint32 limit);
     static MessagesDialogs getDialogsResult(InboundPkt *in);
 
-    static bool getHistory(OutboundPkt *out, const InputPeer &peer, qint32 offset, qint32 maxId, qint32 limit);
+    static bool getHistory(OutboundPkt *out, const InputPeer &peer, qint32 offsetId, qint32 addOffset, qint32 limit, qint32 maxId, qint32 minId);
     static MessagesMessages getHistoryResult(InboundPkt *in);
 
-    static bool search(OutboundPkt *out, const InputPeer &peer, const QString &q, const MessagesFilter &filter, qint32 minDate, qint32 maxDate, qint32 offset, qint32 maxId, qint32 limit);
+    static bool search(OutboundPkt *out, bool importantOnly, const InputPeer &peer, const QString &q, const MessagesFilter &filter, qint32 minDate, qint32 maxDate, qint32 offset, qint32 maxId, qint32 limit);
     static MessagesMessages searchResult(InboundPkt *in);
 
-    static bool readHistory(OutboundPkt *out, const InputPeer &peer, qint32 maxId, qint32 offset);
-    static MessagesAffectedHistory readHistoryResult(InboundPkt *in);
+    static bool readHistory(OutboundPkt *out, const InputPeer &peer, qint32 maxId);
+    static MessagesAffectedMessages readHistoryResult(InboundPkt *in);
 
-    static bool deleteHistory(OutboundPkt *out, const InputPeer &peer, qint32 offset);
+    static bool deleteHistory(OutboundPkt *out, const InputPeer &peer, qint32 maxId);
     static MessagesAffectedHistory deleteHistoryResult(InboundPkt *in);
 
     static bool deleteMessages(OutboundPkt *out, const QList<qint32> &id);
@@ -124,13 +130,13 @@ public:
     static bool setTyping(OutboundPkt *out, const InputPeer &peer, const SendMessageAction &action);
     static bool setTypingResult(InboundPkt *in);
 
-    static bool sendMessage(OutboundPkt *out, const InputPeer &peer, qint32 replyToMsgId, const QString &message, qint64 randomId, const ReplyMarkup &replyMarkup, const QList<MessageEntity> &entities);
+    static bool sendMessage(OutboundPkt *out, bool noWebpage, bool broadcast, const InputPeer &peer, qint32 replyToMsgId, const QString &message, qint64 randomId, const ReplyMarkup &replyMarkup, const QList<MessageEntity> &entities);
     static UpdatesType sendMessageResult(InboundPkt *in);
 
-    static bool sendMedia(OutboundPkt *out, const InputPeer &peer, qint32 replyToMsgId, const InputMedia &media, qint64 randomId, const ReplyMarkup &replyMarkup);
+    static bool sendMedia(OutboundPkt *out, bool broadcast, const InputPeer &peer, qint32 replyToMsgId, const InputMedia &media, qint64 randomId, const ReplyMarkup &replyMarkup);
     static UpdatesType sendMediaResult(InboundPkt *in);
 
-    static bool forwardMessages(OutboundPkt *out, const InputPeer &peer, const QList<qint32> &id, const QList<qint64> &randomId);
+    static bool forwardMessages(OutboundPkt *out, bool broadcast, const InputPeer &fromPeer, const QList<qint32> &id, const QList<qint64> &randomId, const InputPeer &toPeer);
     static UpdatesType forwardMessagesResult(InboundPkt *in);
 
     static bool getChats(OutboundPkt *out, const QList<qint32> &id);
@@ -220,8 +226,26 @@ public:
     static bool uninstallStickerSet(OutboundPkt *out, const InputStickerSet &stickerset);
     static bool uninstallStickerSetResult(InboundPkt *in);
 
-    static bool startBot(OutboundPkt *out, const InputUser &bot, qint32 chatId, qint64 randomId, const QString &startParam);
+    static bool startBot(OutboundPkt *out, const InputUser &bot, const InputPeer &peer, qint64 randomId, const QString &startParam);
     static UpdatesType startBotResult(InboundPkt *in);
+
+    static bool reportSpam(OutboundPkt *out, const InputPeer &peer);
+    static bool reportSpamResult(InboundPkt *in);
+
+    static bool getMessagesViews(OutboundPkt *out, const InputPeer &peer, const QList<qint32> &id, bool increment);
+    static QList<qint32> getMessagesViewsResult(InboundPkt *in);
+
+    static bool toggleChatAdmins(OutboundPkt *out, qint32 chatId, bool enabled);
+    static UpdatesType toggleChatAdminsResult(InboundPkt *in);
+
+    static bool editChatAdmin(OutboundPkt *out, qint32 chatId, const InputUser &userId, bool isAdmin);
+    static bool editChatAdminResult(InboundPkt *in);
+
+    static bool migrateChat(OutboundPkt *out, qint32 chatId);
+    static UpdatesType migrateChatResult(InboundPkt *in);
+
+    static bool searchGlobal(OutboundPkt *out, const QString &q, qint32 offsetDate, const InputPeer &offsetPeer, qint32 offsetId, qint32 limit);
+    static MessagesMessages searchGlobalResult(InboundPkt *in);
 
 };
 
@@ -248,10 +272,9 @@ inline MessagesMessages Functions::Messages::getMessagesResult(InboundPkt *in) {
     return result;
 }
 
-inline bool Functions::Messages::getDialogs(OutboundPkt *out, qint32 offset, qint32 maxId, qint32 limit) {
+inline bool Functions::Messages::getDialogs(OutboundPkt *out, qint32 offset, qint32 limit) {
     out->appendInt(fncMessagesGetDialogs);
     out->appendInt(offset);
-    out->appendInt(maxId);
     out->appendInt(limit);
     return true;
 }
@@ -262,12 +285,14 @@ inline MessagesDialogs Functions::Messages::getDialogsResult(InboundPkt *in) {
     return result;
 }
 
-inline bool Functions::Messages::getHistory(OutboundPkt *out, const InputPeer &peer, qint32 offset, qint32 maxId, qint32 limit) {
+inline bool Functions::Messages::getHistory(OutboundPkt *out, const InputPeer &peer, qint32 offsetId, qint32 addOffset, qint32 limit, qint32 maxId, qint32 minId) {
     out->appendInt(fncMessagesGetHistory);
     if(!peer.push(out)) return false;
-    out->appendInt(offset);
-    out->appendInt(maxId);
+    out->appendInt(offsetId);
+    out->appendInt(addOffset);
     out->appendInt(limit);
+    out->appendInt(maxId);
+    out->appendInt(minId);
     return true;
 }
 
@@ -277,8 +302,13 @@ inline MessagesMessages Functions::Messages::getHistoryResult(InboundPkt *in) {
     return result;
 }
 
-inline bool Functions::Messages::search(OutboundPkt *out, const InputPeer &peer, const QString &q, const MessagesFilter &filter, qint32 minDate, qint32 maxDate, qint32 offset, qint32 maxId, qint32 limit) {
+inline bool Functions::Messages::search(OutboundPkt *out, bool importantOnly, const InputPeer &peer, const QString &q, const MessagesFilter &filter, qint32 minDate, qint32 maxDate, qint32 offset, qint32 maxId, qint32 limit) {
     out->appendInt(fncMessagesSearch);
+    
+    qint32 flags = 0;
+    if(importantOnly != 0) flags = (1<<0 | flags);
+    
+    out->appendInt(flags);
     if(!peer.push(out)) return false;
     out->appendQString(q);
     if(!filter.push(out)) return false;
@@ -296,24 +326,23 @@ inline MessagesMessages Functions::Messages::searchResult(InboundPkt *in) {
     return result;
 }
 
-inline bool Functions::Messages::readHistory(OutboundPkt *out, const InputPeer &peer, qint32 maxId, qint32 offset) {
+inline bool Functions::Messages::readHistory(OutboundPkt *out, const InputPeer &peer, qint32 maxId) {
     out->appendInt(fncMessagesReadHistory);
     if(!peer.push(out)) return false;
     out->appendInt(maxId);
-    out->appendInt(offset);
     return true;
 }
 
-inline MessagesAffectedHistory Functions::Messages::readHistoryResult(InboundPkt *in) {
-    MessagesAffectedHistory result;
+inline MessagesAffectedMessages Functions::Messages::readHistoryResult(InboundPkt *in) {
+    MessagesAffectedMessages result;
     if(!result.fetch(in)) return result;
     return result;
 }
 
-inline bool Functions::Messages::deleteHistory(OutboundPkt *out, const InputPeer &peer, qint32 offset) {
+inline bool Functions::Messages::deleteHistory(OutboundPkt *out, const InputPeer &peer, qint32 maxId) {
     out->appendInt(fncMessagesDeleteHistory);
     if(!peer.push(out)) return false;
-    out->appendInt(offset);
+    out->appendInt(maxId);
     return true;
 }
 
@@ -371,10 +400,12 @@ inline bool Functions::Messages::setTypingResult(InboundPkt *in) {
     return result;
 }
 
-inline bool Functions::Messages::sendMessage(OutboundPkt *out, const InputPeer &peer, qint32 replyToMsgId, const QString &message, qint64 randomId, const ReplyMarkup &replyMarkup, const QList<MessageEntity> &entities) {
+inline bool Functions::Messages::sendMessage(OutboundPkt *out, bool noWebpage, bool broadcast, const InputPeer &peer, qint32 replyToMsgId, const QString &message, qint64 randomId, const ReplyMarkup &replyMarkup, const QList<MessageEntity> &entities) {
     out->appendInt(fncMessagesSendMessage);
     
     qint32 flags = 0;
+    if(noWebpage != 0) flags = (1<<1 | flags);
+    if(broadcast != 0) flags = (1<<4 | flags);
     if(replyToMsgId != 0) flags = (1<<0 | flags);
     if(replyMarkup != 0) flags = (1<<2 | flags);
     if(entities.count() != 0) flags = (1<<3 | flags);
@@ -401,10 +432,11 @@ inline UpdatesType Functions::Messages::sendMessageResult(InboundPkt *in) {
     return result;
 }
 
-inline bool Functions::Messages::sendMedia(OutboundPkt *out, const InputPeer &peer, qint32 replyToMsgId, const InputMedia &media, qint64 randomId, const ReplyMarkup &replyMarkup) {
+inline bool Functions::Messages::sendMedia(OutboundPkt *out, bool broadcast, const InputPeer &peer, qint32 replyToMsgId, const InputMedia &media, qint64 randomId, const ReplyMarkup &replyMarkup) {
     out->appendInt(fncMessagesSendMedia);
     
     qint32 flags = 0;
+    if(broadcast != 0) flags = (1<<4 | flags);
     if(replyToMsgId != 0) flags = (1<<0 | flags);
     if(replyMarkup != 0) flags = (1<<2 | flags);
     
@@ -423,9 +455,14 @@ inline UpdatesType Functions::Messages::sendMediaResult(InboundPkt *in) {
     return result;
 }
 
-inline bool Functions::Messages::forwardMessages(OutboundPkt *out, const InputPeer &peer, const QList<qint32> &id, const QList<qint64> &randomId) {
+inline bool Functions::Messages::forwardMessages(OutboundPkt *out, bool broadcast, const InputPeer &fromPeer, const QList<qint32> &id, const QList<qint64> &randomId, const InputPeer &toPeer) {
     out->appendInt(fncMessagesForwardMessages);
-    if(!peer.push(out)) return false;
+    
+    qint32 flags = 0;
+    if(broadcast != 0) flags = (1<<4 | flags);
+    
+    out->appendInt(flags);
+    if(!fromPeer.push(out)) return false;
     out->appendInt(CoreTypes::typeVector);
     out->appendInt(id.count());
     for (qint32 i = 0; i < id.count(); i++) {
@@ -436,6 +473,7 @@ inline bool Functions::Messages::forwardMessages(OutboundPkt *out, const InputPe
     for (qint32 i = 0; i < randomId.count(); i++) {
         out->appendLong(randomId[i]);
     }
+    if(!toPeer.push(out)) return false;
     return true;
 }
 
@@ -847,10 +885,10 @@ inline bool Functions::Messages::uninstallStickerSetResult(InboundPkt *in) {
     return result;
 }
 
-inline bool Functions::Messages::startBot(OutboundPkt *out, const InputUser &bot, qint32 chatId, qint64 randomId, const QString &startParam) {
+inline bool Functions::Messages::startBot(OutboundPkt *out, const InputUser &bot, const InputPeer &peer, qint64 randomId, const QString &startParam) {
     out->appendInt(fncMessagesStartBot);
     if(!bot.push(out)) return false;
-    out->appendInt(chatId);
+    if(!peer.push(out)) return false;
     out->appendLong(randomId);
     out->appendQString(startParam);
     return true;
@@ -858,6 +896,98 @@ inline bool Functions::Messages::startBot(OutboundPkt *out, const InputUser &bot
 
 inline UpdatesType Functions::Messages::startBotResult(InboundPkt *in) {
     UpdatesType result;
+    if(!result.fetch(in)) return result;
+    return result;
+}
+
+inline bool Functions::Messages::reportSpam(OutboundPkt *out, const InputPeer &peer) {
+    out->appendInt(fncMessagesReportSpam);
+    if(!peer.push(out)) return false;
+    return true;
+}
+
+inline bool Functions::Messages::reportSpamResult(InboundPkt *in) {
+    bool result;
+    result = in->fetchBool();
+    return result;
+}
+
+inline bool Functions::Messages::getMessagesViews(OutboundPkt *out, const InputPeer &peer, const QList<qint32> &id, bool increment) {
+    out->appendInt(fncMessagesGetMessagesViews);
+    if(!peer.push(out)) return false;
+    out->appendInt(CoreTypes::typeVector);
+    out->appendInt(id.count());
+    for (qint32 i = 0; i < id.count(); i++) {
+        out->appendInt(id[i]);
+    }
+    out->appendBool(increment);
+    return true;
+}
+
+inline QList<qint32> Functions::Messages::getMessagesViewsResult(InboundPkt *in) {
+    QList<qint32> result;
+    if(in->fetchInt() != (qint32)CoreTypes::typeVector) return result;
+    qint32 result_length = in->fetchInt();
+    result.clear();
+    for (qint32 i = 0; i < result_length; i++) {
+        qint32 type;
+        type = in->fetchInt();
+        result.append(type);
+    }
+    return result;
+}
+
+inline bool Functions::Messages::toggleChatAdmins(OutboundPkt *out, qint32 chatId, bool enabled) {
+    out->appendInt(fncMessagesToggleChatAdmins);
+    out->appendInt(chatId);
+    out->appendBool(enabled);
+    return true;
+}
+
+inline UpdatesType Functions::Messages::toggleChatAdminsResult(InboundPkt *in) {
+    UpdatesType result;
+    if(!result.fetch(in)) return result;
+    return result;
+}
+
+inline bool Functions::Messages::editChatAdmin(OutboundPkt *out, qint32 chatId, const InputUser &userId, bool isAdmin) {
+    out->appendInt(fncMessagesEditChatAdmin);
+    out->appendInt(chatId);
+    if(!userId.push(out)) return false;
+    out->appendBool(isAdmin);
+    return true;
+}
+
+inline bool Functions::Messages::editChatAdminResult(InboundPkt *in) {
+    bool result;
+    result = in->fetchBool();
+    return result;
+}
+
+inline bool Functions::Messages::migrateChat(OutboundPkt *out, qint32 chatId) {
+    out->appendInt(fncMessagesMigrateChat);
+    out->appendInt(chatId);
+    return true;
+}
+
+inline UpdatesType Functions::Messages::migrateChatResult(InboundPkt *in) {
+    UpdatesType result;
+    if(!result.fetch(in)) return result;
+    return result;
+}
+
+inline bool Functions::Messages::searchGlobal(OutboundPkt *out, const QString &q, qint32 offsetDate, const InputPeer &offsetPeer, qint32 offsetId, qint32 limit) {
+    out->appendInt(fncMessagesSearchGlobal);
+    out->appendQString(q);
+    out->appendInt(offsetDate);
+    if(!offsetPeer.push(out)) return false;
+    out->appendInt(offsetId);
+    out->appendInt(limit);
+    return true;
+}
+
+inline MessagesMessages Functions::Messages::searchGlobalResult(InboundPkt *in) {
+    MessagesMessages result;
     if(!result.fetch(in)) return result;
     return result;
 }

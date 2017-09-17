@@ -86,3 +86,15 @@
 
 * **Start bot** - [TelegramCore::messagesStartBot](methods/startbot.md)
 
+* **Report spam** - [TelegramCore::messagesReportSpam](methods/reportspam.md)
+
+* **Get messages views** - [TelegramCore::messagesGetMessagesViews](methods/getmessagesviews.md)
+
+* **Toggle chat admins** - [TelegramCore::messagesToggleChatAdmins](methods/togglechatadmins.md)
+
+* **Edit chat admin** - [TelegramCore::messagesEditChatAdmin](methods/editchatadmin.md)
+
+* **Migrate chat** - [TelegramCore::messagesMigrateChat](methods/migratechat.md)
+
+* **Search global** - [TelegramCore::messagesSearchGlobal](methods/searchglobal.md)
+

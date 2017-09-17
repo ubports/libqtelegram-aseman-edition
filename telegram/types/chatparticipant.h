@@ -21,7 +21,9 @@ class LIBQTELEGRAMSHARED_EXPORT ChatParticipant : public TelegramTypeObject
 {
 public:
     enum ChatParticipantClassType {
-        typeChatParticipant = 0xc8d7493e
+        typeChatParticipant = 0xc8d7493e,
+        typeChatParticipantCreator = 0xda13538a,
+        typeChatParticipantAdmin = 0xe2d6e436
     };
 
     ChatParticipant(ChatParticipantClassType classType = typeChatParticipant, InboundPkt *in = 0);
@@ -148,6 +150,22 @@ inline bool ChatParticipant::fetch(InboundPkt *in) {
     }
         break;
     
+    case typeChatParticipantCreator: {
+        m_userId = in->fetchInt();
+        m_classType = static_cast<ChatParticipantClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeChatParticipantAdmin: {
+        m_userId = in->fetchInt();
+        m_inviterId = in->fetchInt();
+        m_date = in->fetchInt();
+        m_classType = static_cast<ChatParticipantClassType>(x);
+        return true;
+    }
+        break;
+    
     default:
         LQTG_FETCH_ASSERT;
         return false;
@@ -158,6 +176,20 @@ inline bool ChatParticipant::push(OutboundPkt *out) const {
     out->appendInt(m_classType);
     switch(m_classType) {
     case typeChatParticipant: {
+        out->appendInt(m_userId);
+        out->appendInt(m_inviterId);
+        out->appendInt(m_date);
+        return true;
+    }
+        break;
+    
+    case typeChatParticipantCreator: {
+        out->appendInt(m_userId);
+        return true;
+    }
+        break;
+    
+    case typeChatParticipantAdmin: {
         out->appendInt(m_userId);
         out->appendInt(m_inviterId);
         out->appendInt(m_date);
@@ -182,6 +214,22 @@ inline QMap<QString, QVariant> ChatParticipant::toMap() const {
     }
         break;
     
+    case typeChatParticipantCreator: {
+        result["classType"] = "ChatParticipant::typeChatParticipantCreator";
+        result["userId"] = QVariant::fromValue<qint32>(userId());
+        return result;
+    }
+        break;
+    
+    case typeChatParticipantAdmin: {
+        result["classType"] = "ChatParticipant::typeChatParticipantAdmin";
+        result["userId"] = QVariant::fromValue<qint32>(userId());
+        result["inviterId"] = QVariant::fromValue<qint32>(inviterId());
+        result["date"] = QVariant::fromValue<qint32>(date());
+        return result;
+    }
+        break;
+    
     default:
         return result;
     }
@@ -191,6 +239,18 @@ inline ChatParticipant ChatParticipant::fromMap(const QMap<QString, QVariant> &m
     ChatParticipant result;
     if(map.value("classType").toString() == "ChatParticipant::typeChatParticipant") {
         result.setClassType(typeChatParticipant);
+        result.setUserId( map.value("userId").value<qint32>() );
+        result.setInviterId( map.value("inviterId").value<qint32>() );
+        result.setDate( map.value("date").value<qint32>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "ChatParticipant::typeChatParticipantCreator") {
+        result.setClassType(typeChatParticipantCreator);
+        result.setUserId( map.value("userId").value<qint32>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "ChatParticipant::typeChatParticipantAdmin") {
+        result.setClassType(typeChatParticipantAdmin);
         result.setUserId( map.value("userId").value<qint32>() );
         result.setInviterId( map.value("inviterId").value<qint32>() );
         result.setDate( map.value("date").value<qint32>() );
@@ -214,6 +274,14 @@ inline QDataStream &operator<<(QDataStream &stream, const ChatParticipant &item)
         stream << item.inviterId();
         stream << item.date();
         break;
+    case ChatParticipant::typeChatParticipantCreator:
+        stream << item.userId();
+        break;
+    case ChatParticipant::typeChatParticipantAdmin:
+        stream << item.userId();
+        stream << item.inviterId();
+        stream << item.date();
+        break;
     }
     return stream;
 }
@@ -224,6 +292,24 @@ inline QDataStream &operator>>(QDataStream &stream, ChatParticipant &item) {
     item.setClassType(static_cast<ChatParticipant::ChatParticipantClassType>(type));
     switch(type) {
     case ChatParticipant::typeChatParticipant: {
+        qint32 m_user_id;
+        stream >> m_user_id;
+        item.setUserId(m_user_id);
+        qint32 m_inviter_id;
+        stream >> m_inviter_id;
+        item.setInviterId(m_inviter_id);
+        qint32 m_date;
+        stream >> m_date;
+        item.setDate(m_date);
+    }
+        break;
+    case ChatParticipant::typeChatParticipantCreator: {
+        qint32 m_user_id;
+        stream >> m_user_id;
+        item.setUserId(m_user_id);
+    }
+        break;
+    case ChatParticipant::typeChatParticipantAdmin: {
         qint32 m_user_id;
         stream >> m_user_id;
         item.setUserId(m_user_id);

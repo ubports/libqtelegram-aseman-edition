@@ -5,6 +5,8 @@
 * [typeChatEmpty](#chattypechatempty)
 * [typeChat](#chattypechat)
 * [typeChatForbidden](#chattypechatforbidden)
+* [typeChannel](#chattypechannel)
+* [typeChannelForbidden](#chattypechannelforbidden)
 
 ## Chat::typeChatEmpty
 
@@ -25,27 +27,33 @@ chatEmpty#9ba2d800 id:int = Chat;
 #### Schema:
 
 ```c++
-chat#6e9c9bc7 id:int title:string photo:ChatPhoto participants_count:int date:int left:Bool version:int = Chat;
+chat#d91cdd54 flags:# creator:flags.0?true kicked:flags.1?true left:flags.2?true admins_enabled:flags.3?true admin:flags.4?true deactivated:flags.5?true id:int title:string photo:ChatPhoto participants_count:int date:int version:int migrated_to:flags.6?InputChannel = Chat;
 ```
 
 #### Parameters:
 
 |Name|Type|
 |----|----|
+|creator|bool|
+|kicked|bool|
+|left|bool|
+|adminsEnabled|bool|
+|admin|bool|
+|deactivated|bool|
 |id|qint32|
 |title|QString|
 |photo|[ChatPhoto](chatphoto.md)|
 |participantsCount|qint32|
 |date|qint32|
-|left|bool|
 |version|qint32|
+|migratedTo|[InputChannel](inputchannel.md)|
 
 ## Chat::typeChatForbidden
 
 #### Schema:
 
 ```c++
-chatForbidden#fb0ccc41 id:int title:string date:int = Chat;
+chatForbidden#7328bdb id:int title:string = Chat;
 ```
 
 #### Parameters:
@@ -54,5 +62,48 @@ chatForbidden#fb0ccc41 id:int title:string date:int = Chat;
 |----|----|
 |id|qint32|
 |title|QString|
+
+## Chat::typeChannel
+
+#### Schema:
+
+```c++
+channel#678e9587 flags:# creator:flags.0?true kicked:flags.1?true left:flags.2?true editor:flags.3?true moderator:flags.4?true broadcast:flags.5?true verified:flags.7?true megagroup:flags.8?true id:int access_hash:long title:string username:flags.6?string photo:ChatPhoto date:int version:int = Chat;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|creator|bool|
+|kicked|bool|
+|left|bool|
+|editor|bool|
+|moderator|bool|
+|broadcast|bool|
+|verified|bool|
+|megagroup|bool|
+|id|qint32|
+|accessHash|qint64|
+|title|QString|
+|username|QString|
+|photo|[ChatPhoto](chatphoto.md)|
 |date|qint32|
+|version|qint32|
+
+## Chat::typeChannelForbidden
+
+#### Schema:
+
+```c++
+channelForbidden#2d85832c id:int access_hash:long title:string = Chat;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|id|qint32|
+|accessHash|qint64|
+|title|QString|
 

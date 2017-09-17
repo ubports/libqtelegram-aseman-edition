@@ -7,14 +7,14 @@ TelegramCore::messagesStartBot
 ## Schema:
 
 ```c++
-messages.startBot#1b3e0ffc bot:InputUser chat_id:int random_id:long start_param:string = Updates;
+messages.startBot#e6df7378 bot:InputUser peer:InputPeer random_id:long start_param:string = Updates;
 ```
 ## Parameters:
 
 |Name|Type|Default|
 |----|----|-------|
 |bot|[InputUser](../../types/inputuser.md)||
-|chatId|qint32||
+|peer|[InputPeer](../../types/inputpeer.md)||
 |randomId|qint64||
 |startParam|QString||
 |callBack|Callback&lt;[UpdatesType](../../types/updatestype.md)&gt;|0|
@@ -53,7 +53,7 @@ onStartBotError(qint64 msgId, qint32 errorCode, const QString &errorText)
 ## Examples:
 
 ```c++
-tg->startBot(bot, chat_id, random_id, start_param, [=](TG_START_BOT_CALLBACK){
+tg->startBot(bot, peer, random_id, start_param, [=](TG_START_BOT_CALLBACK){
     ...
 }, 30000);
 ```

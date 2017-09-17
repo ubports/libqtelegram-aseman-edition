@@ -4,6 +4,8 @@
 
 * [Auth](auth.md)
 
+* [Channels](channels.md)
+
 * [Contacts](contacts.md)
 
 * [Help](help.md)

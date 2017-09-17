@@ -10,9 +10,9 @@
 
 #include <QPointer>
 #include "messageactionobject.h"
+#include "peerobject.h"
 #include "messagemediaobject.h"
 #include "replymarkupobject.h"
-#include "peerobject.h"
 
 class LIBQTELEGRAMSHARED_EXPORT MessageObject : public TelegramTypeQObject
 {
@@ -24,13 +24,18 @@ class LIBQTELEGRAMSHARED_EXPORT MessageObject : public TelegramTypeQObject
     Q_PROPERTY(qint32 flags READ flags WRITE setFlags NOTIFY flagsChanged)
     Q_PROPERTY(qint32 fromId READ fromId WRITE setFromId NOTIFY fromIdChanged)
     Q_PROPERTY(qint32 fwdDate READ fwdDate WRITE setFwdDate NOTIFY fwdDateChanged)
-    Q_PROPERTY(qint32 fwdFromId READ fwdFromId WRITE setFwdFromId NOTIFY fwdFromIdChanged)
+    Q_PROPERTY(PeerObject* fwdFromId READ fwdFromId WRITE setFwdFromId NOTIFY fwdFromIdChanged)
     Q_PROPERTY(qint32 id READ id WRITE setId NOTIFY idChanged)
     Q_PROPERTY(MessageMediaObject* media READ media WRITE setMedia NOTIFY mediaChanged)
+    Q_PROPERTY(bool mediaUnread READ mediaUnread WRITE setMediaUnread NOTIFY mediaUnreadChanged)
+    Q_PROPERTY(bool mentioned READ mentioned WRITE setMentioned NOTIFY mentionedChanged)
     Q_PROPERTY(QString message READ message WRITE setMessage NOTIFY messageChanged)
+    Q_PROPERTY(bool out READ out WRITE setOut NOTIFY outChanged)
     Q_PROPERTY(ReplyMarkupObject* replyMarkup READ replyMarkup WRITE setReplyMarkup NOTIFY replyMarkupChanged)
     Q_PROPERTY(qint32 replyToMsgId READ replyToMsgId WRITE setReplyToMsgId NOTIFY replyToMsgIdChanged)
     Q_PROPERTY(PeerObject* toId READ toId WRITE setToId NOTIFY toIdChanged)
+    Q_PROPERTY(bool unread READ unread WRITE setUnread NOTIFY unreadChanged)
+    Q_PROPERTY(qint32 views READ views WRITE setViews NOTIFY viewsChanged)
     Q_PROPERTY(Message core READ core WRITE setCore NOTIFY coreChanged)
     Q_PROPERTY(quint32 classType READ classType WRITE setClassType NOTIFY classTypeChanged)
 
@@ -63,8 +68,8 @@ public:
     void setFwdDate(qint32 fwdDate);
     qint32 fwdDate() const;
 
-    void setFwdFromId(qint32 fwdFromId);
-    qint32 fwdFromId() const;
+    void setFwdFromId(PeerObject* fwdFromId);
+    PeerObject* fwdFromId() const;
 
     void setId(qint32 id);
     qint32 id() const;
@@ -72,8 +77,17 @@ public:
     void setMedia(MessageMediaObject* media);
     MessageMediaObject* media() const;
 
+    void setMediaUnread(bool mediaUnread);
+    bool mediaUnread() const;
+
+    void setMentioned(bool mentioned);
+    bool mentioned() const;
+
     void setMessage(const QString &message);
     QString message() const;
+
+    void setOut(bool out);
+    bool out() const;
 
     void setReplyMarkup(ReplyMarkupObject* replyMarkup);
     ReplyMarkupObject* replyMarkup() const;
@@ -83,6 +97,12 @@ public:
 
     void setToId(PeerObject* toId);
     PeerObject* toId() const;
+
+    void setUnread(bool unread);
+    bool unread() const;
+
+    void setViews(qint32 views);
+    qint32 views() const;
 
     void setClassType(quint32 classType);
     quint32 classType() const;
@@ -105,19 +125,26 @@ Q_SIGNALS:
     void fwdFromIdChanged();
     void idChanged();
     void mediaChanged();
+    void mediaUnreadChanged();
+    void mentionedChanged();
     void messageChanged();
+    void outChanged();
     void replyMarkupChanged();
     void replyToMsgIdChanged();
     void toIdChanged();
+    void unreadChanged();
+    void viewsChanged();
 
 private Q_SLOTS:
     void coreActionChanged();
+    void coreFwdFromIdChanged();
     void coreMediaChanged();
     void coreReplyMarkupChanged();
     void coreToIdChanged();
 
 private:
     QPointer<MessageActionObject> m_action;
+    QPointer<PeerObject> m_fwdFromId;
     QPointer<MessageMediaObject> m_media;
     QPointer<ReplyMarkupObject> m_replyMarkup;
     QPointer<PeerObject> m_toId;
@@ -127,6 +154,7 @@ private:
 inline MessageObject::MessageObject(const Message &core, QObject *parent) :
     TelegramTypeQObject(parent),
     m_action(0),
+    m_fwdFromId(0),
     m_media(0),
     m_replyMarkup(0),
     m_toId(0),
@@ -134,6 +162,8 @@ inline MessageObject::MessageObject(const Message &core, QObject *parent) :
 {
     m_action = new MessageActionObject(m_core.action(), this);
     connect(m_action.data(), &MessageActionObject::coreChanged, this, &MessageObject::coreActionChanged);
+    m_fwdFromId = new PeerObject(m_core.fwdFromId(), this);
+    connect(m_fwdFromId.data(), &PeerObject::coreChanged, this, &MessageObject::coreFwdFromIdChanged);
     m_media = new MessageMediaObject(m_core.media(), this);
     connect(m_media.data(), &MessageMediaObject::coreChanged, this, &MessageObject::coreMediaChanged);
     m_replyMarkup = new ReplyMarkupObject(m_core.replyMarkup(), this);
@@ -145,6 +175,7 @@ inline MessageObject::MessageObject(const Message &core, QObject *parent) :
 inline MessageObject::MessageObject(QObject *parent) :
     TelegramTypeQObject(parent),
     m_action(0),
+    m_fwdFromId(0),
     m_media(0),
     m_replyMarkup(0),
     m_toId(0),
@@ -152,6 +183,8 @@ inline MessageObject::MessageObject(QObject *parent) :
 {
     m_action = new MessageActionObject(m_core.action(), this);
     connect(m_action.data(), &MessageActionObject::coreChanged, this, &MessageObject::coreActionChanged);
+    m_fwdFromId = new PeerObject(m_core.fwdFromId(), this);
+    connect(m_fwdFromId.data(), &PeerObject::coreChanged, this, &MessageObject::coreFwdFromIdChanged);
     m_media = new MessageMediaObject(m_core.media(), this);
     connect(m_media.data(), &MessageMediaObject::coreChanged, this, &MessageObject::coreMediaChanged);
     m_replyMarkup = new ReplyMarkupObject(m_core.replyMarkup(), this);
@@ -235,15 +268,21 @@ inline qint32 MessageObject::fwdDate() const {
     return m_core.fwdDate();
 }
 
-inline void MessageObject::setFwdFromId(qint32 fwdFromId) {
-    if(m_core.fwdFromId() == fwdFromId) return;
-    m_core.setFwdFromId(fwdFromId);
+inline void MessageObject::setFwdFromId(PeerObject* fwdFromId) {
+    if(m_fwdFromId == fwdFromId) return;
+    if(m_fwdFromId) delete m_fwdFromId;
+    m_fwdFromId = fwdFromId;
+    if(m_fwdFromId) {
+        m_fwdFromId->setParent(this);
+        m_core.setFwdFromId(m_fwdFromId->core());
+        connect(m_fwdFromId.data(), &PeerObject::coreChanged, this, &MessageObject::coreFwdFromIdChanged);
+    }
     Q_EMIT fwdFromIdChanged();
     Q_EMIT coreChanged();
 }
 
-inline qint32 MessageObject::fwdFromId() const {
-    return m_core.fwdFromId();
+inline PeerObject*  MessageObject::fwdFromId() const {
+    return m_fwdFromId;
 }
 
 inline void MessageObject::setId(qint32 id) {
@@ -274,6 +313,28 @@ inline MessageMediaObject*  MessageObject::media() const {
     return m_media;
 }
 
+inline void MessageObject::setMediaUnread(bool mediaUnread) {
+    if(m_core.mediaUnread() == mediaUnread) return;
+    m_core.setMediaUnread(mediaUnread);
+    Q_EMIT mediaUnreadChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool MessageObject::mediaUnread() const {
+    return m_core.mediaUnread();
+}
+
+inline void MessageObject::setMentioned(bool mentioned) {
+    if(m_core.mentioned() == mentioned) return;
+    m_core.setMentioned(mentioned);
+    Q_EMIT mentionedChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool MessageObject::mentioned() const {
+    return m_core.mentioned();
+}
+
 inline void MessageObject::setMessage(const QString &message) {
     if(m_core.message() == message) return;
     m_core.setMessage(message);
@@ -283,6 +344,17 @@ inline void MessageObject::setMessage(const QString &message) {
 
 inline QString MessageObject::message() const {
     return m_core.message();
+}
+
+inline void MessageObject::setOut(bool out) {
+    if(m_core.out() == out) return;
+    m_core.setOut(out);
+    Q_EMIT outChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool MessageObject::out() const {
+    return m_core.out();
 }
 
 inline void MessageObject::setReplyMarkup(ReplyMarkupObject* replyMarkup) {
@@ -330,10 +402,33 @@ inline PeerObject*  MessageObject::toId() const {
     return m_toId;
 }
 
+inline void MessageObject::setUnread(bool unread) {
+    if(m_core.unread() == unread) return;
+    m_core.setUnread(unread);
+    Q_EMIT unreadChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool MessageObject::unread() const {
+    return m_core.unread();
+}
+
+inline void MessageObject::setViews(qint32 views) {
+    if(m_core.views() == views) return;
+    m_core.setViews(views);
+    Q_EMIT viewsChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 MessageObject::views() const {
+    return m_core.views();
+}
+
 inline MessageObject &MessageObject::operator =(const Message &b) {
     if(m_core == b) return *this;
     m_core = b;
     m_action->setCore(b.action());
+    m_fwdFromId->setCore(b.fwdFromId());
     m_media->setCore(b.media());
     m_replyMarkup->setCore(b.replyMarkup());
     m_toId->setCore(b.toId());
@@ -347,10 +442,15 @@ inline MessageObject &MessageObject::operator =(const Message &b) {
     Q_EMIT fwdFromIdChanged();
     Q_EMIT idChanged();
     Q_EMIT mediaChanged();
+    Q_EMIT mediaUnreadChanged();
+    Q_EMIT mentionedChanged();
     Q_EMIT messageChanged();
+    Q_EMIT outChanged();
     Q_EMIT replyMarkupChanged();
     Q_EMIT replyToMsgIdChanged();
     Q_EMIT toIdChanged();
+    Q_EMIT unreadChanged();
+    Q_EMIT viewsChanged();
     Q_EMIT coreChanged();
     return *this;
 }
@@ -414,6 +514,13 @@ inline void MessageObject::coreActionChanged() {
     if(m_core.action() == m_action->core()) return;
     m_core.setAction(m_action->core());
     Q_EMIT actionChanged();
+    Q_EMIT coreChanged();
+}
+
+inline void MessageObject::coreFwdFromIdChanged() {
+    if(m_core.fwdFromId() == m_fwdFromId->core()) return;
+    m_core.setFwdFromId(m_fwdFromId->core());
+    Q_EMIT fwdFromIdChanged();
     Q_EMIT coreChanged();
 }
 

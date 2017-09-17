@@ -23,8 +23,8 @@ class LIBQTELEGRAMSHARED_EXPORT ChatParticipants : public TelegramTypeObject
 {
 public:
     enum ChatParticipantsClassType {
-        typeChatParticipantsForbidden = 0xfd2bb8a,
-        typeChatParticipants = 0x7841b415
+        typeChatParticipantsForbidden = 0xfc900c2b,
+        typeChatParticipants = 0x3f460fed
     };
 
     ChatParticipants(ChatParticipantsClassType classType = typeChatParticipantsForbidden, InboundPkt *in = 0);
@@ -32,14 +32,17 @@ public:
     ChatParticipants(const Null&);
     virtual ~ChatParticipants();
 
-    void setAdminId(qint32 adminId);
-    qint32 adminId() const;
-
     void setChatId(qint32 chatId);
     qint32 chatId() const;
 
+    void setFlags(qint32 flags);
+    qint32 flags() const;
+
     void setParticipants(const QList<ChatParticipant> &participants);
     QList<ChatParticipant> participants() const;
+
+    void setSelfParticipant(const ChatParticipant &selfParticipant);
+    ChatParticipant selfParticipant() const;
 
     void setVersion(qint32 version);
     qint32 version() const;
@@ -61,9 +64,10 @@ public:
     QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
-    qint32 m_adminId;
     qint32 m_chatId;
+    qint32 m_flags;
     QList<ChatParticipant> m_participants;
+    ChatParticipant m_selfParticipant;
     qint32 m_version;
     ChatParticipantsClassType m_classType;
 };
@@ -74,8 +78,8 @@ QDataStream LIBQTELEGRAMSHARED_EXPORT &operator<<(QDataStream &stream, const Cha
 QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, ChatParticipants &item);
 
 inline ChatParticipants::ChatParticipants(ChatParticipantsClassType classType, InboundPkt *in) :
-    m_adminId(0),
     m_chatId(0),
+    m_flags(0),
     m_version(0),
     m_classType(classType)
 {
@@ -83,8 +87,8 @@ inline ChatParticipants::ChatParticipants(ChatParticipantsClassType classType, I
 }
 
 inline ChatParticipants::ChatParticipants(InboundPkt *in) :
-    m_adminId(0),
     m_chatId(0),
+    m_flags(0),
     m_version(0),
     m_classType(typeChatParticipantsForbidden)
 {
@@ -93,22 +97,14 @@ inline ChatParticipants::ChatParticipants(InboundPkt *in) :
 
 inline ChatParticipants::ChatParticipants(const Null &null) :
     TelegramTypeObject(null),
-    m_adminId(0),
     m_chatId(0),
+    m_flags(0),
     m_version(0),
     m_classType(typeChatParticipantsForbidden)
 {
 }
 
 inline ChatParticipants::~ChatParticipants() {
-}
-
-inline void ChatParticipants::setAdminId(qint32 adminId) {
-    m_adminId = adminId;
-}
-
-inline qint32 ChatParticipants::adminId() const {
-    return m_adminId;
 }
 
 inline void ChatParticipants::setChatId(qint32 chatId) {
@@ -119,12 +115,28 @@ inline qint32 ChatParticipants::chatId() const {
     return m_chatId;
 }
 
+inline void ChatParticipants::setFlags(qint32 flags) {
+    m_flags = flags;
+}
+
+inline qint32 ChatParticipants::flags() const {
+    return m_flags;
+}
+
 inline void ChatParticipants::setParticipants(const QList<ChatParticipant> &participants) {
     m_participants = participants;
 }
 
 inline QList<ChatParticipant> ChatParticipants::participants() const {
     return m_participants;
+}
+
+inline void ChatParticipants::setSelfParticipant(const ChatParticipant &selfParticipant) {
+    m_selfParticipant = selfParticipant;
+}
+
+inline ChatParticipant ChatParticipants::selfParticipant() const {
+    return m_selfParticipant;
 }
 
 inline void ChatParticipants::setVersion(qint32 version) {
@@ -137,9 +149,10 @@ inline qint32 ChatParticipants::version() const {
 
 inline bool ChatParticipants::operator ==(const ChatParticipants &b) const {
     return m_classType == b.m_classType &&
-           m_adminId == b.m_adminId &&
            m_chatId == b.m_chatId &&
+           m_flags == b.m_flags &&
            m_participants == b.m_participants &&
+           m_selfParticipant == b.m_selfParticipant &&
            m_version == b.m_version;
 }
 
@@ -156,7 +169,11 @@ inline bool ChatParticipants::fetch(InboundPkt *in) {
     int x = in->fetchInt();
     switch(x) {
     case typeChatParticipantsForbidden: {
+        m_flags = in->fetchInt();
         m_chatId = in->fetchInt();
+        if(m_flags & 1<<0) {
+            m_selfParticipant.fetch(in);
+        }
         m_classType = static_cast<ChatParticipantsClassType>(x);
         return true;
     }
@@ -164,7 +181,6 @@ inline bool ChatParticipants::fetch(InboundPkt *in) {
     
     case typeChatParticipants: {
         m_chatId = in->fetchInt();
-        m_adminId = in->fetchInt();
         if(in->fetchInt() != (qint32)CoreTypes::typeVector) return false;
         qint32 m_participants_length = in->fetchInt();
         m_participants.clear();
@@ -189,14 +205,15 @@ inline bool ChatParticipants::push(OutboundPkt *out) const {
     out->appendInt(m_classType);
     switch(m_classType) {
     case typeChatParticipantsForbidden: {
+        out->appendInt(m_flags);
         out->appendInt(m_chatId);
+        m_selfParticipant.push(out);
         return true;
     }
         break;
     
     case typeChatParticipants: {
         out->appendInt(m_chatId);
-        out->appendInt(m_adminId);
         out->appendInt(CoreTypes::typeVector);
         out->appendInt(m_participants.count());
         for (qint32 i = 0; i < m_participants.count(); i++) {
@@ -218,6 +235,7 @@ inline QMap<QString, QVariant> ChatParticipants::toMap() const {
     case typeChatParticipantsForbidden: {
         result["classType"] = "ChatParticipants::typeChatParticipantsForbidden";
         result["chatId"] = QVariant::fromValue<qint32>(chatId());
+        result["selfParticipant"] = m_selfParticipant.toMap();
         return result;
     }
         break;
@@ -225,7 +243,6 @@ inline QMap<QString, QVariant> ChatParticipants::toMap() const {
     case typeChatParticipants: {
         result["classType"] = "ChatParticipants::typeChatParticipants";
         result["chatId"] = QVariant::fromValue<qint32>(chatId());
-        result["adminId"] = QVariant::fromValue<qint32>(adminId());
         QList<QVariant> _participants;
         Q_FOREACH(const ChatParticipant &m__type, m_participants)
             _participants << m__type.toMap();
@@ -245,12 +262,12 @@ inline ChatParticipants ChatParticipants::fromMap(const QMap<QString, QVariant> 
     if(map.value("classType").toString() == "ChatParticipants::typeChatParticipantsForbidden") {
         result.setClassType(typeChatParticipantsForbidden);
         result.setChatId( map.value("chatId").value<qint32>() );
+        result.setSelfParticipant( ChatParticipant::fromMap(map.value("selfParticipant").toMap()) );
         return result;
     }
     if(map.value("classType").toString() == "ChatParticipants::typeChatParticipants") {
         result.setClassType(typeChatParticipants);
         result.setChatId( map.value("chatId").value<qint32>() );
-        result.setAdminId( map.value("adminId").value<qint32>() );
         QList<QVariant> map_participants = map["participants"].toList();
         QList<ChatParticipant> _participants;
         Q_FOREACH(const QVariant &var, map_participants)
@@ -273,11 +290,12 @@ inline QDataStream &operator<<(QDataStream &stream, const ChatParticipants &item
     stream << static_cast<uint>(item.classType());
     switch(item.classType()) {
     case ChatParticipants::typeChatParticipantsForbidden:
+        stream << item.flags();
         stream << item.chatId();
+        stream << item.selfParticipant();
         break;
     case ChatParticipants::typeChatParticipants:
         stream << item.chatId();
-        stream << item.adminId();
         stream << item.participants();
         stream << item.version();
         break;
@@ -291,18 +309,21 @@ inline QDataStream &operator>>(QDataStream &stream, ChatParticipants &item) {
     item.setClassType(static_cast<ChatParticipants::ChatParticipantsClassType>(type));
     switch(type) {
     case ChatParticipants::typeChatParticipantsForbidden: {
+        qint32 m_flags;
+        stream >> m_flags;
+        item.setFlags(m_flags);
         qint32 m_chat_id;
         stream >> m_chat_id;
         item.setChatId(m_chat_id);
+        ChatParticipant m_self_participant;
+        stream >> m_self_participant;
+        item.setSelfParticipant(m_self_participant);
     }
         break;
     case ChatParticipants::typeChatParticipants: {
         qint32 m_chat_id;
         stream >> m_chat_id;
         item.setChatId(m_chat_id);
-        qint32 m_admin_id;
-        stream >> m_admin_id;
-        item.setAdminId(m_admin_id);
         QList<ChatParticipant> m_participants;
         stream >> m_participants;
         item.setParticipants(m_participants);

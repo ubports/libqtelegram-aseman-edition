@@ -19,18 +19,18 @@
 #include <QtGlobal>
 #include <QList>
 #include "messageentity.h"
+#include "peer.h"
 #include "messagemedia.h"
 #include <QString>
 #include "replymarkup.h"
-#include "peer.h"
 
 class LIBQTELEGRAMSHARED_EXPORT Message : public TelegramTypeObject
 {
 public:
     enum MessageClassType {
         typeMessageEmpty = 0x83e5de54,
-        typeMessage = 0x2bebfa86,
-        typeMessageService = 0x1d86f70e
+        typeMessage = 0x5ba66c13,
+        typeMessageService = 0xc06b9607
     };
 
     Message(MessageClassType classType = typeMessageEmpty, InboundPkt *in = 0);
@@ -56,8 +56,8 @@ public:
     void setFwdDate(qint32 fwdDate);
     qint32 fwdDate() const;
 
-    void setFwdFromId(qint32 fwdFromId);
-    qint32 fwdFromId() const;
+    void setFwdFromId(const Peer &fwdFromId);
+    Peer fwdFromId() const;
 
     void setId(qint32 id);
     qint32 id() const;
@@ -65,8 +65,17 @@ public:
     void setMedia(const MessageMedia &media);
     MessageMedia media() const;
 
+    void setMediaUnread(bool mediaUnread);
+    bool mediaUnread() const;
+
+    void setMentioned(bool mentioned);
+    bool mentioned() const;
+
     void setMessage(const QString &message);
     QString message() const;
+
+    void setOut(bool out);
+    bool out() const;
 
     void setReplyMarkup(const ReplyMarkup &replyMarkup);
     ReplyMarkup replyMarkup() const;
@@ -76,6 +85,12 @@ public:
 
     void setToId(const Peer &toId);
     Peer toId() const;
+
+    void setUnread(bool unread);
+    bool unread() const;
+
+    void setViews(qint32 views);
+    qint32 views() const;
 
     void setClassType(MessageClassType classType);
     MessageClassType classType() const;
@@ -100,13 +115,14 @@ private:
     qint32 m_flags;
     qint32 m_fromId;
     qint32 m_fwdDate;
-    qint32 m_fwdFromId;
+    Peer m_fwdFromId;
     qint32 m_id;
     MessageMedia m_media;
     QString m_message;
     ReplyMarkup m_replyMarkup;
     qint32 m_replyToMsgId;
     Peer m_toId;
+    qint32 m_views;
     MessageClassType m_classType;
 };
 
@@ -120,9 +136,9 @@ inline Message::Message(MessageClassType classType, InboundPkt *in) :
     m_flags(0),
     m_fromId(0),
     m_fwdDate(0),
-    m_fwdFromId(0),
     m_id(0),
     m_replyToMsgId(0),
+    m_views(0),
     m_classType(classType)
 {
     if(in) fetch(in);
@@ -133,9 +149,9 @@ inline Message::Message(InboundPkt *in) :
     m_flags(0),
     m_fromId(0),
     m_fwdDate(0),
-    m_fwdFromId(0),
     m_id(0),
     m_replyToMsgId(0),
+    m_views(0),
     m_classType(typeMessageEmpty)
 {
     fetch(in);
@@ -147,9 +163,9 @@ inline Message::Message(const Null &null) :
     m_flags(0),
     m_fromId(0),
     m_fwdDate(0),
-    m_fwdFromId(0),
     m_id(0),
     m_replyToMsgId(0),
+    m_views(0),
     m_classType(typeMessageEmpty)
 {
 }
@@ -205,11 +221,11 @@ inline qint32 Message::fwdDate() const {
     return m_fwdDate;
 }
 
-inline void Message::setFwdFromId(qint32 fwdFromId) {
+inline void Message::setFwdFromId(const Peer &fwdFromId) {
     m_fwdFromId = fwdFromId;
 }
 
-inline qint32 Message::fwdFromId() const {
+inline Peer Message::fwdFromId() const {
     return m_fwdFromId;
 }
 
@@ -229,12 +245,39 @@ inline MessageMedia Message::media() const {
     return m_media;
 }
 
+inline void Message::setMediaUnread(bool mediaUnread) {
+    if(mediaUnread) m_flags = (m_flags | (1<<5));
+    else m_flags = (m_flags & ~(1<<5));
+}
+
+inline bool Message::mediaUnread() const {
+    return (m_flags & 1<<5);
+}
+
+inline void Message::setMentioned(bool mentioned) {
+    if(mentioned) m_flags = (m_flags | (1<<4));
+    else m_flags = (m_flags & ~(1<<4));
+}
+
+inline bool Message::mentioned() const {
+    return (m_flags & 1<<4);
+}
+
 inline void Message::setMessage(const QString &message) {
     m_message = message;
 }
 
 inline QString Message::message() const {
     return m_message;
+}
+
+inline void Message::setOut(bool out) {
+    if(out) m_flags = (m_flags | (1<<1));
+    else m_flags = (m_flags & ~(1<<1));
+}
+
+inline bool Message::out() const {
+    return (m_flags & 1<<1);
 }
 
 inline void Message::setReplyMarkup(const ReplyMarkup &replyMarkup) {
@@ -261,6 +304,23 @@ inline Peer Message::toId() const {
     return m_toId;
 }
 
+inline void Message::setUnread(bool unread) {
+    if(unread) m_flags = (m_flags | (1<<0));
+    else m_flags = (m_flags & ~(1<<0));
+}
+
+inline bool Message::unread() const {
+    return (m_flags & 1<<0);
+}
+
+inline void Message::setViews(qint32 views) {
+    m_views = views;
+}
+
+inline qint32 Message::views() const {
+    return m_views;
+}
+
 inline bool Message::operator ==(const Message &b) const {
     return m_classType == b.m_classType &&
            m_action == b.m_action &&
@@ -275,7 +335,8 @@ inline bool Message::operator ==(const Message &b) const {
            m_message == b.m_message &&
            m_replyMarkup == b.m_replyMarkup &&
            m_replyToMsgId == b.m_replyToMsgId &&
-           m_toId == b.m_toId;
+           m_toId == b.m_toId &&
+           m_views == b.m_views;
 }
 
 inline void Message::setClassType(Message::MessageClassType classType) {
@@ -300,10 +361,12 @@ inline bool Message::fetch(InboundPkt *in) {
     case typeMessage: {
         m_flags = in->fetchInt();
         m_id = in->fetchInt();
-        m_fromId = in->fetchInt();
+        if(m_flags & 1<<8) {
+            m_fromId = in->fetchInt();
+        }
         m_toId.fetch(in);
         if(m_flags & 1<<2) {
-            m_fwdFromId = in->fetchInt();
+            m_fwdFromId.fetch(in);
         }
         if(m_flags & 1<<2) {
             m_fwdDate = in->fetchInt();
@@ -331,6 +394,9 @@ inline bool Message::fetch(InboundPkt *in) {
                 m_entities.append(type);
             }
         }
+        if(m_flags & 1<<10) {
+            m_views = in->fetchInt();
+        }
         m_classType = static_cast<MessageClassType>(x);
         return true;
     }
@@ -339,7 +405,9 @@ inline bool Message::fetch(InboundPkt *in) {
     case typeMessageService: {
         m_flags = in->fetchInt();
         m_id = in->fetchInt();
-        m_fromId = in->fetchInt();
+        if(m_flags & 1<<8) {
+            m_fromId = in->fetchInt();
+        }
         m_toId.fetch(in);
         m_date = in->fetchInt();
         m_action.fetch(in);
@@ -368,7 +436,7 @@ inline bool Message::push(OutboundPkt *out) const {
         out->appendInt(m_id);
         out->appendInt(m_fromId);
         m_toId.push(out);
-        out->appendInt(m_fwdFromId);
+        m_fwdFromId.push(out);
         out->appendInt(m_fwdDate);
         out->appendInt(m_replyToMsgId);
         out->appendInt(m_date);
@@ -380,6 +448,7 @@ inline bool Message::push(OutboundPkt *out) const {
         for (qint32 i = 0; i < m_entities.count(); i++) {
             m_entities[i].push(out);
         }
+        out->appendInt(m_views);
         return true;
     }
         break;
@@ -412,10 +481,14 @@ inline QMap<QString, QVariant> Message::toMap() const {
     
     case typeMessage: {
         result["classType"] = "Message::typeMessage";
+        result["unread"] = QVariant::fromValue<bool>(unread());
+        result["out"] = QVariant::fromValue<bool>(out());
+        result["mentioned"] = QVariant::fromValue<bool>(mentioned());
+        result["mediaUnread"] = QVariant::fromValue<bool>(mediaUnread());
         result["id"] = QVariant::fromValue<qint32>(id());
         result["fromId"] = QVariant::fromValue<qint32>(fromId());
         result["toId"] = m_toId.toMap();
-        result["fwdFromId"] = QVariant::fromValue<qint32>(fwdFromId());
+        result["fwdFromId"] = m_fwdFromId.toMap();
         result["fwdDate"] = QVariant::fromValue<qint32>(fwdDate());
         result["replyToMsgId"] = QVariant::fromValue<qint32>(replyToMsgId());
         result["date"] = QVariant::fromValue<qint32>(date());
@@ -426,13 +499,17 @@ inline QMap<QString, QVariant> Message::toMap() const {
         Q_FOREACH(const MessageEntity &m__type, m_entities)
             _entities << m__type.toMap();
         result["entities"] = _entities;
+        result["views"] = QVariant::fromValue<qint32>(views());
         return result;
     }
         break;
     
     case typeMessageService: {
         result["classType"] = "Message::typeMessageService";
-        result["flags"] = QVariant::fromValue<qint32>(flags());
+        result["unread"] = QVariant::fromValue<bool>(unread());
+        result["out"] = QVariant::fromValue<bool>(out());
+        result["mentioned"] = QVariant::fromValue<bool>(mentioned());
+        result["mediaUnread"] = QVariant::fromValue<bool>(mediaUnread());
         result["id"] = QVariant::fromValue<qint32>(id());
         result["fromId"] = QVariant::fromValue<qint32>(fromId());
         result["toId"] = m_toId.toMap();
@@ -456,10 +533,14 @@ inline Message Message::fromMap(const QMap<QString, QVariant> &map) {
     }
     if(map.value("classType").toString() == "Message::typeMessage") {
         result.setClassType(typeMessage);
+        result.setUnread( map.value("unread").value<bool>() );
+        result.setOut( map.value("out").value<bool>() );
+        result.setMentioned( map.value("mentioned").value<bool>() );
+        result.setMediaUnread( map.value("mediaUnread").value<bool>() );
         result.setId( map.value("id").value<qint32>() );
         result.setFromId( map.value("fromId").value<qint32>() );
         result.setToId( Peer::fromMap(map.value("toId").toMap()) );
-        result.setFwdFromId( map.value("fwdFromId").value<qint32>() );
+        result.setFwdFromId( Peer::fromMap(map.value("fwdFromId").toMap()) );
         result.setFwdDate( map.value("fwdDate").value<qint32>() );
         result.setReplyToMsgId( map.value("replyToMsgId").value<qint32>() );
         result.setDate( map.value("date").value<qint32>() );
@@ -471,11 +552,15 @@ inline Message Message::fromMap(const QMap<QString, QVariant> &map) {
         Q_FOREACH(const QVariant &var, map_entities)
             _entities << MessageEntity::fromMap(var.toMap());
         result.setEntities(_entities);
+        result.setViews( map.value("views").value<qint32>() );
         return result;
     }
     if(map.value("classType").toString() == "Message::typeMessageService") {
         result.setClassType(typeMessageService);
-        result.setFlags( map.value("flags").value<qint32>() );
+        result.setUnread( map.value("unread").value<bool>() );
+        result.setOut( map.value("out").value<bool>() );
+        result.setMentioned( map.value("mentioned").value<bool>() );
+        result.setMediaUnread( map.value("mediaUnread").value<bool>() );
         result.setId( map.value("id").value<qint32>() );
         result.setFromId( map.value("fromId").value<qint32>() );
         result.setToId( Peer::fromMap(map.value("toId").toMap()) );
@@ -512,6 +597,7 @@ inline QDataStream &operator<<(QDataStream &stream, const Message &item) {
         stream << item.media();
         stream << item.replyMarkup();
         stream << item.entities();
+        stream << item.views();
         break;
     case Message::typeMessageService:
         stream << item.flags();
@@ -549,7 +635,7 @@ inline QDataStream &operator>>(QDataStream &stream, Message &item) {
         Peer m_to_id;
         stream >> m_to_id;
         item.setToId(m_to_id);
-        qint32 m_fwd_from_id;
+        Peer m_fwd_from_id;
         stream >> m_fwd_from_id;
         item.setFwdFromId(m_fwd_from_id);
         qint32 m_fwd_date;
@@ -573,6 +659,9 @@ inline QDataStream &operator>>(QDataStream &stream, Message &item) {
         QList<MessageEntity> m_entities;
         stream >> m_entities;
         item.setEntities(m_entities);
+        qint32 m_views;
+        stream >> m_views;
+        item.setViews(m_views);
     }
         break;
     case Message::typeMessageService: {

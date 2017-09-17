@@ -15,6 +15,7 @@ class LIBQTELEGRAMSHARED_EXPORT InputPeerObject : public TelegramTypeQObject
     Q_OBJECT
     Q_ENUMS(InputPeerClassType)
     Q_PROPERTY(qint64 accessHash READ accessHash WRITE setAccessHash NOTIFY accessHashChanged)
+    Q_PROPERTY(qint32 channelId READ channelId WRITE setChannelId NOTIFY channelIdChanged)
     Q_PROPERTY(qint32 chatId READ chatId WRITE setChatId NOTIFY chatIdChanged)
     Q_PROPERTY(qint32 userId READ userId WRITE setUserId NOTIFY userIdChanged)
     Q_PROPERTY(InputPeer core READ core WRITE setCore NOTIFY coreChanged)
@@ -25,7 +26,8 @@ public:
         TypeInputPeerEmpty,
         TypeInputPeerSelf,
         TypeInputPeerChat,
-        TypeInputPeerUser
+        TypeInputPeerUser,
+        TypeInputPeerChannel
     };
 
     InputPeerObject(const InputPeer &core, QObject *parent = 0);
@@ -34,6 +36,9 @@ public:
 
     void setAccessHash(qint64 accessHash);
     qint64 accessHash() const;
+
+    void setChannelId(qint32 channelId);
+    qint32 channelId() const;
 
     void setChatId(qint32 chatId);
     qint32 chatId() const;
@@ -54,6 +59,7 @@ Q_SIGNALS:
     void coreChanged();
     void classTypeChanged();
     void accessHashChanged();
+    void channelIdChanged();
     void chatIdChanged();
     void userIdChanged();
 
@@ -89,6 +95,17 @@ inline qint64 InputPeerObject::accessHash() const {
     return m_core.accessHash();
 }
 
+inline void InputPeerObject::setChannelId(qint32 channelId) {
+    if(m_core.channelId() == channelId) return;
+    m_core.setChannelId(channelId);
+    Q_EMIT channelIdChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 InputPeerObject::channelId() const {
+    return m_core.channelId();
+}
+
 inline void InputPeerObject::setChatId(qint32 chatId) {
     if(m_core.chatId() == chatId) return;
     m_core.setChatId(chatId);
@@ -116,6 +133,7 @@ inline InputPeerObject &InputPeerObject::operator =(const InputPeer &b) {
     m_core = b;
 
     Q_EMIT accessHashChanged();
+    Q_EMIT channelIdChanged();
     Q_EMIT chatIdChanged();
     Q_EMIT userIdChanged();
     Q_EMIT coreChanged();
@@ -140,6 +158,9 @@ inline void InputPeerObject::setClassType(quint32 classType) {
         break;
     case TypeInputPeerUser:
         result = InputPeer::typeInputPeerUser;
+        break;
+    case TypeInputPeerChannel:
+        result = InputPeer::typeInputPeerChannel;
         break;
     default:
         result = InputPeer::typeInputPeerEmpty;
@@ -166,6 +187,9 @@ inline quint32 InputPeerObject::classType() const {
         break;
     case InputPeer::typeInputPeerUser:
         result = TypeInputPeerUser;
+        break;
+    case InputPeer::typeInputPeerChannel:
+        result = TypeInputPeerChannel;
         break;
     default:
         result = TypeInputPeerEmpty;

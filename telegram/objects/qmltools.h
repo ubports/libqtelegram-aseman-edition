@@ -13,6 +13,10 @@ void qtelegramRegisterQmlTypes(const char *uri, int major, int minor) {
     qmlRegisterType<AuthorizationObject>(uri, major, minor, "Authorization");
     qmlRegisterType<BotCommandObject>(uri, major, minor, "BotCommand");
     qmlRegisterType<BotInfoObject>(uri, major, minor, "BotInfo");
+    qmlRegisterType<ChannelMessagesFilterObject>(uri, major, minor, "ChannelMessagesFilter");
+    qmlRegisterType<ChannelParticipantObject>(uri, major, minor, "ChannelParticipant");
+    qmlRegisterType<ChannelParticipantRoleObject>(uri, major, minor, "ChannelParticipantRole");
+    qmlRegisterType<ChannelParticipantsFilterObject>(uri, major, minor, "ChannelParticipantsFilter");
     qmlRegisterType<ChatObject>(uri, major, minor, "Chat");
     qmlRegisterType<ChatFullObject>(uri, major, minor, "ChatFull");
     qmlRegisterType<ChatInviteObject>(uri, major, minor, "ChatInvite");
@@ -22,7 +26,6 @@ void qtelegramRegisterQmlTypes(const char *uri, int major, int minor) {
     qmlRegisterType<ConfigObject>(uri, major, minor, "Config");
     qmlRegisterType<ContactObject>(uri, major, minor, "Contact");
     qmlRegisterType<ContactBlockedObject>(uri, major, minor, "ContactBlocked");
-    qmlRegisterType<ContactFoundObject>(uri, major, minor, "ContactFound");
     qmlRegisterType<ContactLinkObject>(uri, major, minor, "ContactLink");
     qmlRegisterType<ContactStatusObject>(uri, major, minor, "ContactStatus");
     qmlRegisterType<ContactSuggestedObject>(uri, major, minor, "ContactSuggested");
@@ -44,6 +47,7 @@ void qtelegramRegisterQmlTypes(const char *uri, int major, int minor) {
     qmlRegisterType<ImportedContactObject>(uri, major, minor, "ImportedContact");
     qmlRegisterType<InputAppEventObject>(uri, major, minor, "InputAppEvent");
     qmlRegisterType<InputAudioObject>(uri, major, minor, "InputAudio");
+    qmlRegisterType<InputChannelObject>(uri, major, minor, "InputChannel");
     qmlRegisterType<InputChatPhotoObject>(uri, major, minor, "InputChatPhoto");
     qmlRegisterType<InputContactObject>(uri, major, minor, "InputContact");
     qmlRegisterType<InputDocumentObject>(uri, major, minor, "InputDocument");
@@ -69,7 +73,9 @@ void qtelegramRegisterQmlTypes(const char *uri, int major, int minor) {
     qmlRegisterType<MessageObject>(uri, major, minor, "Message");
     qmlRegisterType<MessageActionObject>(uri, major, minor, "MessageAction");
     qmlRegisterType<MessageEntityObject>(uri, major, minor, "MessageEntity");
+    qmlRegisterType<MessageGroupObject>(uri, major, minor, "MessageGroup");
     qmlRegisterType<MessageMediaObject>(uri, major, minor, "MessageMedia");
+    qmlRegisterType<MessageRangeObject>(uri, major, minor, "MessageRange");
     qmlRegisterType<MessagesFilterObject>(uri, major, minor, "MessagesFilter");
     qmlRegisterType<NearestDcObject>(uri, major, minor, "NearestDc");
     qmlRegisterType<NotifyPeerObject>(uri, major, minor, "NotifyPeer");
@@ -86,6 +92,7 @@ void qtelegramRegisterQmlTypes(const char *uri, int major, int minor) {
     qmlRegisterType<SendMessageActionObject>(uri, major, minor, "SendMessageAction");
     qmlRegisterType<StickerPackObject>(uri, major, minor, "StickerPack");
     qmlRegisterType<StickerSetObject>(uri, major, minor, "StickerSet");
+    qmlRegisterType<TrueObject>(uri, major, minor, "True");
     qmlRegisterType<UpdateObject>(uri, major, minor, "Update");
     qmlRegisterType<UpdatesTypeObject>(uri, major, minor, "UpdatesType");
     qmlRegisterType<UserObject>(uri, major, minor, "User");
@@ -106,11 +113,14 @@ void qtelegramRegisterQmlTypes(const char *uri, int major, int minor) {
     qmlRegisterType<AuthExportedAuthorizationObject>(uri, major, minor, "AuthExportedAuthorization");
     qmlRegisterType<AuthPasswordRecoveryObject>(uri, major, minor, "AuthPasswordRecovery");
     qmlRegisterType<AuthSentCodeObject>(uri, major, minor, "AuthSentCode");
+    qmlRegisterType<ChannelsChannelParticipantObject>(uri, major, minor, "ChannelsChannelParticipant");
+    qmlRegisterType<ChannelsChannelParticipantsObject>(uri, major, minor, "ChannelsChannelParticipants");
     qmlRegisterType<ContactsBlockedObject>(uri, major, minor, "ContactsBlocked");
     qmlRegisterType<ContactsContactsObject>(uri, major, minor, "ContactsContacts");
     qmlRegisterType<ContactsFoundObject>(uri, major, minor, "ContactsFound");
     qmlRegisterType<ContactsImportedContactsObject>(uri, major, minor, "ContactsImportedContacts");
     qmlRegisterType<ContactsLinkObject>(uri, major, minor, "ContactsLink");
+    qmlRegisterType<ContactsResolvedPeerObject>(uri, major, minor, "ContactsResolvedPeer");
     qmlRegisterType<ContactsSuggestedObject>(uri, major, minor, "ContactsSuggested");
     qmlRegisterType<HelpAppChangelogObject>(uri, major, minor, "HelpAppChangelog");
     qmlRegisterType<HelpAppUpdateObject>(uri, major, minor, "HelpAppUpdate");
@@ -130,6 +140,7 @@ void qtelegramRegisterQmlTypes(const char *uri, int major, int minor) {
     qmlRegisterType<PhotosPhotoObject>(uri, major, minor, "PhotosPhoto");
     qmlRegisterType<PhotosPhotosObject>(uri, major, minor, "PhotosPhotos");
     qmlRegisterType<StorageFileTypeObject>(uri, major, minor, "StorageFileType");
+    qmlRegisterType<UpdatesChannelDifferenceObject>(uri, major, minor, "UpdatesChannelDifference");
     qmlRegisterType<UpdatesDifferenceObject>(uri, major, minor, "UpdatesDifference");
     qmlRegisterType<UpdatesStateObject>(uri, major, minor, "UpdatesState");
     qmlRegisterType<UploadFileObject>(uri, major, minor, "UploadFile");

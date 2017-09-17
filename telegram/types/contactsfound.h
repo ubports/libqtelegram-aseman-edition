@@ -16,14 +16,15 @@
 #include <QDataStream>
 
 #include <QList>
-#include "contactfound.h"
+#include "chat.h"
+#include "peer.h"
 #include "user.h"
 
 class LIBQTELEGRAMSHARED_EXPORT ContactsFound : public TelegramTypeObject
 {
 public:
     enum ContactsFoundClassType {
-        typeContactsFound = 0x566000e
+        typeContactsFound = 0x1aa1f784
     };
 
     ContactsFound(ContactsFoundClassType classType = typeContactsFound, InboundPkt *in = 0);
@@ -31,8 +32,11 @@ public:
     ContactsFound(const Null&);
     virtual ~ContactsFound();
 
-    void setResults(const QList<ContactFound> &results);
-    QList<ContactFound> results() const;
+    void setChats(const QList<Chat> &chats);
+    QList<Chat> chats() const;
+
+    void setResults(const QList<Peer> &results);
+    QList<Peer> results() const;
 
     void setUsers(const QList<User> &users);
     QList<User> users() const;
@@ -54,7 +58,8 @@ public:
     QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
-    QList<ContactFound> m_results;
+    QList<Chat> m_chats;
+    QList<Peer> m_results;
     QList<User> m_users;
     ContactsFoundClassType m_classType;
 };
@@ -85,11 +90,19 @@ inline ContactsFound::ContactsFound(const Null &null) :
 inline ContactsFound::~ContactsFound() {
 }
 
-inline void ContactsFound::setResults(const QList<ContactFound> &results) {
+inline void ContactsFound::setChats(const QList<Chat> &chats) {
+    m_chats = chats;
+}
+
+inline QList<Chat> ContactsFound::chats() const {
+    return m_chats;
+}
+
+inline void ContactsFound::setResults(const QList<Peer> &results) {
     m_results = results;
 }
 
-inline QList<ContactFound> ContactsFound::results() const {
+inline QList<Peer> ContactsFound::results() const {
     return m_results;
 }
 
@@ -103,6 +116,7 @@ inline QList<User> ContactsFound::users() const {
 
 inline bool ContactsFound::operator ==(const ContactsFound &b) const {
     return m_classType == b.m_classType &&
+           m_chats == b.m_chats &&
            m_results == b.m_results &&
            m_users == b.m_users;
 }
@@ -124,9 +138,17 @@ inline bool ContactsFound::fetch(InboundPkt *in) {
         qint32 m_results_length = in->fetchInt();
         m_results.clear();
         for (qint32 i = 0; i < m_results_length; i++) {
-            ContactFound type;
+            Peer type;
             type.fetch(in);
             m_results.append(type);
+        }
+        if(in->fetchInt() != (qint32)CoreTypes::typeVector) return false;
+        qint32 m_chats_length = in->fetchInt();
+        m_chats.clear();
+        for (qint32 i = 0; i < m_chats_length; i++) {
+            Chat type;
+            type.fetch(in);
+            m_chats.append(type);
         }
         if(in->fetchInt() != (qint32)CoreTypes::typeVector) return false;
         qint32 m_users_length = in->fetchInt();
@@ -157,6 +179,11 @@ inline bool ContactsFound::push(OutboundPkt *out) const {
             m_results[i].push(out);
         }
         out->appendInt(CoreTypes::typeVector);
+        out->appendInt(m_chats.count());
+        for (qint32 i = 0; i < m_chats.count(); i++) {
+            m_chats[i].push(out);
+        }
+        out->appendInt(CoreTypes::typeVector);
         out->appendInt(m_users.count());
         for (qint32 i = 0; i < m_users.count(); i++) {
             m_users[i].push(out);
@@ -176,9 +203,13 @@ inline QMap<QString, QVariant> ContactsFound::toMap() const {
     case typeContactsFound: {
         result["classType"] = "ContactsFound::typeContactsFound";
         QList<QVariant> _results;
-        Q_FOREACH(const ContactFound &m__type, m_results)
+        Q_FOREACH(const Peer &m__type, m_results)
             _results << m__type.toMap();
         result["results"] = _results;
+        QList<QVariant> _chats;
+        Q_FOREACH(const Chat &m__type, m_chats)
+            _chats << m__type.toMap();
+        result["chats"] = _chats;
         QList<QVariant> _users;
         Q_FOREACH(const User &m__type, m_users)
             _users << m__type.toMap();
@@ -197,10 +228,15 @@ inline ContactsFound ContactsFound::fromMap(const QMap<QString, QVariant> &map) 
     if(map.value("classType").toString() == "ContactsFound::typeContactsFound") {
         result.setClassType(typeContactsFound);
         QList<QVariant> map_results = map["results"].toList();
-        QList<ContactFound> _results;
+        QList<Peer> _results;
         Q_FOREACH(const QVariant &var, map_results)
-            _results << ContactFound::fromMap(var.toMap());
+            _results << Peer::fromMap(var.toMap());
         result.setResults(_results);
+        QList<QVariant> map_chats = map["chats"].toList();
+        QList<Chat> _chats;
+        Q_FOREACH(const QVariant &var, map_chats)
+            _chats << Chat::fromMap(var.toMap());
+        result.setChats(_chats);
         QList<QVariant> map_users = map["users"].toList();
         QList<User> _users;
         Q_FOREACH(const QVariant &var, map_users)
@@ -223,6 +259,7 @@ inline QDataStream &operator<<(QDataStream &stream, const ContactsFound &item) {
     switch(item.classType()) {
     case ContactsFound::typeContactsFound:
         stream << item.results();
+        stream << item.chats();
         stream << item.users();
         break;
     }
@@ -235,9 +272,12 @@ inline QDataStream &operator>>(QDataStream &stream, ContactsFound &item) {
     item.setClassType(static_cast<ContactsFound::ContactsFoundClassType>(type));
     switch(type) {
     case ContactsFound::typeContactsFound: {
-        QList<ContactFound> m_results;
+        QList<Peer> m_results;
         stream >> m_results;
         item.setResults(m_results);
+        QList<Chat> m_chats;
+        stream >> m_chats;
+        item.setChats(m_chats);
         QList<User> m_users;
         stream >> m_users;
         item.setUsers(m_users);

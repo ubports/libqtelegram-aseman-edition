@@ -12,6 +12,7 @@
 #include "sendmessageactionobject.h"
 #include "encryptedchatobject.h"
 #include "contactlinkobject.h"
+#include "messagegroupobject.h"
 #include "privacykeyobject.h"
 #include "messagemediaobject.h"
 #include "encryptedmessageobject.h"
@@ -31,15 +32,19 @@ class LIBQTELEGRAMSHARED_EXPORT UpdateObject : public TelegramTypeQObject
     Q_PROPERTY(SendMessageActionObject* action READ action WRITE setAction NOTIFY actionChanged)
     Q_PROPERTY(qint64 authKeyId READ authKeyId WRITE setAuthKeyId NOTIFY authKeyIdChanged)
     Q_PROPERTY(bool blocked READ blocked WRITE setBlocked NOTIFY blockedChanged)
+    Q_PROPERTY(qint32 channelId READ channelId WRITE setChannelId NOTIFY channelIdChanged)
     Q_PROPERTY(EncryptedChatObject* chat READ chat WRITE setChat NOTIFY chatChanged)
     Q_PROPERTY(qint32 chatId READ chatId WRITE setChatId NOTIFY chatIdChanged)
     Q_PROPERTY(qint32 date READ date WRITE setDate NOTIFY dateChanged)
     Q_PROPERTY(QList<DcOption> dcOptions READ dcOptions WRITE setDcOptions NOTIFY dcOptionsChanged)
     Q_PROPERTY(QString device READ device WRITE setDevice NOTIFY deviceChanged)
+    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged)
     Q_PROPERTY(QString firstName READ firstName WRITE setFirstName NOTIFY firstNameChanged)
     Q_PROPERTY(ContactLinkObject* foreignLink READ foreignLink WRITE setForeignLink NOTIFY foreignLinkChanged)
+    Q_PROPERTY(MessageGroupObject* group READ group WRITE setGroup NOTIFY groupChanged)
     Q_PROPERTY(qint32 id READ id WRITE setId NOTIFY idChanged)
     Q_PROPERTY(qint32 inviterId READ inviterId WRITE setInviterId NOTIFY inviterIdChanged)
+    Q_PROPERTY(bool isAdmin READ isAdmin WRITE setIsAdmin NOTIFY isAdminChanged)
     Q_PROPERTY(PrivacyKeyObject* key READ key WRITE setKey NOTIFY keyChanged)
     Q_PROPERTY(QString lastName READ lastName WRITE setLastName NOTIFY lastNameChanged)
     Q_PROPERTY(QString location READ location WRITE setLocation NOTIFY locationChanged)
@@ -69,6 +74,7 @@ class LIBQTELEGRAMSHARED_EXPORT UpdateObject : public TelegramTypeQObject
     Q_PROPERTY(qint32 userId READ userId WRITE setUserId NOTIFY userIdChanged)
     Q_PROPERTY(QString username READ username WRITE setUsername NOTIFY usernameChanged)
     Q_PROPERTY(qint32 version READ version WRITE setVersion NOTIFY versionChanged)
+    Q_PROPERTY(qint32 views READ views WRITE setViews NOTIFY viewsChanged)
     Q_PROPERTY(WebPageObject* webpage READ webpage WRITE setWebpage NOTIFY webpageChanged)
     Q_PROPERTY(Update core READ core WRITE setCore NOTIFY coreChanged)
     Q_PROPERTY(quint32 classType READ classType WRITE setClassType NOTIFY classTypeChanged)
@@ -102,7 +108,16 @@ public:
         TypeUpdateReadHistoryInbox,
         TypeUpdateReadHistoryOutbox,
         TypeUpdateWebPage,
-        TypeUpdateReadMessagesContents
+        TypeUpdateReadMessagesContents,
+        TypeUpdateChannelTooLong,
+        TypeUpdateChannel,
+        TypeUpdateChannelGroup,
+        TypeUpdateNewChannelMessage,
+        TypeUpdateReadChannelInbox,
+        TypeUpdateDeleteChannelMessages,
+        TypeUpdateChannelMessageViews,
+        TypeUpdateChatAdmins,
+        TypeUpdateChatParticipantAdmin
     };
 
     UpdateObject(const Update &core, QObject *parent = 0);
@@ -117,6 +132,9 @@ public:
 
     void setBlocked(bool blocked);
     bool blocked() const;
+
+    void setChannelId(qint32 channelId);
+    qint32 channelId() const;
 
     void setChat(EncryptedChatObject* chat);
     EncryptedChatObject* chat() const;
@@ -133,17 +151,26 @@ public:
     void setDevice(const QString &device);
     QString device() const;
 
+    void setEnabled(bool enabled);
+    bool enabled() const;
+
     void setFirstName(const QString &firstName);
     QString firstName() const;
 
     void setForeignLink(ContactLinkObject* foreignLink);
     ContactLinkObject* foreignLink() const;
 
+    void setGroup(MessageGroupObject* group);
+    MessageGroupObject* group() const;
+
     void setId(qint32 id);
     qint32 id() const;
 
     void setInviterId(qint32 inviterId);
     qint32 inviterId() const;
+
+    void setIsAdmin(bool isAdmin);
+    bool isAdmin() const;
 
     void setKey(PrivacyKeyObject* key);
     PrivacyKeyObject* key() const;
@@ -232,6 +259,9 @@ public:
     void setVersion(qint32 version);
     qint32 version() const;
 
+    void setViews(qint32 views);
+    qint32 views() const;
+
     void setWebpage(WebPageObject* webpage);
     WebPageObject* webpage() const;
 
@@ -250,15 +280,19 @@ Q_SIGNALS:
     void actionChanged();
     void authKeyIdChanged();
     void blockedChanged();
+    void channelIdChanged();
     void chatChanged();
     void chatIdChanged();
     void dateChanged();
     void dcOptionsChanged();
     void deviceChanged();
+    void enabledChanged();
     void firstNameChanged();
     void foreignLinkChanged();
+    void groupChanged();
     void idChanged();
     void inviterIdChanged();
+    void isAdminChanged();
     void keyChanged();
     void lastNameChanged();
     void locationChanged();
@@ -288,12 +322,14 @@ Q_SIGNALS:
     void userIdChanged();
     void usernameChanged();
     void versionChanged();
+    void viewsChanged();
     void webpageChanged();
 
 private Q_SLOTS:
     void coreActionChanged();
     void coreChatChanged();
     void coreForeignLinkChanged();
+    void coreGroupChanged();
     void coreKeyChanged();
     void coreMediaChanged();
     void coreMessageEncryptedChanged();
@@ -311,6 +347,7 @@ private:
     QPointer<SendMessageActionObject> m_action;
     QPointer<EncryptedChatObject> m_chat;
     QPointer<ContactLinkObject> m_foreignLink;
+    QPointer<MessageGroupObject> m_group;
     QPointer<PrivacyKeyObject> m_key;
     QPointer<MessageMediaObject> m_media;
     QPointer<EncryptedMessageObject> m_messageEncrypted;
@@ -331,6 +368,7 @@ inline UpdateObject::UpdateObject(const Update &core, QObject *parent) :
     m_action(0),
     m_chat(0),
     m_foreignLink(0),
+    m_group(0),
     m_key(0),
     m_media(0),
     m_messageEncrypted(0),
@@ -351,6 +389,8 @@ inline UpdateObject::UpdateObject(const Update &core, QObject *parent) :
     connect(m_chat.data(), &EncryptedChatObject::coreChanged, this, &UpdateObject::coreChatChanged);
     m_foreignLink = new ContactLinkObject(m_core.foreignLink(), this);
     connect(m_foreignLink.data(), &ContactLinkObject::coreChanged, this, &UpdateObject::coreForeignLinkChanged);
+    m_group = new MessageGroupObject(m_core.group(), this);
+    connect(m_group.data(), &MessageGroupObject::coreChanged, this, &UpdateObject::coreGroupChanged);
     m_key = new PrivacyKeyObject(m_core.key(), this);
     connect(m_key.data(), &PrivacyKeyObject::coreChanged, this, &UpdateObject::coreKeyChanged);
     m_media = new MessageMediaObject(m_core.media(), this);
@@ -382,6 +422,7 @@ inline UpdateObject::UpdateObject(QObject *parent) :
     m_action(0),
     m_chat(0),
     m_foreignLink(0),
+    m_group(0),
     m_key(0),
     m_media(0),
     m_messageEncrypted(0),
@@ -402,6 +443,8 @@ inline UpdateObject::UpdateObject(QObject *parent) :
     connect(m_chat.data(), &EncryptedChatObject::coreChanged, this, &UpdateObject::coreChatChanged);
     m_foreignLink = new ContactLinkObject(m_core.foreignLink(), this);
     connect(m_foreignLink.data(), &ContactLinkObject::coreChanged, this, &UpdateObject::coreForeignLinkChanged);
+    m_group = new MessageGroupObject(m_core.group(), this);
+    connect(m_group.data(), &MessageGroupObject::coreChanged, this, &UpdateObject::coreGroupChanged);
     m_key = new PrivacyKeyObject(m_core.key(), this);
     connect(m_key.data(), &PrivacyKeyObject::coreChanged, this, &UpdateObject::coreKeyChanged);
     m_media = new MessageMediaObject(m_core.media(), this);
@@ -470,6 +513,17 @@ inline bool UpdateObject::blocked() const {
     return m_core.blocked();
 }
 
+inline void UpdateObject::setChannelId(qint32 channelId) {
+    if(m_core.channelId() == channelId) return;
+    m_core.setChannelId(channelId);
+    Q_EMIT channelIdChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 UpdateObject::channelId() const {
+    return m_core.channelId();
+}
+
 inline void UpdateObject::setChat(EncryptedChatObject* chat) {
     if(m_chat == chat) return;
     if(m_chat) delete m_chat;
@@ -531,6 +585,17 @@ inline QString UpdateObject::device() const {
     return m_core.device();
 }
 
+inline void UpdateObject::setEnabled(bool enabled) {
+    if(m_core.enabled() == enabled) return;
+    m_core.setEnabled(enabled);
+    Q_EMIT enabledChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool UpdateObject::enabled() const {
+    return m_core.enabled();
+}
+
 inline void UpdateObject::setFirstName(const QString &firstName) {
     if(m_core.firstName() == firstName) return;
     m_core.setFirstName(firstName);
@@ -559,6 +624,23 @@ inline ContactLinkObject*  UpdateObject::foreignLink() const {
     return m_foreignLink;
 }
 
+inline void UpdateObject::setGroup(MessageGroupObject* group) {
+    if(m_group == group) return;
+    if(m_group) delete m_group;
+    m_group = group;
+    if(m_group) {
+        m_group->setParent(this);
+        m_core.setGroup(m_group->core());
+        connect(m_group.data(), &MessageGroupObject::coreChanged, this, &UpdateObject::coreGroupChanged);
+    }
+    Q_EMIT groupChanged();
+    Q_EMIT coreChanged();
+}
+
+inline MessageGroupObject*  UpdateObject::group() const {
+    return m_group;
+}
+
 inline void UpdateObject::setId(qint32 id) {
     if(m_core.id() == id) return;
     m_core.setId(id);
@@ -579,6 +661,17 @@ inline void UpdateObject::setInviterId(qint32 inviterId) {
 
 inline qint32 UpdateObject::inviterId() const {
     return m_core.inviterId();
+}
+
+inline void UpdateObject::setIsAdmin(bool isAdmin) {
+    if(m_core.isAdmin() == isAdmin) return;
+    m_core.setIsAdmin(isAdmin);
+    Q_EMIT isAdminChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool UpdateObject::isAdmin() const {
+    return m_core.isAdmin();
 }
 
 inline void UpdateObject::setKey(PrivacyKeyObject* key) {
@@ -966,6 +1059,17 @@ inline qint32 UpdateObject::version() const {
     return m_core.version();
 }
 
+inline void UpdateObject::setViews(qint32 views) {
+    if(m_core.views() == views) return;
+    m_core.setViews(views);
+    Q_EMIT viewsChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 UpdateObject::views() const {
+    return m_core.views();
+}
+
 inline void UpdateObject::setWebpage(WebPageObject* webpage) {
     if(m_webpage == webpage) return;
     if(m_webpage) delete m_webpage;
@@ -989,6 +1093,7 @@ inline UpdateObject &UpdateObject::operator =(const Update &b) {
     m_action->setCore(b.action());
     m_chat->setCore(b.chat());
     m_foreignLink->setCore(b.foreignLink());
+    m_group->setCore(b.group());
     m_key->setCore(b.key());
     m_media->setCore(b.media());
     m_messageEncrypted->setCore(b.messageEncrypted());
@@ -1005,15 +1110,19 @@ inline UpdateObject &UpdateObject::operator =(const Update &b) {
     Q_EMIT actionChanged();
     Q_EMIT authKeyIdChanged();
     Q_EMIT blockedChanged();
+    Q_EMIT channelIdChanged();
     Q_EMIT chatChanged();
     Q_EMIT chatIdChanged();
     Q_EMIT dateChanged();
     Q_EMIT dcOptionsChanged();
     Q_EMIT deviceChanged();
+    Q_EMIT enabledChanged();
     Q_EMIT firstNameChanged();
     Q_EMIT foreignLinkChanged();
+    Q_EMIT groupChanged();
     Q_EMIT idChanged();
     Q_EMIT inviterIdChanged();
+    Q_EMIT isAdminChanged();
     Q_EMIT keyChanged();
     Q_EMIT lastNameChanged();
     Q_EMIT locationChanged();
@@ -1043,6 +1152,7 @@ inline UpdateObject &UpdateObject::operator =(const Update &b) {
     Q_EMIT userIdChanged();
     Q_EMIT usernameChanged();
     Q_EMIT versionChanged();
+    Q_EMIT viewsChanged();
     Q_EMIT webpageChanged();
     Q_EMIT coreChanged();
     return *this;
@@ -1138,6 +1248,33 @@ inline void UpdateObject::setClassType(quint32 classType) {
         break;
     case TypeUpdateReadMessagesContents:
         result = Update::typeUpdateReadMessagesContents;
+        break;
+    case TypeUpdateChannelTooLong:
+        result = Update::typeUpdateChannelTooLong;
+        break;
+    case TypeUpdateChannel:
+        result = Update::typeUpdateChannel;
+        break;
+    case TypeUpdateChannelGroup:
+        result = Update::typeUpdateChannelGroup;
+        break;
+    case TypeUpdateNewChannelMessage:
+        result = Update::typeUpdateNewChannelMessage;
+        break;
+    case TypeUpdateReadChannelInbox:
+        result = Update::typeUpdateReadChannelInbox;
+        break;
+    case TypeUpdateDeleteChannelMessages:
+        result = Update::typeUpdateDeleteChannelMessages;
+        break;
+    case TypeUpdateChannelMessageViews:
+        result = Update::typeUpdateChannelMessageViews;
+        break;
+    case TypeUpdateChatAdmins:
+        result = Update::typeUpdateChatAdmins;
+        break;
+    case TypeUpdateChatParticipantAdmin:
+        result = Update::typeUpdateChatParticipantAdmin;
         break;
     default:
         result = Update::typeUpdateNewMessage;
@@ -1237,6 +1374,33 @@ inline quint32 UpdateObject::classType() const {
     case Update::typeUpdateReadMessagesContents:
         result = TypeUpdateReadMessagesContents;
         break;
+    case Update::typeUpdateChannelTooLong:
+        result = TypeUpdateChannelTooLong;
+        break;
+    case Update::typeUpdateChannel:
+        result = TypeUpdateChannel;
+        break;
+    case Update::typeUpdateChannelGroup:
+        result = TypeUpdateChannelGroup;
+        break;
+    case Update::typeUpdateNewChannelMessage:
+        result = TypeUpdateNewChannelMessage;
+        break;
+    case Update::typeUpdateReadChannelInbox:
+        result = TypeUpdateReadChannelInbox;
+        break;
+    case Update::typeUpdateDeleteChannelMessages:
+        result = TypeUpdateDeleteChannelMessages;
+        break;
+    case Update::typeUpdateChannelMessageViews:
+        result = TypeUpdateChannelMessageViews;
+        break;
+    case Update::typeUpdateChatAdmins:
+        result = TypeUpdateChatAdmins;
+        break;
+    case Update::typeUpdateChatParticipantAdmin:
+        result = TypeUpdateChatParticipantAdmin;
+        break;
     default:
         result = TypeUpdateNewMessage;
         break;
@@ -1271,6 +1435,13 @@ inline void UpdateObject::coreForeignLinkChanged() {
     if(m_core.foreignLink() == m_foreignLink->core()) return;
     m_core.setForeignLink(m_foreignLink->core());
     Q_EMIT foreignLinkChanged();
+    Q_EMIT coreChanged();
+}
+
+inline void UpdateObject::coreGroupChanged() {
+    if(m_core.group() == m_group->core()) return;
+    m_core.setGroup(m_group->core());
+    Q_EMIT groupChanged();
     Q_EMIT coreChanged();
 }
 

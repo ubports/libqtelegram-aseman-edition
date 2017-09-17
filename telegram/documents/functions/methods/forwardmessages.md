@@ -7,15 +7,17 @@ TelegramCore::messagesForwardMessages
 ## Schema:
 
 ```c++
-messages.forwardMessages#55e1728d peer:InputPeer id:Vector<int> random_id:Vector<long> = Updates;
+messages.forwardMessages#708e0195 flags:# broadcast:flags.4?true from_peer:InputPeer id:Vector<int> random_id:Vector<long> to_peer:InputPeer = Updates;
 ```
 ## Parameters:
 
 |Name|Type|Default|
 |----|----|-------|
-|peer|[InputPeer](../../types/inputpeer.md)||
+|broadcast|bool||
+|fromPeer|[InputPeer](../../types/inputpeer.md)||
 |id|QList&lt;qint32&gt;||
 |randomId|QList&lt;qint64&gt;||
+|toPeer|[InputPeer](../../types/inputpeer.md)||
 |callBack|Callback&lt;[UpdatesType](../../types/updatestype.md)&gt;|0|
 |timeout|qint32|TelegramCore::timeOut()|
 
@@ -52,7 +54,7 @@ onForwardMessagesError(qint64 msgId, qint32 errorCode, const QString &errorText)
 ## Examples:
 
 ```c++
-tg->forwardMessages(peer, id, random_id, [=](TG_FORWARD_MESSAGES_CALLBACK){
+tg->forwardMessages(broadcast, from_peer, id, random_id, to_peer, [=](TG_FORWARD_MESSAGES_CALLBACK){
     ...
 }, 30000);
 ```

@@ -22,13 +22,17 @@ class LIBQTELEGRAMSHARED_EXPORT Peer : public TelegramTypeObject
 public:
     enum PeerClassType {
         typePeerUser = 0x9db1bc6d,
-        typePeerChat = 0xbad0e5bb
+        typePeerChat = 0xbad0e5bb,
+        typePeerChannel = 0xbddde532
     };
 
     Peer(PeerClassType classType = typePeerUser, InboundPkt *in = 0);
     Peer(InboundPkt *in);
     Peer(const Null&);
     virtual ~Peer();
+
+    void setChannelId(qint32 channelId);
+    qint32 channelId() const;
 
     void setChatId(qint32 chatId);
     qint32 chatId() const;
@@ -53,6 +57,7 @@ public:
     QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
+    qint32 m_channelId;
     qint32 m_chatId;
     qint32 m_userId;
     PeerClassType m_classType;
@@ -64,6 +69,7 @@ QDataStream LIBQTELEGRAMSHARED_EXPORT &operator<<(QDataStream &stream, const Pee
 QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, Peer &item);
 
 inline Peer::Peer(PeerClassType classType, InboundPkt *in) :
+    m_channelId(0),
     m_chatId(0),
     m_userId(0),
     m_classType(classType)
@@ -72,6 +78,7 @@ inline Peer::Peer(PeerClassType classType, InboundPkt *in) :
 }
 
 inline Peer::Peer(InboundPkt *in) :
+    m_channelId(0),
     m_chatId(0),
     m_userId(0),
     m_classType(typePeerUser)
@@ -81,6 +88,7 @@ inline Peer::Peer(InboundPkt *in) :
 
 inline Peer::Peer(const Null &null) :
     TelegramTypeObject(null),
+    m_channelId(0),
     m_chatId(0),
     m_userId(0),
     m_classType(typePeerUser)
@@ -88,6 +96,14 @@ inline Peer::Peer(const Null &null) :
 }
 
 inline Peer::~Peer() {
+}
+
+inline void Peer::setChannelId(qint32 channelId) {
+    m_channelId = channelId;
+}
+
+inline qint32 Peer::channelId() const {
+    return m_channelId;
 }
 
 inline void Peer::setChatId(qint32 chatId) {
@@ -108,6 +124,7 @@ inline qint32 Peer::userId() const {
 
 inline bool Peer::operator ==(const Peer &b) const {
     return m_classType == b.m_classType &&
+           m_channelId == b.m_channelId &&
            m_chatId == b.m_chatId &&
            m_userId == b.m_userId;
 }
@@ -138,6 +155,13 @@ inline bool Peer::fetch(InboundPkt *in) {
     }
         break;
     
+    case typePeerChannel: {
+        m_channelId = in->fetchInt();
+        m_classType = static_cast<PeerClassType>(x);
+        return true;
+    }
+        break;
+    
     default:
         LQTG_FETCH_ASSERT;
         return false;
@@ -155,6 +179,12 @@ inline bool Peer::push(OutboundPkt *out) const {
     
     case typePeerChat: {
         out->appendInt(m_chatId);
+        return true;
+    }
+        break;
+    
+    case typePeerChannel: {
+        out->appendInt(m_channelId);
         return true;
     }
         break;
@@ -181,6 +211,13 @@ inline QMap<QString, QVariant> Peer::toMap() const {
     }
         break;
     
+    case typePeerChannel: {
+        result["classType"] = "Peer::typePeerChannel";
+        result["channelId"] = QVariant::fromValue<qint32>(channelId());
+        return result;
+    }
+        break;
+    
     default:
         return result;
     }
@@ -196,6 +233,11 @@ inline Peer Peer::fromMap(const QMap<QString, QVariant> &map) {
     if(map.value("classType").toString() == "Peer::typePeerChat") {
         result.setClassType(typePeerChat);
         result.setChatId( map.value("chatId").value<qint32>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "Peer::typePeerChannel") {
+        result.setClassType(typePeerChannel);
+        result.setChannelId( map.value("channelId").value<qint32>() );
         return result;
     }
     return result;
@@ -217,6 +259,9 @@ inline QDataStream &operator<<(QDataStream &stream, const Peer &item) {
     case Peer::typePeerChat:
         stream << item.chatId();
         break;
+    case Peer::typePeerChannel:
+        stream << item.channelId();
+        break;
     }
     return stream;
 }
@@ -236,6 +281,12 @@ inline QDataStream &operator>>(QDataStream &stream, Peer &item) {
         qint32 m_chat_id;
         stream >> m_chat_id;
         item.setChatId(m_chat_id);
+    }
+        break;
+    case Peer::typePeerChannel: {
+        qint32 m_channel_id;
+        stream >> m_channel_id;
+        item.setChannelId(m_channel_id);
     }
         break;
     }

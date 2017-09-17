@@ -15,6 +15,8 @@ class LIBQTELEGRAMSHARED_EXPORT MessageActionObject : public TelegramTypeQObject
 {
     Q_OBJECT
     Q_ENUMS(MessageActionClassType)
+    Q_PROPERTY(qint32 channelId READ channelId WRITE setChannelId NOTIFY channelIdChanged)
+    Q_PROPERTY(qint32 chatId READ chatId WRITE setChatId NOTIFY chatIdChanged)
     Q_PROPERTY(qint32 inviterId READ inviterId WRITE setInviterId NOTIFY inviterIdChanged)
     Q_PROPERTY(PhotoObject* photo READ photo WRITE setPhoto NOTIFY photoChanged)
     Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY titleChanged)
@@ -32,12 +34,21 @@ public:
         TypeMessageActionChatDeletePhoto,
         TypeMessageActionChatAddUser,
         TypeMessageActionChatDeleteUser,
-        TypeMessageActionChatJoinedByLink
+        TypeMessageActionChatJoinedByLink,
+        TypeMessageActionChannelCreate,
+        TypeMessageActionChatMigrateTo,
+        TypeMessageActionChannelMigrateFrom
     };
 
     MessageActionObject(const MessageAction &core, QObject *parent = 0);
     MessageActionObject(QObject *parent = 0);
     virtual ~MessageActionObject();
+
+    void setChannelId(qint32 channelId);
+    qint32 channelId() const;
+
+    void setChatId(qint32 chatId);
+    qint32 chatId() const;
 
     void setInviterId(qint32 inviterId);
     qint32 inviterId() const;
@@ -66,6 +77,8 @@ public:
 Q_SIGNALS:
     void coreChanged();
     void classTypeChanged();
+    void channelIdChanged();
+    void chatIdChanged();
     void inviterIdChanged();
     void photoChanged();
     void titleChanged();
@@ -99,6 +112,28 @@ inline MessageActionObject::MessageActionObject(QObject *parent) :
 }
 
 inline MessageActionObject::~MessageActionObject() {
+}
+
+inline void MessageActionObject::setChannelId(qint32 channelId) {
+    if(m_core.channelId() == channelId) return;
+    m_core.setChannelId(channelId);
+    Q_EMIT channelIdChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 MessageActionObject::channelId() const {
+    return m_core.channelId();
+}
+
+inline void MessageActionObject::setChatId(qint32 chatId) {
+    if(m_core.chatId() == chatId) return;
+    m_core.setChatId(chatId);
+    Q_EMIT chatIdChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 MessageActionObject::chatId() const {
+    return m_core.chatId();
 }
 
 inline void MessageActionObject::setInviterId(qint32 inviterId) {
@@ -167,6 +202,8 @@ inline MessageActionObject &MessageActionObject::operator =(const MessageAction 
     m_core = b;
     m_photo->setCore(b.photo());
 
+    Q_EMIT channelIdChanged();
+    Q_EMIT chatIdChanged();
     Q_EMIT inviterIdChanged();
     Q_EMIT photoChanged();
     Q_EMIT titleChanged();
@@ -207,6 +244,15 @@ inline void MessageActionObject::setClassType(quint32 classType) {
     case TypeMessageActionChatJoinedByLink:
         result = MessageAction::typeMessageActionChatJoinedByLink;
         break;
+    case TypeMessageActionChannelCreate:
+        result = MessageAction::typeMessageActionChannelCreate;
+        break;
+    case TypeMessageActionChatMigrateTo:
+        result = MessageAction::typeMessageActionChatMigrateTo;
+        break;
+    case TypeMessageActionChannelMigrateFrom:
+        result = MessageAction::typeMessageActionChannelMigrateFrom;
+        break;
     default:
         result = MessageAction::typeMessageActionEmpty;
         break;
@@ -244,6 +290,15 @@ inline quint32 MessageActionObject::classType() const {
         break;
     case MessageAction::typeMessageActionChatJoinedByLink:
         result = TypeMessageActionChatJoinedByLink;
+        break;
+    case MessageAction::typeMessageActionChannelCreate:
+        result = TypeMessageActionChannelCreate;
+        break;
+    case MessageAction::typeMessageActionChatMigrateTo:
+        result = TypeMessageActionChatMigrateTo;
+        break;
+    case MessageAction::typeMessageActionChannelMigrateFrom:
+        result = TypeMessageActionChannelMigrateFrom;
         break;
     default:
         result = TypeMessageActionEmpty;

@@ -36,8 +36,17 @@ public:
     void setFlags(qint32 flags);
     qint32 flags() const;
 
+    void setResize(bool resize);
+    bool resize() const;
+
     void setRows(const QList<KeyboardButtonRow> &rows);
     QList<KeyboardButtonRow> rows() const;
+
+    void setSelective(bool selective);
+    bool selective() const;
+
+    void setSingleUse(bool singleUse);
+    bool singleUse() const;
 
     void setClassType(ReplyMarkupClassType classType);
     ReplyMarkupClassType classType() const;
@@ -98,12 +107,39 @@ inline qint32 ReplyMarkup::flags() const {
     return m_flags;
 }
 
+inline void ReplyMarkup::setResize(bool resize) {
+    if(resize) m_flags = (m_flags | (1<<0));
+    else m_flags = (m_flags & ~(1<<0));
+}
+
+inline bool ReplyMarkup::resize() const {
+    return (m_flags & 1<<0);
+}
+
 inline void ReplyMarkup::setRows(const QList<KeyboardButtonRow> &rows) {
     m_rows = rows;
 }
 
 inline QList<KeyboardButtonRow> ReplyMarkup::rows() const {
     return m_rows;
+}
+
+inline void ReplyMarkup::setSelective(bool selective) {
+    if(selective) m_flags = (m_flags | (1<<2));
+    else m_flags = (m_flags & ~(1<<2));
+}
+
+inline bool ReplyMarkup::selective() const {
+    return (m_flags & 1<<2);
+}
+
+inline void ReplyMarkup::setSingleUse(bool singleUse) {
+    if(singleUse) m_flags = (m_flags | (1<<1));
+    else m_flags = (m_flags & ~(1<<1));
+}
+
+inline bool ReplyMarkup::singleUse() const {
+    return (m_flags & 1<<1);
 }
 
 inline bool ReplyMarkup::operator ==(const ReplyMarkup &b) const {
@@ -195,18 +231,24 @@ inline QMap<QString, QVariant> ReplyMarkup::toMap() const {
     switch(static_cast<int>(m_classType)) {
     case typeReplyKeyboardHide: {
         result["classType"] = "ReplyMarkup::typeReplyKeyboardHide";
+        result["selective"] = QVariant::fromValue<bool>(selective());
         return result;
     }
         break;
     
     case typeReplyKeyboardForceReply: {
         result["classType"] = "ReplyMarkup::typeReplyKeyboardForceReply";
+        result["singleUse"] = QVariant::fromValue<bool>(singleUse());
+        result["selective"] = QVariant::fromValue<bool>(selective());
         return result;
     }
         break;
     
     case typeReplyKeyboardMarkup: {
         result["classType"] = "ReplyMarkup::typeReplyKeyboardMarkup";
+        result["resize"] = QVariant::fromValue<bool>(resize());
+        result["singleUse"] = QVariant::fromValue<bool>(singleUse());
+        result["selective"] = QVariant::fromValue<bool>(selective());
         QList<QVariant> _rows;
         Q_FOREACH(const KeyboardButtonRow &m__type, m_rows)
             _rows << m__type.toMap();
@@ -224,14 +266,20 @@ inline ReplyMarkup ReplyMarkup::fromMap(const QMap<QString, QVariant> &map) {
     ReplyMarkup result;
     if(map.value("classType").toString() == "ReplyMarkup::typeReplyKeyboardHide") {
         result.setClassType(typeReplyKeyboardHide);
+        result.setSelective( map.value("selective").value<bool>() );
         return result;
     }
     if(map.value("classType").toString() == "ReplyMarkup::typeReplyKeyboardForceReply") {
         result.setClassType(typeReplyKeyboardForceReply);
+        result.setSingleUse( map.value("singleUse").value<bool>() );
+        result.setSelective( map.value("selective").value<bool>() );
         return result;
     }
     if(map.value("classType").toString() == "ReplyMarkup::typeReplyKeyboardMarkup") {
         result.setClassType(typeReplyKeyboardMarkup);
+        result.setResize( map.value("resize").value<bool>() );
+        result.setSingleUse( map.value("singleUse").value<bool>() );
+        result.setSelective( map.value("selective").value<bool>() );
         QList<QVariant> map_rows = map["rows"].toList();
         QList<KeyboardButtonRow> _rows;
         Q_FOREACH(const QVariant &var, map_rows)

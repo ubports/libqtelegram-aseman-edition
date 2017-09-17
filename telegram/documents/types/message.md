@@ -25,17 +25,21 @@ messageEmpty#83e5de54 id:int = Message;
 #### Schema:
 
 ```c++
-message#2bebfa86 flags:# id:int from_id:int to_id:Peer fwd_from_id:flags.2?int fwd_date:flags.2?int reply_to_msg_id:flags.3?int date:int message:string media:flags.9?MessageMedia reply_markup:flags.6?ReplyMarkup entities:flags.7?Vector<MessageEntity> = Message;
+message#5ba66c13 flags:# unread:flags.0?true out:flags.1?true mentioned:flags.4?true media_unread:flags.5?true id:int from_id:flags.8?int to_id:Peer fwd_from_id:flags.2?Peer fwd_date:flags.2?int reply_to_msg_id:flags.3?int date:int message:string media:flags.9?MessageMedia reply_markup:flags.6?ReplyMarkup entities:flags.7?Vector<MessageEntity> views:flags.10?int = Message;
 ```
 
 #### Parameters:
 
 |Name|Type|
 |----|----|
+|unread|bool|
+|out|bool|
+|mentioned|bool|
+|mediaUnread|bool|
 |id|qint32|
 |fromId|qint32|
 |toId|[Peer](peer.md)|
-|fwdFromId|qint32|
+|fwdFromId|[Peer](peer.md)|
 |fwdDate|qint32|
 |replyToMsgId|qint32|
 |date|qint32|
@@ -43,20 +47,24 @@ message#2bebfa86 flags:# id:int from_id:int to_id:Peer fwd_from_id:flags.2?int f
 |media|[MessageMedia](messagemedia.md)|
 |replyMarkup|[ReplyMarkup](replymarkup.md)|
 |entities|QList&lt;[MessageEntity](messageentity.md)&gt;|
+|views|qint32|
 
 ## Message::typeMessageService
 
 #### Schema:
 
 ```c++
-messageService#1d86f70e flags:int id:int from_id:int to_id:Peer date:int action:MessageAction = Message;
+messageService#c06b9607 flags:# unread:flags.0?true out:flags.1?true mentioned:flags.4?true media_unread:flags.5?true id:int from_id:flags.8?int to_id:Peer date:int action:MessageAction = Message;
 ```
 
 #### Parameters:
 
 |Name|Type|
 |----|----|
-|flags|qint32|
+|unread|bool|
+|out|bool|
+|mentioned|bool|
+|mediaUnread|bool|
 |id|qint32|
 |fromId|qint32|
 |toId|[Peer](peer.md)|

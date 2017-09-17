@@ -10,6 +10,14 @@
 
 * [BotInfo](botinfo.md)
 
+* [ChannelMessagesFilter](channelmessagesfilter.md)
+
+* [ChannelParticipant](channelparticipant.md)
+
+* [ChannelParticipantRole](channelparticipantrole.md)
+
+* [ChannelParticipantsFilter](channelparticipantsfilter.md)
+
 * [Chat](chat.md)
 
 * [ChatFull](chatfull.md)
@@ -27,8 +35,6 @@
 * [Contact](contact.md)
 
 * [ContactBlocked](contactblocked.md)
-
-* [ContactFound](contactfound.md)
 
 * [ContactLink](contactlink.md)
 
@@ -71,6 +77,8 @@
 * [InputAppEvent](inputappevent.md)
 
 * [InputAudio](inputaudio.md)
+
+* [InputChannel](inputchannel.md)
 
 * [InputChatPhoto](inputchatphoto.md)
 
@@ -122,7 +130,11 @@
 
 * [MessageEntity](messageentity.md)
 
+* [MessageGroup](messagegroup.md)
+
 * [MessageMedia](messagemedia.md)
+
+* [MessageRange](messagerange.md)
 
 * [MessagesFilter](messagesfilter.md)
 
@@ -155,6 +167,8 @@
 * [StickerPack](stickerpack.md)
 
 * [StickerSet](stickerset.md)
+
+* [True](true.md)
 
 * [Update](update.md)
 
@@ -196,6 +210,10 @@
 
 * [AuthSentCode](authsentcode.md)
 
+* [ChannelsChannelParticipant](channelschannelparticipant.md)
+
+* [ChannelsChannelParticipants](channelschannelparticipants.md)
+
 * [ContactsBlocked](contactsblocked.md)
 
 * [ContactsContacts](contactscontacts.md)
@@ -205,6 +223,8 @@
 * [ContactsImportedContacts](contactsimportedcontacts.md)
 
 * [ContactsLink](contactslink.md)
+
+* [ContactsResolvedPeer](contactsresolvedpeer.md)
 
 * [ContactsSuggested](contactssuggested.md)
 
@@ -243,6 +263,8 @@
 * [PhotosPhotos](photosphotos.md)
 
 * [StorageFileType](storagefiletype.md)
+
+* [UpdatesChannelDifference](updateschanneldifference.md)
 
 * [UpdatesDifference](updatesdifference.md)
 

@@ -39,6 +39,12 @@ public:
     void setIpAddress(const QString &ipAddress);
     QString ipAddress() const;
 
+    void setIpv6(bool ipv6);
+    bool ipv6() const;
+
+    void setMediaOnly(bool mediaOnly);
+    bool mediaOnly() const;
+
     void setPort(qint32 port);
     qint32 port() const;
 
@@ -125,6 +131,24 @@ inline QString DcOption::ipAddress() const {
     return m_ipAddress;
 }
 
+inline void DcOption::setIpv6(bool ipv6) {
+    if(ipv6) m_flags = (m_flags | (1<<0));
+    else m_flags = (m_flags & ~(1<<0));
+}
+
+inline bool DcOption::ipv6() const {
+    return (m_flags & 1<<0);
+}
+
+inline void DcOption::setMediaOnly(bool mediaOnly) {
+    if(mediaOnly) m_flags = (m_flags | (1<<1));
+    else m_flags = (m_flags & ~(1<<1));
+}
+
+inline bool DcOption::mediaOnly() const {
+    return (m_flags & 1<<1);
+}
+
 inline void DcOption::setPort(qint32 port) {
     m_port = port;
 }
@@ -191,6 +215,8 @@ inline QMap<QString, QVariant> DcOption::toMap() const {
     switch(static_cast<int>(m_classType)) {
     case typeDcOption: {
         result["classType"] = "DcOption::typeDcOption";
+        result["ipv6"] = QVariant::fromValue<bool>(ipv6());
+        result["mediaOnly"] = QVariant::fromValue<bool>(mediaOnly());
         result["id"] = QVariant::fromValue<qint32>(id());
         result["ipAddress"] = QVariant::fromValue<QString>(ipAddress());
         result["port"] = QVariant::fromValue<qint32>(port());
@@ -207,6 +233,8 @@ inline DcOption DcOption::fromMap(const QMap<QString, QVariant> &map) {
     DcOption result;
     if(map.value("classType").toString() == "DcOption::typeDcOption") {
         result.setClassType(typeDcOption);
+        result.setIpv6( map.value("ipv6").value<bool>() );
+        result.setMediaOnly( map.value("mediaOnly").value<bool>() );
         result.setId( map.value("id").value<qint32>() );
         result.setIpAddress( map.value("ipAddress").value<QString>() );
         result.setPort( map.value("port").value<qint32>() );

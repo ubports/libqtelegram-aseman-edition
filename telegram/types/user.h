@@ -36,8 +36,23 @@ public:
     void setAccessHash(qint64 accessHash);
     qint64 accessHash() const;
 
+    void setBot(bool bot);
+    bool bot() const;
+
+    void setBotChatHistory(bool botChatHistory);
+    bool botChatHistory() const;
+
     void setBotInfoVersion(qint32 botInfoVersion);
     qint32 botInfoVersion() const;
+
+    void setBotNochats(bool botNochats);
+    bool botNochats() const;
+
+    void setContact(bool contact);
+    bool contact() const;
+
+    void setDeleted(bool deleted);
+    bool deleted() const;
 
     void setFirstName(const QString &firstName);
     QString firstName() const;
@@ -51,17 +66,26 @@ public:
     void setLastName(const QString &lastName);
     QString lastName() const;
 
+    void setMutualContact(bool mutualContact);
+    bool mutualContact() const;
+
     void setPhone(const QString &phone);
     QString phone() const;
 
     void setPhoto(const UserProfilePhoto &photo);
     UserProfilePhoto photo() const;
 
+    void setSelf(bool self);
+    bool self() const;
+
     void setStatus(const UserStatus &status);
     UserStatus status() const;
 
     void setUsername(const QString &username);
     QString username() const;
+
+    void setVerified(bool verified);
+    bool verified() const;
 
     void setClassType(UserClassType classType);
     UserClassType classType() const;
@@ -139,12 +163,57 @@ inline qint64 User::accessHash() const {
     return m_accessHash;
 }
 
+inline void User::setBot(bool bot) {
+    if(bot) m_flags = (m_flags | (1<<14));
+    else m_flags = (m_flags & ~(1<<14));
+}
+
+inline bool User::bot() const {
+    return (m_flags & 1<<14);
+}
+
+inline void User::setBotChatHistory(bool botChatHistory) {
+    if(botChatHistory) m_flags = (m_flags | (1<<15));
+    else m_flags = (m_flags & ~(1<<15));
+}
+
+inline bool User::botChatHistory() const {
+    return (m_flags & 1<<15);
+}
+
 inline void User::setBotInfoVersion(qint32 botInfoVersion) {
     m_botInfoVersion = botInfoVersion;
 }
 
 inline qint32 User::botInfoVersion() const {
     return m_botInfoVersion;
+}
+
+inline void User::setBotNochats(bool botNochats) {
+    if(botNochats) m_flags = (m_flags | (1<<16));
+    else m_flags = (m_flags & ~(1<<16));
+}
+
+inline bool User::botNochats() const {
+    return (m_flags & 1<<16);
+}
+
+inline void User::setContact(bool contact) {
+    if(contact) m_flags = (m_flags | (1<<11));
+    else m_flags = (m_flags & ~(1<<11));
+}
+
+inline bool User::contact() const {
+    return (m_flags & 1<<11);
+}
+
+inline void User::setDeleted(bool deleted) {
+    if(deleted) m_flags = (m_flags | (1<<13));
+    else m_flags = (m_flags & ~(1<<13));
+}
+
+inline bool User::deleted() const {
+    return (m_flags & 1<<13);
 }
 
 inline void User::setFirstName(const QString &firstName) {
@@ -179,6 +248,15 @@ inline QString User::lastName() const {
     return m_lastName;
 }
 
+inline void User::setMutualContact(bool mutualContact) {
+    if(mutualContact) m_flags = (m_flags | (1<<12));
+    else m_flags = (m_flags & ~(1<<12));
+}
+
+inline bool User::mutualContact() const {
+    return (m_flags & 1<<12);
+}
+
 inline void User::setPhone(const QString &phone) {
     m_phone = phone;
 }
@@ -195,6 +273,15 @@ inline UserProfilePhoto User::photo() const {
     return m_photo;
 }
 
+inline void User::setSelf(bool self) {
+    if(self) m_flags = (m_flags | (1<<10));
+    else m_flags = (m_flags & ~(1<<10));
+}
+
+inline bool User::self() const {
+    return (m_flags & 1<<10);
+}
+
 inline void User::setStatus(const UserStatus &status) {
     m_status = status;
 }
@@ -209,6 +296,15 @@ inline void User::setUsername(const QString &username) {
 
 inline QString User::username() const {
     return m_username;
+}
+
+inline void User::setVerified(bool verified) {
+    if(verified) m_flags = (m_flags | (1<<17));
+    else m_flags = (m_flags & ~(1<<17));
+}
+
+inline bool User::verified() const {
+    return (m_flags & 1<<17);
 }
 
 inline bool User::operator ==(const User &b) const {
@@ -323,6 +419,14 @@ inline QMap<QString, QVariant> User::toMap() const {
     
     case typeUser: {
         result["classType"] = "User::typeUser";
+        result["self"] = QVariant::fromValue<bool>(self());
+        result["contact"] = QVariant::fromValue<bool>(contact());
+        result["mutualContact"] = QVariant::fromValue<bool>(mutualContact());
+        result["deleted"] = QVariant::fromValue<bool>(deleted());
+        result["bot"] = QVariant::fromValue<bool>(bot());
+        result["botChatHistory"] = QVariant::fromValue<bool>(botChatHistory());
+        result["botNochats"] = QVariant::fromValue<bool>(botNochats());
+        result["verified"] = QVariant::fromValue<bool>(verified());
         result["id"] = QVariant::fromValue<qint32>(id());
         result["accessHash"] = QVariant::fromValue<qint64>(accessHash());
         result["firstName"] = QVariant::fromValue<QString>(firstName());
@@ -350,6 +454,14 @@ inline User User::fromMap(const QMap<QString, QVariant> &map) {
     }
     if(map.value("classType").toString() == "User::typeUser") {
         result.setClassType(typeUser);
+        result.setSelf( map.value("self").value<bool>() );
+        result.setContact( map.value("contact").value<bool>() );
+        result.setMutualContact( map.value("mutualContact").value<bool>() );
+        result.setDeleted( map.value("deleted").value<bool>() );
+        result.setBot( map.value("bot").value<bool>() );
+        result.setBotChatHistory( map.value("botChatHistory").value<bool>() );
+        result.setBotNochats( map.value("botNochats").value<bool>() );
+        result.setVerified( map.value("verified").value<bool>() );
         result.setId( map.value("id").value<qint32>() );
         result.setAccessHash( map.value("accessHash").value<qint64>() );
         result.setFirstName( map.value("firstName").value<QString>() );

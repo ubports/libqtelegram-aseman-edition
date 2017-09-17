@@ -12,6 +12,10 @@ HEADERS += \
     $$PWD/authorizationobject.h \
     $$PWD/botcommandobject.h \
     $$PWD/botinfoobject.h \
+    $$PWD/channelmessagesfilterobject.h \
+    $$PWD/channelparticipantobject.h \
+    $$PWD/channelparticipantroleobject.h \
+    $$PWD/channelparticipantsfilterobject.h \
     $$PWD/chatobject.h \
     $$PWD/chatfullobject.h \
     $$PWD/chatinviteobject.h \
@@ -21,7 +25,6 @@ HEADERS += \
     $$PWD/configobject.h \
     $$PWD/contactobject.h \
     $$PWD/contactblockedobject.h \
-    $$PWD/contactfoundobject.h \
     $$PWD/contactlinkobject.h \
     $$PWD/contactstatusobject.h \
     $$PWD/contactsuggestedobject.h \
@@ -43,6 +46,7 @@ HEADERS += \
     $$PWD/importedcontactobject.h \
     $$PWD/inputappeventobject.h \
     $$PWD/inputaudioobject.h \
+    $$PWD/inputchannelobject.h \
     $$PWD/inputchatphotoobject.h \
     $$PWD/inputcontactobject.h \
     $$PWD/inputdocumentobject.h \
@@ -68,7 +72,9 @@ HEADERS += \
     $$PWD/messageobject.h \
     $$PWD/messageactionobject.h \
     $$PWD/messageentityobject.h \
+    $$PWD/messagegroupobject.h \
     $$PWD/messagemediaobject.h \
+    $$PWD/messagerangeobject.h \
     $$PWD/messagesfilterobject.h \
     $$PWD/nearestdcobject.h \
     $$PWD/notifypeerobject.h \
@@ -85,6 +91,7 @@ HEADERS += \
     $$PWD/sendmessageactionobject.h \
     $$PWD/stickerpackobject.h \
     $$PWD/stickersetobject.h \
+    $$PWD/trueobject.h \
     $$PWD/updateobject.h \
     $$PWD/updatestypeobject.h \
     $$PWD/userobject.h \
@@ -105,11 +112,14 @@ HEADERS += \
     $$PWD/authexportedauthorizationobject.h \
     $$PWD/authpasswordrecoveryobject.h \
     $$PWD/authsentcodeobject.h \
+    $$PWD/channelschannelparticipantobject.h \
+    $$PWD/channelschannelparticipantsobject.h \
     $$PWD/contactsblockedobject.h \
     $$PWD/contactscontactsobject.h \
     $$PWD/contactsfoundobject.h \
     $$PWD/contactsimportedcontactsobject.h \
     $$PWD/contactslinkobject.h \
+    $$PWD/contactsresolvedpeerobject.h \
     $$PWD/contactssuggestedobject.h \
     $$PWD/helpappchangelogobject.h \
     $$PWD/helpappupdateobject.h \
@@ -129,6 +139,7 @@ HEADERS += \
     $$PWD/photosphotoobject.h \
     $$PWD/photosphotosobject.h \
     $$PWD/storagefiletypeobject.h \
+    $$PWD/updateschanneldifferenceobject.h \
     $$PWD/updatesdifferenceobject.h \
     $$PWD/updatesstateobject.h \
     $$PWD/uploadfileobject.h
@@ -140,6 +151,10 @@ SOURCES += \
     $$PWD/authorizationobject.cpp \
     $$PWD/botcommandobject.cpp \
     $$PWD/botinfoobject.cpp \
+    $$PWD/channelmessagesfilterobject.cpp \
+    $$PWD/channelparticipantobject.cpp \
+    $$PWD/channelparticipantroleobject.cpp \
+    $$PWD/channelparticipantsfilterobject.cpp \
     $$PWD/chatobject.cpp \
     $$PWD/chatfullobject.cpp \
     $$PWD/chatinviteobject.cpp \
@@ -149,7 +164,6 @@ SOURCES += \
     $$PWD/configobject.cpp \
     $$PWD/contactobject.cpp \
     $$PWD/contactblockedobject.cpp \
-    $$PWD/contactfoundobject.cpp \
     $$PWD/contactlinkobject.cpp \
     $$PWD/contactstatusobject.cpp \
     $$PWD/contactsuggestedobject.cpp \
@@ -171,6 +185,7 @@ SOURCES += \
     $$PWD/importedcontactobject.cpp \
     $$PWD/inputappeventobject.cpp \
     $$PWD/inputaudioobject.cpp \
+    $$PWD/inputchannelobject.cpp \
     $$PWD/inputchatphotoobject.cpp \
     $$PWD/inputcontactobject.cpp \
     $$PWD/inputdocumentobject.cpp \
@@ -196,7 +211,9 @@ SOURCES += \
     $$PWD/messageobject.cpp \
     $$PWD/messageactionobject.cpp \
     $$PWD/messageentityobject.cpp \
+    $$PWD/messagegroupobject.cpp \
     $$PWD/messagemediaobject.cpp \
+    $$PWD/messagerangeobject.cpp \
     $$PWD/messagesfilterobject.cpp \
     $$PWD/nearestdcobject.cpp \
     $$PWD/notifypeerobject.cpp \
@@ -213,6 +230,7 @@ SOURCES += \
     $$PWD/sendmessageactionobject.cpp \
     $$PWD/stickerpackobject.cpp \
     $$PWD/stickersetobject.cpp \
+    $$PWD/trueobject.cpp \
     $$PWD/updateobject.cpp \
     $$PWD/updatestypeobject.cpp \
     $$PWD/userobject.cpp \
@@ -233,11 +251,14 @@ SOURCES += \
     $$PWD/authexportedauthorizationobject.cpp \
     $$PWD/authpasswordrecoveryobject.cpp \
     $$PWD/authsentcodeobject.cpp \
+    $$PWD/channelschannelparticipantobject.cpp \
+    $$PWD/channelschannelparticipantsobject.cpp \
     $$PWD/contactsblockedobject.cpp \
     $$PWD/contactscontactsobject.cpp \
     $$PWD/contactsfoundobject.cpp \
     $$PWD/contactsimportedcontactsobject.cpp \
     $$PWD/contactslinkobject.cpp \
+    $$PWD/contactsresolvedpeerobject.cpp \
     $$PWD/contactssuggestedobject.cpp \
     $$PWD/helpappchangelogobject.cpp \
     $$PWD/helpappupdateobject.cpp \
@@ -257,6 +278,7 @@ SOURCES += \
     $$PWD/photosphotoobject.cpp \
     $$PWD/photosphotosobject.cpp \
     $$PWD/storagefiletypeobject.cpp \
+    $$PWD/updateschanneldifferenceobject.cpp \
     $$PWD/updatesdifferenceobject.cpp \
     $$PWD/updatesstateobject.cpp \
     $$PWD/uploadfileobject.cpp

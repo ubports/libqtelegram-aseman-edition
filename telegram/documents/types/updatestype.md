@@ -26,20 +26,24 @@ updatesTooLong#e317af7e = Updates;
 #### Schema:
 
 ```c++
-updateShortMessage#3f32d858 flags:# id:int user_id:int message:string pts:int pts_count:int date:int fwd_from_id:flags.2?int fwd_date:flags.2?int reply_to_msg_id:flags.3?int entities:flags.7?Vector<MessageEntity> = Updates;
+updateShortMessage#f7d91a46 flags:# unread:flags.0?true out:flags.1?true mentioned:flags.4?true media_unread:flags.5?true id:int user_id:int message:string pts:int pts_count:int date:int fwd_from_id:flags.2?Peer fwd_date:flags.2?int reply_to_msg_id:flags.3?int entities:flags.7?Vector<MessageEntity> = Updates;
 ```
 
 #### Parameters:
 
 |Name|Type|
 |----|----|
+|unread|bool|
+|out|bool|
+|mentioned|bool|
+|mediaUnread|bool|
 |id|qint32|
 |userId|qint32|
 |message|QString|
 |pts|qint32|
 |ptsCount|qint32|
 |date|qint32|
-|fwdFromId|qint32|
+|fwdFromId|[Peer](peer.md)|
 |fwdDate|qint32|
 |replyToMsgId|qint32|
 |entities|QList&lt;[MessageEntity](messageentity.md)&gt;|
@@ -49,13 +53,17 @@ updateShortMessage#3f32d858 flags:# id:int user_id:int message:string pts:int pt
 #### Schema:
 
 ```c++
-updateShortChatMessage#f9409b3d flags:# id:int from_id:int chat_id:int message:string pts:int pts_count:int date:int fwd_from_id:flags.2?int fwd_date:flags.2?int reply_to_msg_id:flags.3?int entities:flags.7?Vector<MessageEntity> = Updates;
+updateShortChatMessage#cac7fdd2 flags:# unread:flags.0?true out:flags.1?true mentioned:flags.4?true media_unread:flags.5?true id:int from_id:int chat_id:int message:string pts:int pts_count:int date:int fwd_from_id:flags.2?Peer fwd_date:flags.2?int reply_to_msg_id:flags.3?int entities:flags.7?Vector<MessageEntity> = Updates;
 ```
 
 #### Parameters:
 
 |Name|Type|
 |----|----|
+|unread|bool|
+|out|bool|
+|mentioned|bool|
+|mediaUnread|bool|
 |id|qint32|
 |fromId|qint32|
 |chatId|qint32|
@@ -63,7 +71,7 @@ updateShortChatMessage#f9409b3d flags:# id:int from_id:int chat_id:int message:s
 |pts|qint32|
 |ptsCount|qint32|
 |date|qint32|
-|fwdFromId|qint32|
+|fwdFromId|[Peer](peer.md)|
 |fwdDate|qint32|
 |replyToMsgId|qint32|
 |entities|QList&lt;[MessageEntity](messageentity.md)&gt;|
@@ -125,13 +133,15 @@ updates#74ae4240 updates:Vector<Update> users:Vector<User> chats:Vector<Chat> da
 #### Schema:
 
 ```c++
-updateShortSentMessage#11f1331c flags:# id:int pts:int pts_count:int date:int media:flags.9?MessageMedia entities:flags.7?Vector<MessageEntity> = Updates;
+updateShortSentMessage#11f1331c flags:# unread:flags.0?true out:flags.1?true id:int pts:int pts_count:int date:int media:flags.9?MessageMedia entities:flags.7?Vector<MessageEntity> = Updates;
 ```
 
 #### Parameters:
 
 |Name|Type|
 |----|----|
+|unread|bool|
+|out|bool|
 |id|qint32|
 |pts|qint32|
 |ptsCount|qint32|

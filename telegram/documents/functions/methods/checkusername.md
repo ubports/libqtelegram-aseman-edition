@@ -1,18 +1,19 @@
-# Account.checkUsername
+# Channels.checkUsername
 
 ## Function:
 
-TelegramCore::accountCheckUsername
+TelegramCore::channelsCheckUsername
 
 ## Schema:
 
 ```c++
-account.checkUsername#2714d86c username:string = Bool;
+channels.checkUsername#10e6bd2c channel:InputChannel username:string = Bool;
 ```
 ## Parameters:
 
 |Name|Type|Default|
 |----|----|-------|
+|channel|[InputChannel](../../types/inputchannel.md)||
 |username|QString||
 |callBack|Callback&lt;bool&gt;|0|
 |timeout|qint32|TelegramCore::timeOut()|
@@ -50,7 +51,7 @@ onCheckUsernameError(qint64 msgId, qint32 errorCode, const QString &errorText)
 ## Examples:
 
 ```c++
-tg->checkUsername(username, [=](TG_CHECK_USERNAME_CALLBACK){
+tg->checkUsername(channel, username, [=](TG_CHECK_USERNAME_CALLBACK){
     ...
 }, 30000);
 ```

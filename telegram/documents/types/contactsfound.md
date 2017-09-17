@@ -9,13 +9,14 @@
 #### Schema:
 
 ```c++
-contacts.found#566000e results:Vector<ContactFound> users:Vector<User> = contacts.Found;
+contacts.found#1aa1f784 results:Vector<Peer> chats:Vector<Chat> users:Vector<User> = contacts.Found;
 ```
 
 #### Parameters:
 
 |Name|Type|
 |----|----|
-|results|QList&lt;[ContactFound](contactfound.md)&gt;|
+|results|QList&lt;[Peer](peer.md)&gt;|
+|chats|QList&lt;[Chat](chat.md)&gt;|
 |users|QList&lt;[User](user.md)&gt;|
 

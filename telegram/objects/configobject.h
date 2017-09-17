@@ -14,7 +14,6 @@ class LIBQTELEGRAMSHARED_EXPORT ConfigObject : public TelegramTypeQObject
 {
     Q_OBJECT
     Q_ENUMS(ConfigClassType)
-    Q_PROPERTY(qint32 broadcastSizeMax READ broadcastSizeMax WRITE setBroadcastSizeMax NOTIFY broadcastSizeMaxChanged)
     Q_PROPERTY(qint32 chatBigSize READ chatBigSize WRITE setChatBigSize NOTIFY chatBigSizeChanged)
     Q_PROPERTY(qint32 chatSizeMax READ chatSizeMax WRITE setChatSizeMax NOTIFY chatSizeMaxChanged)
     Q_PROPERTY(qint32 date READ date WRITE setDate NOTIFY dateChanged)
@@ -22,6 +21,7 @@ class LIBQTELEGRAMSHARED_EXPORT ConfigObject : public TelegramTypeQObject
     Q_PROPERTY(QList<DisabledFeature> disabledFeatures READ disabledFeatures WRITE setDisabledFeatures NOTIFY disabledFeaturesChanged)
     Q_PROPERTY(qint32 expires READ expires WRITE setExpires NOTIFY expiresChanged)
     Q_PROPERTY(qint32 forwardedCountMax READ forwardedCountMax WRITE setForwardedCountMax NOTIFY forwardedCountMaxChanged)
+    Q_PROPERTY(qint32 megagroupSizeMax READ megagroupSizeMax WRITE setMegagroupSizeMax NOTIFY megagroupSizeMaxChanged)
     Q_PROPERTY(qint32 notifyCloudDelayMs READ notifyCloudDelayMs WRITE setNotifyCloudDelayMs NOTIFY notifyCloudDelayMsChanged)
     Q_PROPERTY(qint32 notifyDefaultDelayMs READ notifyDefaultDelayMs WRITE setNotifyDefaultDelayMs NOTIFY notifyDefaultDelayMsChanged)
     Q_PROPERTY(qint32 offlineBlurTimeoutMs READ offlineBlurTimeoutMs WRITE setOfflineBlurTimeoutMs NOTIFY offlineBlurTimeoutMsChanged)
@@ -44,9 +44,6 @@ public:
     ConfigObject(QObject *parent = 0);
     virtual ~ConfigObject();
 
-    void setBroadcastSizeMax(qint32 broadcastSizeMax);
-    qint32 broadcastSizeMax() const;
-
     void setChatBigSize(qint32 chatBigSize);
     qint32 chatBigSize() const;
 
@@ -67,6 +64,9 @@ public:
 
     void setForwardedCountMax(qint32 forwardedCountMax);
     qint32 forwardedCountMax() const;
+
+    void setMegagroupSizeMax(qint32 megagroupSizeMax);
+    qint32 megagroupSizeMax() const;
 
     void setNotifyCloudDelayMs(qint32 notifyCloudDelayMs);
     qint32 notifyCloudDelayMs() const;
@@ -110,7 +110,6 @@ public:
 Q_SIGNALS:
     void coreChanged();
     void classTypeChanged();
-    void broadcastSizeMaxChanged();
     void chatBigSizeChanged();
     void chatSizeMaxChanged();
     void dateChanged();
@@ -118,6 +117,7 @@ Q_SIGNALS:
     void disabledFeaturesChanged();
     void expiresChanged();
     void forwardedCountMaxChanged();
+    void megagroupSizeMaxChanged();
     void notifyCloudDelayMsChanged();
     void notifyDefaultDelayMsChanged();
     void offlineBlurTimeoutMsChanged();
@@ -148,17 +148,6 @@ inline ConfigObject::ConfigObject(QObject *parent) :
 }
 
 inline ConfigObject::~ConfigObject() {
-}
-
-inline void ConfigObject::setBroadcastSizeMax(qint32 broadcastSizeMax) {
-    if(m_core.broadcastSizeMax() == broadcastSizeMax) return;
-    m_core.setBroadcastSizeMax(broadcastSizeMax);
-    Q_EMIT broadcastSizeMaxChanged();
-    Q_EMIT coreChanged();
-}
-
-inline qint32 ConfigObject::broadcastSizeMax() const {
-    return m_core.broadcastSizeMax();
 }
 
 inline void ConfigObject::setChatBigSize(qint32 chatBigSize) {
@@ -236,6 +225,17 @@ inline void ConfigObject::setForwardedCountMax(qint32 forwardedCountMax) {
 
 inline qint32 ConfigObject::forwardedCountMax() const {
     return m_core.forwardedCountMax();
+}
+
+inline void ConfigObject::setMegagroupSizeMax(qint32 megagroupSizeMax) {
+    if(m_core.megagroupSizeMax() == megagroupSizeMax) return;
+    m_core.setMegagroupSizeMax(megagroupSizeMax);
+    Q_EMIT megagroupSizeMaxChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 ConfigObject::megagroupSizeMax() const {
+    return m_core.megagroupSizeMax();
 }
 
 inline void ConfigObject::setNotifyCloudDelayMs(qint32 notifyCloudDelayMs) {
@@ -352,7 +352,6 @@ inline ConfigObject &ConfigObject::operator =(const Config &b) {
     if(m_core == b) return *this;
     m_core = b;
 
-    Q_EMIT broadcastSizeMaxChanged();
     Q_EMIT chatBigSizeChanged();
     Q_EMIT chatSizeMaxChanged();
     Q_EMIT dateChanged();
@@ -360,6 +359,7 @@ inline ConfigObject &ConfigObject::operator =(const Config &b) {
     Q_EMIT disabledFeaturesChanged();
     Q_EMIT expiresChanged();
     Q_EMIT forwardedCountMaxChanged();
+    Q_EMIT megagroupSizeMaxChanged();
     Q_EMIT notifyCloudDelayMsChanged();
     Q_EMIT notifyDefaultDelayMsChanged();
     Q_EMIT offlineBlurTimeoutMsChanged();

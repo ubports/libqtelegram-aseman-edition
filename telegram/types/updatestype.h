@@ -19,6 +19,7 @@
 #include <QList>
 #include "chat.h"
 #include "messageentity.h"
+#include "peer.h"
 #include "messagemedia.h"
 #include <QString>
 #include "update.h"
@@ -29,8 +30,8 @@ class LIBQTELEGRAMSHARED_EXPORT UpdatesType : public TelegramTypeObject
 public:
     enum UpdatesTypeClassType {
         typeUpdatesTooLong = 0xe317af7e,
-        typeUpdateShortMessage = 0x3f32d858,
-        typeUpdateShortChatMessage = 0xf9409b3d,
+        typeUpdateShortMessage = 0xf7d91a46,
+        typeUpdateShortChatMessage = 0xcac7fdd2,
         typeUpdateShort = 0x78d4dec1,
         typeUpdatesCombined = 0x725b04c3,
         typeUpdates = 0x74ae4240,
@@ -63,8 +64,8 @@ public:
     void setFwdDate(qint32 fwdDate);
     qint32 fwdDate() const;
 
-    void setFwdFromId(qint32 fwdFromId);
-    qint32 fwdFromId() const;
+    void setFwdFromId(const Peer &fwdFromId);
+    Peer fwdFromId() const;
 
     void setId(qint32 id);
     qint32 id() const;
@@ -72,8 +73,17 @@ public:
     void setMedia(const MessageMedia &media);
     MessageMedia media() const;
 
+    void setMediaUnread(bool mediaUnread);
+    bool mediaUnread() const;
+
+    void setMentioned(bool mentioned);
+    bool mentioned() const;
+
     void setMessage(const QString &message);
     QString message() const;
+
+    void setOut(bool out);
+    bool out() const;
 
     void setPts(qint32 pts);
     qint32 pts() const;
@@ -89,6 +99,9 @@ public:
 
     void setSeqStart(qint32 seqStart);
     qint32 seqStart() const;
+
+    void setUnread(bool unread);
+    bool unread() const;
 
     void setUpdate(const Update &update);
     Update update() const;
@@ -126,7 +139,7 @@ private:
     qint32 m_flags;
     qint32 m_fromId;
     qint32 m_fwdDate;
-    qint32 m_fwdFromId;
+    Peer m_fwdFromId;
     qint32 m_id;
     MessageMedia m_media;
     QString m_message;
@@ -153,7 +166,6 @@ inline UpdatesType::UpdatesType(UpdatesTypeClassType classType, InboundPkt *in) 
     m_flags(0),
     m_fromId(0),
     m_fwdDate(0),
-    m_fwdFromId(0),
     m_id(0),
     m_pts(0),
     m_ptsCount(0),
@@ -172,7 +184,6 @@ inline UpdatesType::UpdatesType(InboundPkt *in) :
     m_flags(0),
     m_fromId(0),
     m_fwdDate(0),
-    m_fwdFromId(0),
     m_id(0),
     m_pts(0),
     m_ptsCount(0),
@@ -192,7 +203,6 @@ inline UpdatesType::UpdatesType(const Null &null) :
     m_flags(0),
     m_fromId(0),
     m_fwdDate(0),
-    m_fwdFromId(0),
     m_id(0),
     m_pts(0),
     m_ptsCount(0),
@@ -263,11 +273,11 @@ inline qint32 UpdatesType::fwdDate() const {
     return m_fwdDate;
 }
 
-inline void UpdatesType::setFwdFromId(qint32 fwdFromId) {
+inline void UpdatesType::setFwdFromId(const Peer &fwdFromId) {
     m_fwdFromId = fwdFromId;
 }
 
-inline qint32 UpdatesType::fwdFromId() const {
+inline Peer UpdatesType::fwdFromId() const {
     return m_fwdFromId;
 }
 
@@ -287,12 +297,39 @@ inline MessageMedia UpdatesType::media() const {
     return m_media;
 }
 
+inline void UpdatesType::setMediaUnread(bool mediaUnread) {
+    if(mediaUnread) m_flags = (m_flags | (1<<5));
+    else m_flags = (m_flags & ~(1<<5));
+}
+
+inline bool UpdatesType::mediaUnread() const {
+    return (m_flags & 1<<5);
+}
+
+inline void UpdatesType::setMentioned(bool mentioned) {
+    if(mentioned) m_flags = (m_flags | (1<<4));
+    else m_flags = (m_flags & ~(1<<4));
+}
+
+inline bool UpdatesType::mentioned() const {
+    return (m_flags & 1<<4);
+}
+
 inline void UpdatesType::setMessage(const QString &message) {
     m_message = message;
 }
 
 inline QString UpdatesType::message() const {
     return m_message;
+}
+
+inline void UpdatesType::setOut(bool out) {
+    if(out) m_flags = (m_flags | (1<<1));
+    else m_flags = (m_flags & ~(1<<1));
+}
+
+inline bool UpdatesType::out() const {
+    return (m_flags & 1<<1);
 }
 
 inline void UpdatesType::setPts(qint32 pts) {
@@ -333,6 +370,15 @@ inline void UpdatesType::setSeqStart(qint32 seqStart) {
 
 inline qint32 UpdatesType::seqStart() const {
     return m_seqStart;
+}
+
+inline void UpdatesType::setUnread(bool unread) {
+    if(unread) m_flags = (m_flags | (1<<0));
+    else m_flags = (m_flags & ~(1<<0));
+}
+
+inline bool UpdatesType::unread() const {
+    return (m_flags & 1<<0);
 }
 
 inline void UpdatesType::setUpdate(const Update &update) {
@@ -418,7 +464,7 @@ inline bool UpdatesType::fetch(InboundPkt *in) {
         m_ptsCount = in->fetchInt();
         m_date = in->fetchInt();
         if(m_flags & 1<<2) {
-            m_fwdFromId = in->fetchInt();
+            m_fwdFromId.fetch(in);
         }
         if(m_flags & 1<<2) {
             m_fwdDate = in->fetchInt();
@@ -453,7 +499,7 @@ inline bool UpdatesType::fetch(InboundPkt *in) {
         m_ptsCount = in->fetchInt();
         m_date = in->fetchInt();
         if(m_flags & 1<<2) {
-            m_fwdFromId = in->fetchInt();
+            m_fwdFromId.fetch(in);
         }
         if(m_flags & 1<<2) {
             m_fwdDate = in->fetchInt();
@@ -599,7 +645,7 @@ inline bool UpdatesType::push(OutboundPkt *out) const {
         out->appendInt(m_pts);
         out->appendInt(m_ptsCount);
         out->appendInt(m_date);
-        out->appendInt(m_fwdFromId);
+        m_fwdFromId.push(out);
         out->appendInt(m_fwdDate);
         out->appendInt(m_replyToMsgId);
         out->appendInt(CoreTypes::typeVector);
@@ -620,7 +666,7 @@ inline bool UpdatesType::push(OutboundPkt *out) const {
         out->appendInt(m_pts);
         out->appendInt(m_ptsCount);
         out->appendInt(m_date);
-        out->appendInt(m_fwdFromId);
+        m_fwdFromId.push(out);
         out->appendInt(m_fwdDate);
         out->appendInt(m_replyToMsgId);
         out->appendInt(CoreTypes::typeVector);
@@ -716,13 +762,17 @@ inline QMap<QString, QVariant> UpdatesType::toMap() const {
     
     case typeUpdateShortMessage: {
         result["classType"] = "UpdatesType::typeUpdateShortMessage";
+        result["unread"] = QVariant::fromValue<bool>(unread());
+        result["out"] = QVariant::fromValue<bool>(out());
+        result["mentioned"] = QVariant::fromValue<bool>(mentioned());
+        result["mediaUnread"] = QVariant::fromValue<bool>(mediaUnread());
         result["id"] = QVariant::fromValue<qint32>(id());
         result["userId"] = QVariant::fromValue<qint32>(userId());
         result["message"] = QVariant::fromValue<QString>(message());
         result["pts"] = QVariant::fromValue<qint32>(pts());
         result["ptsCount"] = QVariant::fromValue<qint32>(ptsCount());
         result["date"] = QVariant::fromValue<qint32>(date());
-        result["fwdFromId"] = QVariant::fromValue<qint32>(fwdFromId());
+        result["fwdFromId"] = m_fwdFromId.toMap();
         result["fwdDate"] = QVariant::fromValue<qint32>(fwdDate());
         result["replyToMsgId"] = QVariant::fromValue<qint32>(replyToMsgId());
         QList<QVariant> _entities;
@@ -735,6 +785,10 @@ inline QMap<QString, QVariant> UpdatesType::toMap() const {
     
     case typeUpdateShortChatMessage: {
         result["classType"] = "UpdatesType::typeUpdateShortChatMessage";
+        result["unread"] = QVariant::fromValue<bool>(unread());
+        result["out"] = QVariant::fromValue<bool>(out());
+        result["mentioned"] = QVariant::fromValue<bool>(mentioned());
+        result["mediaUnread"] = QVariant::fromValue<bool>(mediaUnread());
         result["id"] = QVariant::fromValue<qint32>(id());
         result["fromId"] = QVariant::fromValue<qint32>(fromId());
         result["chatId"] = QVariant::fromValue<qint32>(chatId());
@@ -742,7 +796,7 @@ inline QMap<QString, QVariant> UpdatesType::toMap() const {
         result["pts"] = QVariant::fromValue<qint32>(pts());
         result["ptsCount"] = QVariant::fromValue<qint32>(ptsCount());
         result["date"] = QVariant::fromValue<qint32>(date());
-        result["fwdFromId"] = QVariant::fromValue<qint32>(fwdFromId());
+        result["fwdFromId"] = m_fwdFromId.toMap();
         result["fwdDate"] = QVariant::fromValue<qint32>(fwdDate());
         result["replyToMsgId"] = QVariant::fromValue<qint32>(replyToMsgId());
         QList<QVariant> _entities;
@@ -804,6 +858,8 @@ inline QMap<QString, QVariant> UpdatesType::toMap() const {
     
     case typeUpdateShortSentMessage: {
         result["classType"] = "UpdatesType::typeUpdateShortSentMessage";
+        result["unread"] = QVariant::fromValue<bool>(unread());
+        result["out"] = QVariant::fromValue<bool>(out());
         result["id"] = QVariant::fromValue<qint32>(id());
         result["pts"] = QVariant::fromValue<qint32>(pts());
         result["ptsCount"] = QVariant::fromValue<qint32>(ptsCount());
@@ -830,13 +886,17 @@ inline UpdatesType UpdatesType::fromMap(const QMap<QString, QVariant> &map) {
     }
     if(map.value("classType").toString() == "UpdatesType::typeUpdateShortMessage") {
         result.setClassType(typeUpdateShortMessage);
+        result.setUnread( map.value("unread").value<bool>() );
+        result.setOut( map.value("out").value<bool>() );
+        result.setMentioned( map.value("mentioned").value<bool>() );
+        result.setMediaUnread( map.value("mediaUnread").value<bool>() );
         result.setId( map.value("id").value<qint32>() );
         result.setUserId( map.value("userId").value<qint32>() );
         result.setMessage( map.value("message").value<QString>() );
         result.setPts( map.value("pts").value<qint32>() );
         result.setPtsCount( map.value("ptsCount").value<qint32>() );
         result.setDate( map.value("date").value<qint32>() );
-        result.setFwdFromId( map.value("fwdFromId").value<qint32>() );
+        result.setFwdFromId( Peer::fromMap(map.value("fwdFromId").toMap()) );
         result.setFwdDate( map.value("fwdDate").value<qint32>() );
         result.setReplyToMsgId( map.value("replyToMsgId").value<qint32>() );
         QList<QVariant> map_entities = map["entities"].toList();
@@ -848,6 +908,10 @@ inline UpdatesType UpdatesType::fromMap(const QMap<QString, QVariant> &map) {
     }
     if(map.value("classType").toString() == "UpdatesType::typeUpdateShortChatMessage") {
         result.setClassType(typeUpdateShortChatMessage);
+        result.setUnread( map.value("unread").value<bool>() );
+        result.setOut( map.value("out").value<bool>() );
+        result.setMentioned( map.value("mentioned").value<bool>() );
+        result.setMediaUnread( map.value("mediaUnread").value<bool>() );
         result.setId( map.value("id").value<qint32>() );
         result.setFromId( map.value("fromId").value<qint32>() );
         result.setChatId( map.value("chatId").value<qint32>() );
@@ -855,7 +919,7 @@ inline UpdatesType UpdatesType::fromMap(const QMap<QString, QVariant> &map) {
         result.setPts( map.value("pts").value<qint32>() );
         result.setPtsCount( map.value("ptsCount").value<qint32>() );
         result.setDate( map.value("date").value<qint32>() );
-        result.setFwdFromId( map.value("fwdFromId").value<qint32>() );
+        result.setFwdFromId( Peer::fromMap(map.value("fwdFromId").toMap()) );
         result.setFwdDate( map.value("fwdDate").value<qint32>() );
         result.setReplyToMsgId( map.value("replyToMsgId").value<qint32>() );
         QList<QVariant> map_entities = map["entities"].toList();
@@ -916,6 +980,8 @@ inline UpdatesType UpdatesType::fromMap(const QMap<QString, QVariant> &map) {
     }
     if(map.value("classType").toString() == "UpdatesType::typeUpdateShortSentMessage") {
         result.setClassType(typeUpdateShortSentMessage);
+        result.setUnread( map.value("unread").value<bool>() );
+        result.setOut( map.value("out").value<bool>() );
         result.setId( map.value("id").value<qint32>() );
         result.setPts( map.value("pts").value<qint32>() );
         result.setPtsCount( map.value("ptsCount").value<qint32>() );
@@ -1034,7 +1100,7 @@ inline QDataStream &operator>>(QDataStream &stream, UpdatesType &item) {
         qint32 m_date;
         stream >> m_date;
         item.setDate(m_date);
-        qint32 m_fwd_from_id;
+        Peer m_fwd_from_id;
         stream >> m_fwd_from_id;
         item.setFwdFromId(m_fwd_from_id);
         qint32 m_fwd_date;
@@ -1073,7 +1139,7 @@ inline QDataStream &operator>>(QDataStream &stream, UpdatesType &item) {
         qint32 m_date;
         stream >> m_date;
         item.setDate(m_date);
-        qint32 m_fwd_from_id;
+        Peer m_fwd_from_id;
         stream >> m_fwd_from_id;
         item.setFwdFromId(m_fwd_from_id);
         qint32 m_fwd_date;

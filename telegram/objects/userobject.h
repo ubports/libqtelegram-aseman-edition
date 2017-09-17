@@ -17,15 +17,23 @@ class LIBQTELEGRAMSHARED_EXPORT UserObject : public TelegramTypeQObject
     Q_OBJECT
     Q_ENUMS(UserClassType)
     Q_PROPERTY(qint64 accessHash READ accessHash WRITE setAccessHash NOTIFY accessHashChanged)
+    Q_PROPERTY(bool bot READ bot WRITE setBot NOTIFY botChanged)
+    Q_PROPERTY(bool botChatHistory READ botChatHistory WRITE setBotChatHistory NOTIFY botChatHistoryChanged)
     Q_PROPERTY(qint32 botInfoVersion READ botInfoVersion WRITE setBotInfoVersion NOTIFY botInfoVersionChanged)
+    Q_PROPERTY(bool botNochats READ botNochats WRITE setBotNochats NOTIFY botNochatsChanged)
+    Q_PROPERTY(bool contact READ contact WRITE setContact NOTIFY contactChanged)
+    Q_PROPERTY(bool deleted READ deleted WRITE setDeleted NOTIFY deletedChanged)
     Q_PROPERTY(QString firstName READ firstName WRITE setFirstName NOTIFY firstNameChanged)
     Q_PROPERTY(qint32 flags READ flags WRITE setFlags NOTIFY flagsChanged)
     Q_PROPERTY(qint32 id READ id WRITE setId NOTIFY idChanged)
     Q_PROPERTY(QString lastName READ lastName WRITE setLastName NOTIFY lastNameChanged)
+    Q_PROPERTY(bool mutualContact READ mutualContact WRITE setMutualContact NOTIFY mutualContactChanged)
     Q_PROPERTY(QString phone READ phone WRITE setPhone NOTIFY phoneChanged)
     Q_PROPERTY(UserProfilePhotoObject* photo READ photo WRITE setPhoto NOTIFY photoChanged)
+    Q_PROPERTY(bool self READ self WRITE setSelf NOTIFY selfChanged)
     Q_PROPERTY(UserStatusObject* status READ status WRITE setStatus NOTIFY statusChanged)
     Q_PROPERTY(QString username READ username WRITE setUsername NOTIFY usernameChanged)
+    Q_PROPERTY(bool verified READ verified WRITE setVerified NOTIFY verifiedChanged)
     Q_PROPERTY(User core READ core WRITE setCore NOTIFY coreChanged)
     Q_PROPERTY(quint32 classType READ classType WRITE setClassType NOTIFY classTypeChanged)
 
@@ -42,8 +50,23 @@ public:
     void setAccessHash(qint64 accessHash);
     qint64 accessHash() const;
 
+    void setBot(bool bot);
+    bool bot() const;
+
+    void setBotChatHistory(bool botChatHistory);
+    bool botChatHistory() const;
+
     void setBotInfoVersion(qint32 botInfoVersion);
     qint32 botInfoVersion() const;
+
+    void setBotNochats(bool botNochats);
+    bool botNochats() const;
+
+    void setContact(bool contact);
+    bool contact() const;
+
+    void setDeleted(bool deleted);
+    bool deleted() const;
 
     void setFirstName(const QString &firstName);
     QString firstName() const;
@@ -57,17 +80,26 @@ public:
     void setLastName(const QString &lastName);
     QString lastName() const;
 
+    void setMutualContact(bool mutualContact);
+    bool mutualContact() const;
+
     void setPhone(const QString &phone);
     QString phone() const;
 
     void setPhoto(UserProfilePhotoObject* photo);
     UserProfilePhotoObject* photo() const;
 
+    void setSelf(bool self);
+    bool self() const;
+
     void setStatus(UserStatusObject* status);
     UserStatusObject* status() const;
 
     void setUsername(const QString &username);
     QString username() const;
+
+    void setVerified(bool verified);
+    bool verified() const;
 
     void setClassType(quint32 classType);
     quint32 classType() const;
@@ -82,15 +114,23 @@ Q_SIGNALS:
     void coreChanged();
     void classTypeChanged();
     void accessHashChanged();
+    void botChanged();
+    void botChatHistoryChanged();
     void botInfoVersionChanged();
+    void botNochatsChanged();
+    void contactChanged();
+    void deletedChanged();
     void firstNameChanged();
     void flagsChanged();
     void idChanged();
     void lastNameChanged();
+    void mutualContactChanged();
     void phoneChanged();
     void photoChanged();
+    void selfChanged();
     void statusChanged();
     void usernameChanged();
+    void verifiedChanged();
 
 private Q_SLOTS:
     void corePhotoChanged();
@@ -140,6 +180,28 @@ inline qint64 UserObject::accessHash() const {
     return m_core.accessHash();
 }
 
+inline void UserObject::setBot(bool bot) {
+    if(m_core.bot() == bot) return;
+    m_core.setBot(bot);
+    Q_EMIT botChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool UserObject::bot() const {
+    return m_core.bot();
+}
+
+inline void UserObject::setBotChatHistory(bool botChatHistory) {
+    if(m_core.botChatHistory() == botChatHistory) return;
+    m_core.setBotChatHistory(botChatHistory);
+    Q_EMIT botChatHistoryChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool UserObject::botChatHistory() const {
+    return m_core.botChatHistory();
+}
+
 inline void UserObject::setBotInfoVersion(qint32 botInfoVersion) {
     if(m_core.botInfoVersion() == botInfoVersion) return;
     m_core.setBotInfoVersion(botInfoVersion);
@@ -149,6 +211,39 @@ inline void UserObject::setBotInfoVersion(qint32 botInfoVersion) {
 
 inline qint32 UserObject::botInfoVersion() const {
     return m_core.botInfoVersion();
+}
+
+inline void UserObject::setBotNochats(bool botNochats) {
+    if(m_core.botNochats() == botNochats) return;
+    m_core.setBotNochats(botNochats);
+    Q_EMIT botNochatsChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool UserObject::botNochats() const {
+    return m_core.botNochats();
+}
+
+inline void UserObject::setContact(bool contact) {
+    if(m_core.contact() == contact) return;
+    m_core.setContact(contact);
+    Q_EMIT contactChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool UserObject::contact() const {
+    return m_core.contact();
+}
+
+inline void UserObject::setDeleted(bool deleted) {
+    if(m_core.deleted() == deleted) return;
+    m_core.setDeleted(deleted);
+    Q_EMIT deletedChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool UserObject::deleted() const {
+    return m_core.deleted();
 }
 
 inline void UserObject::setFirstName(const QString &firstName) {
@@ -195,6 +290,17 @@ inline QString UserObject::lastName() const {
     return m_core.lastName();
 }
 
+inline void UserObject::setMutualContact(bool mutualContact) {
+    if(m_core.mutualContact() == mutualContact) return;
+    m_core.setMutualContact(mutualContact);
+    Q_EMIT mutualContactChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool UserObject::mutualContact() const {
+    return m_core.mutualContact();
+}
+
 inline void UserObject::setPhone(const QString &phone) {
     if(m_core.phone() == phone) return;
     m_core.setPhone(phone);
@@ -221,6 +327,17 @@ inline void UserObject::setPhoto(UserProfilePhotoObject* photo) {
 
 inline UserProfilePhotoObject*  UserObject::photo() const {
     return m_photo;
+}
+
+inline void UserObject::setSelf(bool self) {
+    if(m_core.self() == self) return;
+    m_core.setSelf(self);
+    Q_EMIT selfChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool UserObject::self() const {
+    return m_core.self();
 }
 
 inline void UserObject::setStatus(UserStatusObject* status) {
@@ -251,6 +368,17 @@ inline QString UserObject::username() const {
     return m_core.username();
 }
 
+inline void UserObject::setVerified(bool verified) {
+    if(m_core.verified() == verified) return;
+    m_core.setVerified(verified);
+    Q_EMIT verifiedChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool UserObject::verified() const {
+    return m_core.verified();
+}
+
 inline UserObject &UserObject::operator =(const User &b) {
     if(m_core == b) return *this;
     m_core = b;
@@ -258,15 +386,23 @@ inline UserObject &UserObject::operator =(const User &b) {
     m_status->setCore(b.status());
 
     Q_EMIT accessHashChanged();
+    Q_EMIT botChanged();
+    Q_EMIT botChatHistoryChanged();
     Q_EMIT botInfoVersionChanged();
+    Q_EMIT botNochatsChanged();
+    Q_EMIT contactChanged();
+    Q_EMIT deletedChanged();
     Q_EMIT firstNameChanged();
     Q_EMIT flagsChanged();
     Q_EMIT idChanged();
     Q_EMIT lastNameChanged();
+    Q_EMIT mutualContactChanged();
     Q_EMIT phoneChanged();
     Q_EMIT photoChanged();
+    Q_EMIT selfChanged();
     Q_EMIT statusChanged();
     Q_EMIT usernameChanged();
+    Q_EMIT verifiedChanged();
     Q_EMIT coreChanged();
     return *this;
 }

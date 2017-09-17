@@ -18,15 +18,19 @@ class LIBQTELEGRAMSHARED_EXPORT DialogObject : public TelegramTypeQObject
     Q_ENUMS(DialogClassType)
     Q_PROPERTY(PeerNotifySettingsObject* notifySettings READ notifySettings WRITE setNotifySettings NOTIFY notifySettingsChanged)
     Q_PROPERTY(PeerObject* peer READ peer WRITE setPeer NOTIFY peerChanged)
+    Q_PROPERTY(qint32 pts READ pts WRITE setPts NOTIFY ptsChanged)
     Q_PROPERTY(qint32 readInboxMaxId READ readInboxMaxId WRITE setReadInboxMaxId NOTIFY readInboxMaxIdChanged)
+    Q_PROPERTY(qint32 topImportantMessage READ topImportantMessage WRITE setTopImportantMessage NOTIFY topImportantMessageChanged)
     Q_PROPERTY(qint32 topMessage READ topMessage WRITE setTopMessage NOTIFY topMessageChanged)
     Q_PROPERTY(qint32 unreadCount READ unreadCount WRITE setUnreadCount NOTIFY unreadCountChanged)
+    Q_PROPERTY(qint32 unreadImportantCount READ unreadImportantCount WRITE setUnreadImportantCount NOTIFY unreadImportantCountChanged)
     Q_PROPERTY(Dialog core READ core WRITE setCore NOTIFY coreChanged)
     Q_PROPERTY(quint32 classType READ classType WRITE setClassType NOTIFY classTypeChanged)
 
 public:
     enum DialogClassType {
-        TypeDialog
+        TypeDialog,
+        TypeDialogChannel
     };
 
     DialogObject(const Dialog &core, QObject *parent = 0);
@@ -39,14 +43,23 @@ public:
     void setPeer(PeerObject* peer);
     PeerObject* peer() const;
 
+    void setPts(qint32 pts);
+    qint32 pts() const;
+
     void setReadInboxMaxId(qint32 readInboxMaxId);
     qint32 readInboxMaxId() const;
+
+    void setTopImportantMessage(qint32 topImportantMessage);
+    qint32 topImportantMessage() const;
 
     void setTopMessage(qint32 topMessage);
     qint32 topMessage() const;
 
     void setUnreadCount(qint32 unreadCount);
     qint32 unreadCount() const;
+
+    void setUnreadImportantCount(qint32 unreadImportantCount);
+    qint32 unreadImportantCount() const;
 
     void setClassType(quint32 classType);
     quint32 classType() const;
@@ -62,9 +75,12 @@ Q_SIGNALS:
     void classTypeChanged();
     void notifySettingsChanged();
     void peerChanged();
+    void ptsChanged();
     void readInboxMaxIdChanged();
+    void topImportantMessageChanged();
     void topMessageChanged();
     void unreadCountChanged();
+    void unreadImportantCountChanged();
 
 private Q_SLOTS:
     void coreNotifySettingsChanged();
@@ -137,6 +153,17 @@ inline PeerObject*  DialogObject::peer() const {
     return m_peer;
 }
 
+inline void DialogObject::setPts(qint32 pts) {
+    if(m_core.pts() == pts) return;
+    m_core.setPts(pts);
+    Q_EMIT ptsChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 DialogObject::pts() const {
+    return m_core.pts();
+}
+
 inline void DialogObject::setReadInboxMaxId(qint32 readInboxMaxId) {
     if(m_core.readInboxMaxId() == readInboxMaxId) return;
     m_core.setReadInboxMaxId(readInboxMaxId);
@@ -146,6 +173,17 @@ inline void DialogObject::setReadInboxMaxId(qint32 readInboxMaxId) {
 
 inline qint32 DialogObject::readInboxMaxId() const {
     return m_core.readInboxMaxId();
+}
+
+inline void DialogObject::setTopImportantMessage(qint32 topImportantMessage) {
+    if(m_core.topImportantMessage() == topImportantMessage) return;
+    m_core.setTopImportantMessage(topImportantMessage);
+    Q_EMIT topImportantMessageChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 DialogObject::topImportantMessage() const {
+    return m_core.topImportantMessage();
 }
 
 inline void DialogObject::setTopMessage(qint32 topMessage) {
@@ -170,6 +208,17 @@ inline qint32 DialogObject::unreadCount() const {
     return m_core.unreadCount();
 }
 
+inline void DialogObject::setUnreadImportantCount(qint32 unreadImportantCount) {
+    if(m_core.unreadImportantCount() == unreadImportantCount) return;
+    m_core.setUnreadImportantCount(unreadImportantCount);
+    Q_EMIT unreadImportantCountChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 DialogObject::unreadImportantCount() const {
+    return m_core.unreadImportantCount();
+}
+
 inline DialogObject &DialogObject::operator =(const Dialog &b) {
     if(m_core == b) return *this;
     m_core = b;
@@ -178,9 +227,12 @@ inline DialogObject &DialogObject::operator =(const Dialog &b) {
 
     Q_EMIT notifySettingsChanged();
     Q_EMIT peerChanged();
+    Q_EMIT ptsChanged();
     Q_EMIT readInboxMaxIdChanged();
+    Q_EMIT topImportantMessageChanged();
     Q_EMIT topMessageChanged();
     Q_EMIT unreadCountChanged();
+    Q_EMIT unreadImportantCountChanged();
     Q_EMIT coreChanged();
     return *this;
 }
@@ -194,6 +246,9 @@ inline void DialogObject::setClassType(quint32 classType) {
     switch(classType) {
     case TypeDialog:
         result = Dialog::typeDialog;
+        break;
+    case TypeDialogChannel:
+        result = Dialog::typeDialogChannel;
         break;
     default:
         result = Dialog::typeDialog;
@@ -211,6 +266,9 @@ inline quint32 DialogObject::classType() const {
     switch(static_cast<qint64>(m_core.classType())) {
     case Dialog::typeDialog:
         result = TypeDialog;
+        break;
+    case Dialog::typeDialogChannel:
+        result = TypeDialogChannel;
         break;
     default:
         result = TypeDialog;
