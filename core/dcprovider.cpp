@@ -319,7 +319,6 @@ void DcProvider::onConfigReceived(qint64 msgId, const Config &config, const QVar
     }
 
     qCDebug(TG_CORE_DCPROVIDER) << "chatMaxSize =" << config.chatSizeMax();
-    qCDebug(TG_CORE_DCPROVIDER) << "broadcastMaxSize =" << config.broadcastSizeMax();
 }
 
 TelegramApi *DcProvider::getApi() const {
