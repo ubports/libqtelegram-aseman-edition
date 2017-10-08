@@ -248,9 +248,6 @@ void Settings::writeAuthFile() {
         map[ar + ST_SERVER_SALT] = m_dcsList[i]->serverSalt();
         map[ar + ST_EXPIRES] = m_dcsList[i]->expires();
     }
-    qWarning() << "Write auth file:";
-    for(auto e : map.keys())
-        qWarning() << e << ": " << map.value(e);
 
     if(!_telegram_settings_write_fnc(m_baseConfigDirectory, m_phoneNumber, map))
         telegram_settings_write_fnc(m_baseConfigDirectory, m_phoneNumber, map);
