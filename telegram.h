@@ -152,15 +152,11 @@ public:
     qint64 messagesSetTyping(const InputPeer &peer, const SendMessageAction &action);
     qint64 messagesGetMessages(const QList<qint32> &msgIds);
     qint64 messagesGetDialogs(qint32 offset = 0, qint32 maxId = 0, qint32 limit = 0);
-    qint64 messagesGetHistory(const InputPeer &peer, qint32 offset = 0, qint32 maxId = 0, qint32 limit = 0);
-    qint64 messagesSearch(const InputPeer &peer, const QString &query, const MessagesFilter &filter, qint32 minDate = 0, qint32 maxDate = 0, qint32 offset = 0, qint32 maxId = 0, qint32 limit = 0);
     qint64 messagesReadHistory(const InputPeer &peer, qint32 maxId = 0, qint32 offset = 0);
     qint64 messagesReadMessageContents(const QList<qint32> &ids);
     qint64 messagesDeleteHistory(const InputPeer &peer, qint32 offset = 0);
     qint64 messagesDeleteMessages(const QList<qint32> &msgIds);
     qint64 messagesReceivedMessages(qint32 maxId);
-    qint64 messagesForwardMessage(const InputPeer &peer, qint32 msgId);
-    qint64 messagesForwardMessages(const InputPeer &peer, const QList<qint32> &msgIds, const QList<qint64> &randomIds);
     qint64 messagesSendBroadcast(const QList<InputUser> &users, const QList<qint64> &randomIds, const QString &message, const InputMedia &media);
 
     // Working with chats

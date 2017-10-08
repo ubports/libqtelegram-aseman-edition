@@ -1822,13 +1822,6 @@ qint64 Telegram::messagesReceivedMessages(qint32 maxId) {
     return mApi->messagesReceivedMessages(maxId);
 }
 
-qint64 Telegram::messagesForwardMessage(const InputPeer &peer, qint32 msgId) {
-    CHECK_API;
-    qint64 randomId;
-    Utils::randomBytes(&randomId, 8);
-    return mApi->messagesForwardMessage(peer, msgId, randomId);
-}
-
 qint64 Telegram::messagesSendBroadcast(const QList<InputUser> &users, const QList<qint64> &randomIds, const QString &message, const InputMedia &media) {
     CHECK_API;
     return mApi->messagesSendBroadcast(users, randomIds, message, media);
