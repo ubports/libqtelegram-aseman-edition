@@ -316,6 +316,8 @@ void Telegram::onDcProviderReady() {
     setApi( prv->mDcProvider->getApi() );
 
     //errors
+
+    // updates
     connect(mApi, &TelegramApi::fatalError, this, &Telegram::fatalError);
     connect(mApi, &TelegramApi::updates, this, &Telegram::updates);
     connect(mApi, &TelegramApi::updatesCombined, this, &Telegram::updatesCombined);
@@ -323,8 +325,6 @@ void Telegram::onDcProviderReady() {
     connect(mApi, &TelegramApi::updateShortChatMessage, this, &Telegram::updateShortChatMessage);
     connect(mApi, &TelegramApi::updateShortMessage, this, &Telegram::updateShortMessage);
     connect(mApi, &TelegramApi::updatesTooLong, this, &Telegram::updatesTooLong);
-
-    // updates
     connect(mApi, SIGNAL(updatesGetStateAnswer(qint64, const UpdatesState&, const QVariant)), this, SIGNAL(updatesGetStateAnswer(qint64, const UpdatesState&)));
 
     // logic additional signal slots
