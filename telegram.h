@@ -134,6 +134,33 @@ public:
     qint64 contactsUnblock(const InputUser &user);
     qint64 contactsGetBlocked(qint32 offset = 0, qint32 limit = 0);
 
+    // Working with channels
+    qint64 channelsGetDialogs(qint32 offset, qint32 limit);
+    qint64 channelsGetImportantHistory(const InputChannel &channel, qint32 offset_id, qint32 add_offset, qint32 limit, qint32 max_id, qint32 min_id);
+    qint64 channelsReadHistory(const InputChannel &channel, qint32 max_id);
+    qint64 channelsDeleteMessages(const InputChannel &channel, const QList<qint32> &id);
+    qint64 channelsDeleteUserHistory(const InputChannel &channel, const InputUser &user_id);
+    qint64 channelsReportSpam(const InputChannel &channel, const InputUser &user_id, const QList<qint32> &id);
+    qint64 channelsGetMessages(const InputChannel &channel, const QList<qint32> &id);
+    qint64 channelsGetParticipants(const InputChannel &channel, const ChannelParticipantsFilter &filter, qint32 offset, qint32 limit);
+    qint64 channelsGetParticipant(const InputChannel &channel, const InputUser &user_id);
+    qint64 channelsGetChannels(const QList<InputChannel> &id);
+    qint64 channelsGetFullChannel(const InputChannel &channel);
+    qint64 channelsCreateChannel(bool broadcast, bool megagroup, const QString &title, const QString &about);
+    qint64 channelsEditAbout(const InputChannel &channel, const QString &about);
+    qint64 channelsEditAdmin(const InputChannel &channel, const InputUser &user_id, const ChannelParticipantRole &role);
+    qint64 channelsEditTitle(const InputChannel &channel, const QString &title);
+    qint64 channelsEditPhoto(const InputChannel &channel, const InputChatPhoto &photo);
+    qint64 channelsToggleComments(const InputChannel &channel, bool enabled);
+    qint64 channelsCheckUsername(const InputChannel &channel, const QString &username);
+    qint64 channelsUpdateUsername(const InputChannel &channel, const QString &username);
+    qint64 channelsJoinChannel(const InputChannel &channel);
+    qint64 channelsLeaveChannel(const InputChannel &channel);
+    qint64 channelsInviteToChannel(const InputChannel &channel, const QList<InputUser> &users);
+    qint64 channelsKickFromChannel(const InputChannel &channel, const InputUser &user_id, bool kicked);
+    qint64 channelsExportInvite(const InputChannel &channel);
+    qint64 channelsDeleteChannel(const InputChannel &channel);
+
     // Working with messages
     qint64 messagesSendPhoto(const InputPeer &peer, qint64 randomId, const QByteArray &bytes, const QString &fileName, qint32 replyToMsgId = 0);
     qint64 messagesSendPhoto(const InputPeer &peer, qint64 randomId, const QString &filePath, qint32 replyToMsgId = 0);

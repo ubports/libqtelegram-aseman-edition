@@ -1560,6 +1560,157 @@ qint64 Telegram::contactsGetContacts() {
     return TelegramCore::contactsGetContacts(hash);
 }
 
+// Working with channels
+qint64 Telegram::channelsGetDialogs(qint32 offset, qint32 limit)
+{
+    CHECK_API;
+    return channelsGetDialogs(offset, limit);
+}
+
+qint64 Telegram::channelsGetImportantHistory(const InputChannel &channel, qint32 offset_id, qint32 add_offset, qint32 limit, qint32 max_id, qint32 min_id)
+{
+    CHECK_API;
+    return mApi->channelsGetImportantHistory(channel, offset_id, add_offset, limit, max_id, min_id);
+}
+
+qint64 Telegram::channelsReadHistory(const InputChannel &channel, qint32 max_id)
+{
+    CHECK_API;
+    return mApi->channelsReadHistory(channel, max_id);
+}
+
+qint64 Telegram::channelsDeleteMessages(const InputChannel &channel, const QList<qint32> &id)
+{
+    CHECK_API;
+    return mApi->channelsDeleteMessages(channel, id);
+}
+
+qint64 Telegram::channelsDeleteUserHistory(const InputChannel &channel, const InputUser &user_id)
+{
+    CHECK_API;
+    return mApi->channelsDeleteUserHistory(channel, user_id);
+}
+
+qint64 Telegram::channelsReportSpam(const InputChannel &channel, const InputUser &user_id, const QList<qint32> &id)
+{
+    CHECK_API;
+    return mApi->channelsReportSpam(channel, user_id, id);
+}
+
+qint64 Telegram::channelsGetMessages(const InputChannel &channel, const QList<qint32> &id)
+{
+    CHECK_API;
+    return mApi->channelsGetMessages(channel, id);
+}
+
+qint64 Telegram::channelsGetParticipants(const InputChannel &channel, const ChannelParticipantsFilter &filter, qint32 offset, qint32 limit)
+{
+    CHECK_API;
+    return mApi->channelsGetParticipants(channel, filter, offset, limit);
+}
+
+qint64 Telegram::channelsGetParticipant(const InputChannel &channel, const InputUser &user_id)
+{
+    CHECK_API;
+    return mApi->channelsGetParticipant(channel, user_id);
+}
+
+qint64 Telegram::channelsGetChannels(const QList<InputChannel> &id)
+{
+    CHECK_API;
+    return mApi->channelsGetChannels(id);
+}
+
+qint64 Telegram::channelsGetFullChannel(const InputChannel &channel)
+{
+    CHECK_API;
+    return mApi->channelsGetFullChannel(channel);
+}
+
+qint64 Telegram::channelsCreateChannel(bool broadcast, bool megagroup, const QString &title, const QString &about)
+{
+    CHECK_API;
+    return mApi->channelsCreateChannel(broadcast, megagroup, title, about);
+}
+
+qint64 Telegram::channelsEditAbout(const InputChannel &channel, const QString &about)
+{
+    CHECK_API;
+    return mApi->channelsEditAbout(channel, about);
+}
+
+qint64 Telegram::channelsEditAdmin(const InputChannel &channel, const InputUser &user_id, const ChannelParticipantRole &role)
+{
+    CHECK_API;
+    return mApi->channelsEditAdmin(channel, user_id, role);
+}
+
+qint64 Telegram::channelsEditTitle(const InputChannel &channel, const QString &title)
+{
+    CHECK_API;
+    return mApi->channelsEditTitle(channel, title);
+}
+
+qint64 Telegram::channelsEditPhoto(const InputChannel &channel, const InputChatPhoto &photo)
+{
+    CHECK_API;
+    return mApi->channelsEditPhoto(channel, photo);
+}
+
+qint64 Telegram::channelsToggleComments(const InputChannel &channel, bool enabled)
+{
+    CHECK_API;
+    return mApi->channelsToggleComments(channel, enabled);
+}
+
+qint64 Telegram::channelsCheckUsername(const InputChannel &channel, const QString &username)
+{
+    CHECK_API;
+    return mApi->channelsCheckUsername(channel, username);
+}
+
+qint64 Telegram::channelsUpdateUsername(const InputChannel &channel, const QString &username)
+{
+    CHECK_API;
+    return mApi->channelsUpdateUsername(channel, username);
+}
+
+qint64 Telegram::channelsJoinChannel(const InputChannel &channel)
+{
+    CHECK_API;
+    return mApi->channelsJoinChannel(channel);
+}
+
+qint64 Telegram::channelsLeaveChannel(const InputChannel &channel)
+{
+    CHECK_API;
+    return mApi->channelsLeaveChannel(channel);
+}
+
+qint64 Telegram::channelsInviteToChannel(const InputChannel &channel, const QList<InputUser> &users)
+{
+    CHECK_API;
+    return mApi->channelsInviteToChannel(channel, users);
+}
+
+qint64 Telegram::channelsKickFromChannel(const InputChannel &channel, const InputUser &user_id, bool kicked)
+{
+    CHECK_API;
+    return mApi->channelsKickFromChannel(channel, user_id, kicked);
+}
+
+qint64 Telegram::channelsExportInvite(const InputChannel &channel)
+{
+    CHECK_API;
+    return mApi->channelsExportInvite(channel);
+}
+
+qint64 Telegram::channelsDeleteChannel(const InputChannel &channel)
+{
+    CHECK_API;
+    return mApi->channelsDeleteChannel(channel);
+}
+
 qint64 Telegram::messagesSendPhoto(const InputPeer &peer, qint64 randomId, const QByteArray &bytes, const QString &fileName, qint32 replyToMsgId) {
     InputMedia inputMedia(InputMedia::typeInputMediaUploadedPhoto);
     FileOperation *op = new FileOperation(FileOperation::sendMedia);
