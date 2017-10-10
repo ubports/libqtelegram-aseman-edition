@@ -151,7 +151,7 @@ public:
     qint64 messagesForwardDocument(const InputPeer &peer, qint64 randomId, qint64 documentId, qint64 accessHash, qint32 replyToMsgId = 0);
     qint64 messagesSetTyping(const InputPeer &peer, const SendMessageAction &action);
     qint64 messagesGetMessages(const QList<qint32> &msgIds);
-    qint64 messagesGetDialogs(qint32 offset = 0, qint32 maxId = 0, qint32 limit = 0);
+    qint64 messagesGetDialogs(qint32 offset = 0, qint32 limit = 0);
     qint64 messagesReadHistory(const InputPeer &peer, qint32 maxId = 0, qint32 offset = 0);
     qint64 messagesReadMessageContents(const QList<qint32> &ids);
     qint64 messagesDeleteHistory(const InputPeer &peer, qint32 offset = 0);

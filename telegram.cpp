@@ -1792,9 +1792,9 @@ qint64 Telegram::messagesGetMessages(const QList<qint32> &msgIds) {
     return mApi->messagesGetMessages(msgIds);
 }
 
-qint64 Telegram::messagesGetDialogs(qint32 offset, qint32 maxId, qint32 limit) {
+qint64 Telegram::messagesGetDialogs(qint32 offset, qint32 limit) {
     CHECK_API;
-    return mApi->messagesGetDialogs(offset, maxId, limit);
+    return mApi->messagesGetDialogs(offset, limit);
 }
 
 qint64 Telegram::messagesReadHistory(const InputPeer &peer, qint32 maxId, qint32 offset) {
