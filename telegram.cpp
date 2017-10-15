@@ -1564,7 +1564,7 @@ qint64 Telegram::contactsGetContacts() {
 qint64 Telegram::channelsGetDialogs(qint32 offset, qint32 limit)
 {
     CHECK_API;
-    return channelsGetDialogs(offset, limit);
+    return mApi->channelsGetDialogs(offset, limit);
 }
 
 qint64 Telegram::channelsGetImportantHistory(const InputChannel &channel, qint32 offset_id, qint32 add_offset, qint32 limit, qint32 max_id, qint32 min_id)
