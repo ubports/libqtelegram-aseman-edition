@@ -140,7 +140,11 @@ qint64 FileHandler::uploadSendFileParts(UploadFileEngine &file) {
     return file.id();
 }
 
-void FileHandler::onUploadSaveFilePartResult(qint64 msgId, bool ok, const QVariant &attachedData) {
+void FileHandler::onUploadSaveFilePartResult(qint64 msgId, bool ok, const QVariant &attachedData)
+{
+    Q_UNUSED(msgId)
+    Q_UNUSED(ok)
+
     qint64 fileId = attachedData.toLongLong();
     UploadFileEngine::Ptr uploadFile = mUploadsMap.value(fileId);
     Q_ASSERT(!uploadFile.isNull());

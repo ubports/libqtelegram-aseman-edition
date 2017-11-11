@@ -285,7 +285,7 @@ void DcProvider::onConfigReceived(qint64 msgId, const Config &config, const QVar
 
     Q_FOREACH (DcOption dcOption, dcOptions) {
         qCWarning(TG_CORE_DCPROVIDER) << "dcOption | id =" << dcOption.id() << ", ipAddress =" << dcOption.ipAddress() <<
-                    ", port =" << dcOption.port() << ", hostname =" << dcOption.ipAddress();
+                    ", port =" << dcOption.port() << ", hostname =" << dcOption.ipAddress() << ", mediaOnly: " << dcOption.mediaOnly();
         // for every new DC or not authenticated DC, insert into m_dcs and authenticate
         DC *dc = mDcs.value(dcOption.id());
 
@@ -296,7 +296,8 @@ void DcProvider::onConfigReceived(qint64 msgId, const Config &config, const QVar
             mDcs.insert(dcOption.id(), dc);
         }
 
-        dc->addEndpoint(dcOption.ipAddress(), dcOption.port());
+        if(!dcOption.mediaOnly())
+            dc->addEndpoint(dcOption.ipAddress(), dcOption.port());
         qint32 currentDc = dcIndex.indexOf(dcOption.id());
         if (currentDc>-1)
         {

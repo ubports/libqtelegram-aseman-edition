@@ -25,8 +25,8 @@ DC::DC(qint32 dcNum) :
     m_authKeyId(0),
     m_expires(0),
     m_serverSalt(0),
-    mTimeDifference(0),
     m_Endpoint(1),
+    mTimeDifference(0),
     m_mediaOnly(false)
     {
         endpoints = QList<Endpoint>();

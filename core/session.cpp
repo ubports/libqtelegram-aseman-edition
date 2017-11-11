@@ -69,6 +69,7 @@ void Session::close() {
 }
 
 void Session::onDisconnected() {
+    qCWarning(TG_CORE_SESSION()) << "disconnected session id " << QString::number(m_sessionId, 16);
     if(error() == QAbstractSocket::RemoteHostClosedError) {
         return; // Trying to reconnect...
     }
@@ -252,7 +253,7 @@ void Session::workContainer (InboundPkt &inboundPkt, qint64 msgId) {
 }
 
 void Session::workNewSessionCreated(InboundPkt &inboundPkt, qint64 msgId) {
-    qCDebug(TG_CORE_SESSION) << "workNewSessionCreated: msgId =" << QString::number(msgId, 16);
+    qCWarning(TG_CORE_SESSION) << "workNewSessionCreated: msgId =" << QString::number(msgId, 16);
     mAsserter.check(inboundPkt.fetchInt() == (qint32)TL_NewSessionCreated);
     inboundPkt.fetchLong(); // first_msg_id; //XXX set is as m_clientLastMsgId??
     inboundPkt.fetchLong (); // unique_id
@@ -675,11 +676,11 @@ void Session::sendAcks(const QList<qint64> &msgIds) {
 
 void Session::onError(QAbstractSocket::SocketError error) {
     if (error <= QAbstractSocket::NetworkError) {
-        m_dc->advanceEndpoint();
+        //m_dc->advanceEndpoint();
         QString newHost = m_dc->currentEndpoint().host();
         qint32 newPort = m_dc->currentEndpoint().port();
         setHost(newHost);
         setPort(newPort);
-        qCWarning(TG_CORE_SESSION) << "Error " << error << " in tcp socket, retrying endpoint: " << newHost << ":" << newPort;
+        qWarning() << "Error " << error << " in tcp socket, retrying endpoint: " << newHost << ":" << newPort;
     }
 }
