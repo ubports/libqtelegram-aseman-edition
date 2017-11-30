@@ -6,18 +6,28 @@
 #define LQTG_TYPE_INPUTPEERNOTIFYSETTINGS
 
 #include "telegramtypeobject.h"
+
+#include <QMetaType>
+#include <QVariant>
+#include "core/inboundpkt.h"
+#include "core/outboundpkt.h"
+#include "../coretypes.h"
+
+#include <QDataStream>
+
 #include <QtGlobal>
 #include <QString>
 
 class LIBQTELEGRAMSHARED_EXPORT InputPeerNotifySettings : public TelegramTypeObject
 {
 public:
-    enum InputPeerNotifySettingsType {
+    enum InputPeerNotifySettingsClassType {
         typeInputPeerNotifySettings = 0x46a2ce98
     };
 
-    InputPeerNotifySettings(InputPeerNotifySettingsType classType = typeInputPeerNotifySettings, InboundPkt *in = 0);
+    InputPeerNotifySettings(InputPeerNotifySettingsClassType classType = typeInputPeerNotifySettings, InboundPkt *in = 0);
     InputPeerNotifySettings(InboundPkt *in);
+    InputPeerNotifySettings(const Null&);
     virtual ~InputPeerNotifySettings();
 
     void setEventsMask(qint32 eventsMask);
@@ -32,20 +42,224 @@ public:
     void setSound(const QString &sound);
     QString sound() const;
 
-    void setClassType(InputPeerNotifySettingsType classType);
-    InputPeerNotifySettingsType classType() const;
+    void setClassType(InputPeerNotifySettingsClassType classType);
+    InputPeerNotifySettingsClassType classType() const;
 
     bool fetch(InboundPkt *in);
     bool push(OutboundPkt *out) const;
 
-    bool operator ==(const InputPeerNotifySettings &b);
+    QMap<QString, QVariant> toMap() const;
+    static InputPeerNotifySettings fromMap(const QMap<QString, QVariant> &map);
+
+    bool operator ==(const InputPeerNotifySettings &b) const;
+
+    bool operator==(bool stt) const { return isNull() != stt; }
+    bool operator!=(bool stt) const { return !operator ==(stt); }
+
+    QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
     qint32 m_eventsMask;
     qint32 m_muteUntil;
     bool m_showPreviews;
     QString m_sound;
-    InputPeerNotifySettingsType m_classType;
+    InputPeerNotifySettingsClassType m_classType;
 };
+
+Q_DECLARE_METATYPE(InputPeerNotifySettings)
+
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator<<(QDataStream &stream, const InputPeerNotifySettings &item);
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, InputPeerNotifySettings &item);
+
+inline InputPeerNotifySettings::InputPeerNotifySettings(InputPeerNotifySettingsClassType classType, InboundPkt *in) :
+    m_eventsMask(0),
+    m_muteUntil(0),
+    m_showPreviews(false),
+    m_classType(classType)
+{
+    if(in) fetch(in);
+}
+
+inline InputPeerNotifySettings::InputPeerNotifySettings(InboundPkt *in) :
+    m_eventsMask(0),
+    m_muteUntil(0),
+    m_showPreviews(false),
+    m_classType(typeInputPeerNotifySettings)
+{
+    fetch(in);
+}
+
+inline InputPeerNotifySettings::InputPeerNotifySettings(const Null &null) :
+    TelegramTypeObject(null),
+    m_eventsMask(0),
+    m_muteUntil(0),
+    m_showPreviews(false),
+    m_classType(typeInputPeerNotifySettings)
+{
+}
+
+inline InputPeerNotifySettings::~InputPeerNotifySettings() {
+}
+
+inline void InputPeerNotifySettings::setEventsMask(qint32 eventsMask) {
+    m_eventsMask = eventsMask;
+}
+
+inline qint32 InputPeerNotifySettings::eventsMask() const {
+    return m_eventsMask;
+}
+
+inline void InputPeerNotifySettings::setMuteUntil(qint32 muteUntil) {
+    m_muteUntil = muteUntil;
+}
+
+inline qint32 InputPeerNotifySettings::muteUntil() const {
+    return m_muteUntil;
+}
+
+inline void InputPeerNotifySettings::setShowPreviews(bool showPreviews) {
+    m_showPreviews = showPreviews;
+}
+
+inline bool InputPeerNotifySettings::showPreviews() const {
+    return m_showPreviews;
+}
+
+inline void InputPeerNotifySettings::setSound(const QString &sound) {
+    m_sound = sound;
+}
+
+inline QString InputPeerNotifySettings::sound() const {
+    return m_sound;
+}
+
+inline bool InputPeerNotifySettings::operator ==(const InputPeerNotifySettings &b) const {
+    return m_classType == b.m_classType &&
+           m_eventsMask == b.m_eventsMask &&
+           m_muteUntil == b.m_muteUntil &&
+           m_showPreviews == b.m_showPreviews &&
+           m_sound == b.m_sound;
+}
+
+inline void InputPeerNotifySettings::setClassType(InputPeerNotifySettings::InputPeerNotifySettingsClassType classType) {
+    m_classType = classType;
+}
+
+inline InputPeerNotifySettings::InputPeerNotifySettingsClassType InputPeerNotifySettings::classType() const {
+    return m_classType;
+}
+
+inline bool InputPeerNotifySettings::fetch(InboundPkt *in) {
+    LQTG_FETCH_LOG;
+    int x = in->fetchInt();
+    switch(x) {
+    case typeInputPeerNotifySettings: {
+        m_muteUntil = in->fetchInt();
+        m_sound = in->fetchQString();
+        m_showPreviews = in->fetchBool();
+        m_eventsMask = in->fetchInt();
+        m_classType = static_cast<InputPeerNotifySettingsClassType>(x);
+        return true;
+    }
+        break;
+    
+    default:
+        LQTG_FETCH_ASSERT;
+        return false;
+    }
+}
+
+inline bool InputPeerNotifySettings::push(OutboundPkt *out) const {
+    out->appendInt(m_classType);
+    switch(m_classType) {
+    case typeInputPeerNotifySettings: {
+        out->appendInt(m_muteUntil);
+        out->appendQString(m_sound);
+        out->appendBool(m_showPreviews);
+        out->appendInt(m_eventsMask);
+        return true;
+    }
+        break;
+    
+    default:
+        return false;
+    }
+}
+
+inline QMap<QString, QVariant> InputPeerNotifySettings::toMap() const {
+    QMap<QString, QVariant> result;
+    switch(static_cast<int>(m_classType)) {
+    case typeInputPeerNotifySettings: {
+        result["classType"] = "InputPeerNotifySettings::typeInputPeerNotifySettings";
+        result["muteUntil"] = QVariant::fromValue<qint32>(muteUntil());
+        result["sound"] = QVariant::fromValue<QString>(sound());
+        result["showPreviews"] = QVariant::fromValue<bool>(showPreviews());
+        result["eventsMask"] = QVariant::fromValue<qint32>(eventsMask());
+        return result;
+    }
+        break;
+    
+    default:
+        return result;
+    }
+}
+
+inline InputPeerNotifySettings InputPeerNotifySettings::fromMap(const QMap<QString, QVariant> &map) {
+    InputPeerNotifySettings result;
+    if(map.value("classType").toString() == "InputPeerNotifySettings::typeInputPeerNotifySettings") {
+        result.setClassType(typeInputPeerNotifySettings);
+        result.setMuteUntil( map.value("muteUntil").value<qint32>() );
+        result.setSound( map.value("sound").value<QString>() );
+        result.setShowPreviews( map.value("showPreviews").value<bool>() );
+        result.setEventsMask( map.value("eventsMask").value<qint32>() );
+        return result;
+    }
+    return result;
+}
+
+inline QByteArray InputPeerNotifySettings::getHash(QCryptographicHash::Algorithm alg) const {
+    QByteArray data;
+    QDataStream str(&data, QIODevice::WriteOnly);
+    str << *this;
+    return QCryptographicHash::hash(data, alg);
+}
+
+inline QDataStream &operator<<(QDataStream &stream, const InputPeerNotifySettings &item) {
+    stream << static_cast<uint>(item.classType());
+    switch(item.classType()) {
+    case InputPeerNotifySettings::typeInputPeerNotifySettings:
+        stream << item.muteUntil();
+        stream << item.sound();
+        stream << item.showPreviews();
+        stream << item.eventsMask();
+        break;
+    }
+    return stream;
+}
+
+inline QDataStream &operator>>(QDataStream &stream, InputPeerNotifySettings &item) {
+    uint type = 0;
+    stream >> type;
+    item.setClassType(static_cast<InputPeerNotifySettings::InputPeerNotifySettingsClassType>(type));
+    switch(type) {
+    case InputPeerNotifySettings::typeInputPeerNotifySettings: {
+        qint32 m_mute_until;
+        stream >> m_mute_until;
+        item.setMuteUntil(m_mute_until);
+        QString m_sound;
+        stream >> m_sound;
+        item.setSound(m_sound);
+        bool m_show_previews;
+        stream >> m_show_previews;
+        item.setShowPreviews(m_show_previews);
+        qint32 m_events_mask;
+        stream >> m_events_mask;
+        item.setEventsMask(m_events_mask);
+    }
+        break;
+    }
+    return stream;
+}
+
 
 #endif // LQTG_TYPE_INPUTPEERNOTIFYSETTINGS

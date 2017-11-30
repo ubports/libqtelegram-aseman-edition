@@ -20,7 +20,7 @@
  */
 
 #include "dcauth.h"
-
+#include "connection.h"
 #include <openssl/sha.h>
 #include "util/utils.h"
 #include "util/tlvalues.h"
@@ -39,6 +39,7 @@ DCAuth::DCAuth(DC *dc, Settings *settings, CryptoUtils *crypto, QObject *parent)
     mSettings(settings),
     mCrypto(crypto),
     m_dc(dc) {
+        connect(this, &Connection::connectionError, this, &DCAuth::onError);
 }
 
 DCAuth::~DCAuth() {
@@ -339,7 +340,8 @@ void DCAuth::processRpcAnswer(QByteArray response) {
     case DC::userSignedIn:
         break;
     default:
-        qCWarning(TG_CORE_DCAUTH) << "fatal: cannot receive answer in state" << m_dc->state();
+        qCWarning(TG_CORE_DCAUTH) << "fatal: cannot receive answer in state" << m_dc->state() << ", dcId:" << m_dc->id()
+                                  << ", mediaOnly:" << m_dc->mediaOnly();
         Q_EMIT fatalError();
     }
 }
@@ -372,4 +374,15 @@ void DCAuth::rpcSendPacket(OutboundPkt &packet) {
     writeOut(&unencMsgHeader, 20);
     writeOut(packet.buffer(), len);
     qCDebug(TG_CORE_DCAUTH) << "packet sent";
+}
+
+void DCAuth::onError(QAbstractSocket::SocketError error) {
+    if (error <= QAbstractSocket::NetworkError) {
+        m_dc->advanceEndpoint();
+        QString newHost = m_dc->currentEndpoint().host();
+        qint32 newPort = m_dc->currentEndpoint().port();
+        setHost(newHost);
+        setPort(newPort);
+        qCWarning(TG_CORE_DCAUTH) << "Error " << error << " in tcp socket, retrying endpoint: " << newHost << ":" << newPort;
+    }
 }

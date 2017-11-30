@@ -20,6 +20,7 @@
  */
 
 #include "session.h"
+#include "connection.h"
 #include <openssl/rand.h>
 #include <openssl/sha.h>
 #include <QDateTime>
@@ -52,6 +53,7 @@ Session::Session(DC *dc, Settings *settings, CryptoUtils *crypto, QObject *paren
     qCDebug(TG_CORE_SESSION) << "created session with id" << QString::number(m_sessionId, 16);
 
     connect(this, SIGNAL(disconnected()), SLOT(onDisconnected()));
+    connect(this, &Connection::connectionError, this, &Session::onError);
 }
 
 Session::~Session() {
@@ -67,6 +69,7 @@ void Session::close() {
 }
 
 void Session::onDisconnected() {
+    qCWarning(TG_CORE_SESSION()) << "disconnected session id " << QString::number(m_sessionId, 16);
     if(error() == QAbstractSocket::RemoteHostClosedError) {
         return; // Trying to reconnect...
     }
@@ -250,7 +253,7 @@ void Session::workContainer (InboundPkt &inboundPkt, qint64 msgId) {
 }
 
 void Session::workNewSessionCreated(InboundPkt &inboundPkt, qint64 msgId) {
-    qCDebug(TG_CORE_SESSION) << "workNewSessionCreated: msgId =" << QString::number(msgId, 16);
+    qCWarning(TG_CORE_SESSION) << "workNewSessionCreated: msgId =" << QString::number(msgId, 16);
     mAsserter.check(inboundPkt.fetchInt() == (qint32)TL_NewSessionCreated);
     inboundPkt.fetchLong(); // first_msg_id; //XXX set is as m_clientLastMsgId??
     inboundPkt.fetchLong (); // unique_id
@@ -318,6 +321,7 @@ void Session::workUpdateShortChatMessage(InboundPkt &inboundPkt, qint64 msgId) {
     UpdatesType upd(&inboundPkt);
     bool unread = (upd.flags() & 0x1);
     bool out = (upd.flags() & 0x2);
+
     Q_EMIT updateShortChatMessage(upd.id(), upd.fromId(), upd.chatId(), upd.message(), upd.pts(), upd.ptsCount(), upd.date(), upd.fwdFromId(), upd.date(), upd.replyToMsgId(), unread, out);
 }
 
@@ -524,6 +528,7 @@ qint64 Session::sendQuery(OutboundPkt &outboundPkt, QueryMethods *methods, const
     Query *q = new Query(this);
     q->setData(data, ints);
     q->setMsgId(encryptSendMessage(data, ints, 1));
+    q->setMainMsgId(q->msgId());
     q->setSeqNo(m_seqNo - 1);
     qCDebug(TG_CORE_SESSION) << "msgId is" << QString::number(q->msgId(), 16);
     q->setMethods(methods);
@@ -667,4 +672,15 @@ void Session::sendAcks(const QList<qint64> &msgIds) {
     }
     qint64 sentAcksId = encryptSendMessage(p.buffer(), p.length(), 0);
     qCDebug(TG_CORE_SESSION) << "Sent Acks with id:" << QString::number(sentAcksId, 16);
+}
+
+void Session::onError(QAbstractSocket::SocketError error) {
+    if (error <= QAbstractSocket::NetworkError) {
+        //m_dc->advanceEndpoint();
+        QString newHost = m_dc->currentEndpoint().host();
+        qint32 newPort = m_dc->currentEndpoint().port();
+        setHost(newHost);
+        setPort(newPort);
+        qWarning() << "Error " << error << " in tcp socket, retrying endpoint: " << newHost << ":" << newPort;
+    }
 }

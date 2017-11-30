@@ -19,17 +19,19 @@
  *
  */
 
-#ifndef NETWORKMGR_H
-#define NETWORKMGR_H
+#ifndef DC_H
+#define DC_H
+
 
 #include <QObject>
+#include <QMutex>
 #include "outboundpkt.h"
 #include "inboundpkt.h"
 #include "connection.h"
 #include "settings.h"
 #include "util/cryptoutils.h"
 
-class DC : public Endpoint
+class DC
 {
 public:
     enum DcState {
@@ -42,28 +44,37 @@ public:
         userSignedIn
     };
 
-    explicit DC(qint32 dcNum) :
-        m_id(dcNum),
-        m_state(init),
-        m_authKeyId(0),
-        m_expires(0),
-        m_serverSalt(0),
-        mTimeDifference(0) {}
-
+    DC(qint32 dcNum);
     inline qint32 id() { return m_id; }
     inline void setState(DcState dcState) { m_state = dcState; }
     inline DcState state() { return m_state; }
     inline qint64 serverSalt() { return m_serverSalt; }
-    inline void setServerSalt(qint64 serverSalt) { this->m_serverSalt = serverSalt; }
+    inline void setServerSalt(qint64 serverSalt) { m_serverSalt = serverSalt; }
     inline qint64 authKeyId() { return m_authKeyId; }
-    inline void setAuthKeyId(qint64 authkeyId) { this->m_authKeyId = authkeyId; }
+    inline void setAuthKeyId(qint64 authkeyId) { m_authKeyId = authkeyId; }
     inline char *authKey() { return m_authKey; }
     inline double timeDifference() { return mTimeDifference; }
     inline void setTimeDifference(qint32 timeDifference) { mTimeDifference = timeDifference; }
     inline qint32 expires() { return m_expires; }
     inline void setExpires(qint32 expires) { m_expires = expires; }
+    inline bool mediaOnly() const { return m_mediaOnly; }
+    inline void setMediaOnly(bool mediaOnly) { m_mediaOnly = mediaOnly; }
 
-private:
+    QList<Endpoint> getEndpoints() { return endpoints; }
+
+    void addEndpoint(QString ipAddress, qint32 port);
+    void deleteEndpoints();
+    void advanceEndpoint();
+    Endpoint currentEndpoint();
+    QString host() { if (endpoints.length() == 0) return ""; else return endpoints[m_Endpoint-1].host(); }
+    qint32 port() { if (endpoints.length() == 0) return 0; else return endpoints[m_Endpoint-1].port(); }
+
+
+    private:
+
+    QMutex endpointsLock;
+    QList<Endpoint> endpoints;
+    qint32 m_Endpoint;
 
     // dc metadata
     qint32 m_id;
@@ -76,6 +87,7 @@ private:
     qint64 m_serverSalt;
     qint32 mTimeDifference; // difference between client and server time
 
+    bool m_mediaOnly;
 };
 
 #endif // NETWORKMGR_H

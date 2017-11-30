@@ -4,21 +4,22 @@
 
 Q_LOGGING_CATEGORY(TG_FILE_FILEHANDLER, "tg.file.filehandler")
 
-FileHandler::FileHandler(Api *api, CryptoUtils *crypto, Settings *settings, DcProvider &dcProvider, SecretState &secretState, QObject *parent) :
+FileHandler::FileHandler(TelegramCore *core, TelegramApi *api, CryptoUtils *crypto, Settings *settings, DcProvider &dcProvider, SecretState &secretState, QObject *parent) :
     QObject(parent),
     mApi(api),
+    mCore(core),
     mCrypto(crypto),
     mSettings(settings),
     mDcProvider(dcProvider),
     mSecretState(secretState) {
 
-    connect(mApi, SIGNAL(uploadSaveFilePartResult(qint64,qint64,bool)), this, SLOT(onUploadSaveFilePartResult(qint64,qint64,bool)));
-    connect(mApi, SIGNAL(uploadSaveBigFilePartResult(qint64,qint64,bool)), this, SLOT(onUploadSaveFilePartResult(qint64,qint64,bool)));
-    connect(mApi, SIGNAL(uploadFile(qint64,const StorageFileType&,qint32,QByteArray)), this, SLOT(onUploadGetFileAnswer(qint64,const StorageFileType&,qint32,QByteArray)));
-    connect(mApi, SIGNAL(uploadFileError(qint64,qint32,const QString&)), this, SLOT(onUploadGetFileError(qint64,qint32,const QString&)));
-    connect(mApi, SIGNAL(messagesSentMedia(qint64,const UpdatesType&)), SLOT(onMessagesSentMedia(qint64,const UpdatesType&)));
-    connect(mApi, SIGNAL(messagesSendEncryptedFileSentEncryptedMessage(qint64,qint32)), this, SLOT(onMessagesSentEncryptedFile(qint64,qint32)));
-    connect(mApi, SIGNAL(messagesSendEncryptedFileSentEncryptedFile(qint64,qint32,EncryptedFile)), this, SLOT(onMessagesSentEncryptedFile(qint64,qint32,EncryptedFile)));
+    connect(mApi, &TelegramApi::uploadSaveFilePartAnswer, this, &FileHandler::onUploadSaveFilePartResult);
+    connect(mApi, &TelegramApi::uploadSaveBigFilePartAnswer, this, &FileHandler::onUploadSaveFilePartResult);
+    connect(mApi, &TelegramApi::uploadGetFileAnswer, this, &FileHandler::onUploadGetFileAnswer);
+    connect(mApi, &TelegramApi::uploadGetFileError, this, &FileHandler::onUploadGetFileError);
+    connect(mApi, &TelegramApi::messagesSendMediaAnswer, this, &FileHandler::onMessagesSentMedia);
+    connect(mApi, &TelegramApi::messagesSendEncryptedFileAnswer, this, &FileHandler::onMessagesSentEncryptedFile);
+
 }
 
 FileHandler::~FileHandler() {
@@ -68,7 +69,7 @@ qint64 FileHandler::uploadSendFile(FileOperation &op, const QString &fileName, c
         uploadSendFileParts(*firstFileToUpload);
     } else {
         mInitialUploadsMap[session->sessionId()] << firstFileToUpload;
-        connect(session, SIGNAL(sessionReady(DC*)), this, SLOT(onUploadSendFileSessionCreated()));
+        connect(session, &Session::sessionReady, this, &FileHandler::onUploadSendFileSessionCreated);
         session->connectToServer();
     }
 
@@ -108,7 +109,7 @@ qint64 FileHandler::uploadSendFile(FileOperation &op, const QString &filePath, c
         uploadSendFileParts(*firstFileToUpload);
     } else {
         mInitialUploadsMap[session->sessionId()] << firstFileToUpload;
-        connect(session, SIGNAL(sessionReady(DC*)), this, SLOT(onUploadSendFileSessionCreated()));
+        connect(session, &Session::sessionReady, this, &FileHandler::onUploadSendFileSessionCreated);
         session->connectToServer();
     }
 
@@ -130,16 +131,21 @@ qint64 FileHandler::uploadSendFileParts(UploadFileEngine &file) {
     while (file.hasMoreParts()) {
         QByteArray bytes = file.nextPart();
         if (file.length() > 10 * 1024 * 1024) {
-            mApi->uploadSaveBigFilePart(file.session(), file.id(), partId++, file.nParts(), bytes);
+            mApi->uploadSaveBigFilePart(file.id(), partId++, file.nParts(), bytes, file.id(), file.session());
         } else {
-            mApi->uploadSaveFilePart(file.session(), file.id(), partId++, bytes);
+            mApi->uploadSaveFilePart(file.id(), partId++, bytes, file.id(), file.session());
         }
     }
     // return file id instead of every part msg id
     return file.id();
 }
 
-void FileHandler::onUploadSaveFilePartResult(qint64, qint64 fileId, bool) {
+void FileHandler::onUploadSaveFilePartResult(qint64 msgId, bool ok, const QVariant &attachedData)
+{
+    Q_UNUSED(msgId)
+    Q_UNUSED(ok)
+
+    qint64 fileId = attachedData.toLongLong();
     UploadFileEngine::Ptr uploadFile = mUploadsMap.value(fileId);
     Q_ASSERT(!uploadFile.isNull());
     uploadFile->increaseUploadedParts();
@@ -198,21 +204,21 @@ void FileHandler::onUploadSaveFilePartResult(qint64, qint64 fileId, bool) {
                     InputPeer peer = op->peer();
                     qint64 randomId = op->randomId();
                     qint32 replyToMsgId = op->replyToMsgId();
-                    requestId = mApi->messagesSendMedia(peer, metadata, randomId, replyToMsgId);
+                    requestId = mCore->messagesSendMedia(false, peer, replyToMsgId, metadata, randomId, ReplyMarkup());
                     break;
                 }
                 case FileOperation::editChatPhoto: {
                     InputChatPhoto metadata = op->inputChatPhoto();
                     metadata.setFile(inputFile);
                     qint32 chatId = op->chatId();
-                    requestId = mApi->messagesEditChatPhoto(chatId, metadata);
+                    requestId = mCore->messagesEditChatPhoto(chatId, metadata);
                     break;
                 }
                 case FileOperation::uploadProfilePhoto: {
                     QString caption = op->caption();
                     InputGeoPoint geoPoint = op->geoPoint();
                     InputPhotoCrop crop = op->crop();
-                    requestId = mApi->photosUploadProfilePhoto(inputFile, caption, geoPoint, crop);
+                    requestId = mCore->photosUploadProfilePhoto(inputFile, caption, geoPoint, crop);
                     break;
                 }
                 case FileOperation::sendEncryptedFile: {
@@ -229,11 +235,10 @@ void FileHandler::onUploadSaveFilePartResult(qint64, qint64 fileId, bool) {
                     inputEncryptedFile.setKeyFingerprint(keyFingerprint);
 
                     SecretChat *secretChat = mSecretState.chats().value(inputEncryptedChat.chatId());
-                    QList<qint64> previousMsgs = secretChat->sequence();
                     Encrypter encrypter(mSettings);
                     encrypter.setSecretChat(secretChat);
                     QByteArray data = encrypter.generateEncryptedData(decryptedMessage);
-                    requestId = mApi->messagesSendEncryptedFile(previousMsgs, inputEncryptedChat, randomId, data, inputEncryptedFile);
+                    requestId = mCore->messagesSendEncryptedFile(inputEncryptedChat, randomId, data, inputEncryptedFile);
 
                     secretChat->increaseOutSeqNo();
                     secretChat->appendToSequence(randomId);
@@ -250,6 +255,7 @@ void FileHandler::onUploadSaveFilePartResult(qint64, qint64 fileId, bool) {
             op.clear();
         }
     }
+    Q_EMIT uploadSendFileAnswer(fileId, partId, uploaded, length);
 }
 
 qint64 FileHandler::uploadGetFile(const InputFileLocation &location, qint32 fileSize, qint32 dcNum, const QByteArray &key, const QByteArray &iv) {
@@ -270,7 +276,7 @@ qint64 FileHandler::uploadGetFile(const InputFileLocation &location, qint32 file
     }
     mActiveDownloadsMap.insert(f->id(), true);
 
-    connect(session, SIGNAL(updateMessageId(qint64,qint64)), SLOT(onUpdateMessageId(qint64,qint64)));
+    connect(session, &Session::updateMessageId, this, &FileHandler::onUpdateMessageId);
 
     switch (session->state()) {
     case QAbstractSocket::ConnectingState: {
@@ -278,7 +284,7 @@ qint64 FileHandler::uploadGetFile(const InputFileLocation &location, qint32 file
         break;
     }
     case QAbstractSocket::ConnectedState: {
-        qint64 msgId = mApi->uploadGetFile(session, f->fileLocation());
+        qint64 msgId = mApi->uploadGetFile(f->fileLocation(), 0, BLOCK, QVariant(), session);
         mDownloadsMap.insert(msgId, f);
         break;
     }
@@ -286,7 +292,7 @@ qint64 FileHandler::uploadGetFile(const InputFileLocation &location, qint32 file
         QList<DownloadFile::Ptr> sessionInitialFiles;
         sessionInitialFiles << f;
         mInitialDownloadsMap.insert(session->sessionId(), sessionInitialFiles);
-        connect(session, SIGNAL(sessionReady(DC*)), this, SLOT(onUploadGetFileSessionCreated()));
+        connect(session, &Session::sessionReady, this, &FileHandler::onUploadGetFileSessionCreated);
         session->connectToServer();
         break;
     }
@@ -300,13 +306,17 @@ void FileHandler::onUploadGetFileSessionCreated() {
     Session *session = qobject_cast<Session *>(sender());
     QList<DownloadFile::Ptr> sessionInitialFiles = mInitialDownloadsMap.take(session->sessionId());
     Q_FOREACH (DownloadFile::Ptr f, sessionInitialFiles) {
-        qint64 msgId = mApi->uploadGetFile(session, f->fileLocation());
+        qint64 msgId = mApi->uploadGetFile(f->fileLocation(), f->offset(), f->partLength(), QVariant(), f->session());
         mDownloadsMap.insert(msgId, f);
     }
 }
 
-void FileHandler::onUploadGetFileAnswer(qint64 msgId, const StorageFileType &type, qint32 mtime, QByteArray bytes) {
+void FileHandler::onUploadGetFileAnswer(qint64 msgId, const UploadFile &result) {
+    StorageFileType type = result.type();
+    qint32 mtime = result.mtime();
+    QByteArray bytes = result.bytes();
     DownloadFile::Ptr f = mDownloadsMap.take(msgId);
+
     if(f.isNull())
         return;
 
@@ -338,7 +348,7 @@ void FileHandler::onUploadGetFileAnswer(qint64 msgId, const StorageFileType &typ
         }
 
         if (expectedSize == 0 || f->bytes().length() < expectedSize) {
-            qint64 newMsgId = mApi->uploadGetFile(f->session(), f->fileLocation(), f->offset(), f->partLength());
+            qint64 newMsgId = mApi->uploadGetFile(f->fileLocation(), f->offset(), f->partLength(), QVariant(), f->session());
             mDownloadsMap.insert(newMsgId, f);
         } else {
             Q_EMIT uploadGetFileAnswer(f->id(), type, mtime, f->bytes(), 0, f->length(), expectedSize); //emit signal of finished
@@ -360,7 +370,7 @@ void FileHandler::onUploadGetFileAnswer(qint64 msgId, const StorageFileType &typ
         Q_EMIT uploadGetFileAnswer(f->id(), type, mtime, bytes, thisPartId, downloaded, expectedSize);
 
         if (expectedSize == 0 || f->offset() < expectedSize) {
-            qint64 newMsgId = mApi->uploadGetFile(f->session(), f->fileLocation(), f->offset(), f->partLength());
+            qint64 newMsgId = mApi->uploadGetFile(f->fileLocation(), f->offset(), f->partLength(), QVariant(), f->session());
             mDownloadsMap.insert(newMsgId, f);
         } else {
             mActiveDownloadsMap.remove(f->id());
@@ -369,13 +379,13 @@ void FileHandler::onUploadGetFileAnswer(qint64 msgId, const StorageFileType &typ
     }
 }
 
-void FileHandler::onUploadGetFileError(qint64 id, qint32 errorCode, const QString &errorText) {
+void FileHandler::onUploadGetFileError(qint64 msgId, qint32 errorCode, const QString &errorText) {
     // check for error and resend authCheckPhone() request
     if (errorText.contains("_MIGRATE_")) {
         qint32 newDc = errorText.mid(errorText.lastIndexOf("_") + 1).toInt();
         qCDebug(TG_FILE_FILEHANDLER) << "file migrated to dc" << newDc;
         DC *dc = mDcProvider.getDc(newDc);
-        DownloadFile::Ptr f = mDownloadsMap.take(id);
+        DownloadFile::Ptr f = mDownloadsMap.take(msgId);
         if(!f)
             return;
         // release previous session
@@ -390,7 +400,7 @@ void FileHandler::onUploadGetFileError(qint64 id, qint32 errorCode, const QStrin
             break;
         }
         case QAbstractSocket::ConnectedState: {
-            qint64 msgId = mApi->uploadGetFile(newDcSession, f->fileLocation());
+            qint64 msgId = mApi->uploadGetFile(f->fileLocation(), 0, BLOCK, QVariant(), newDcSession);
             mDownloadsMap.insert(msgId, f);
             break;
         }
@@ -398,14 +408,14 @@ void FileHandler::onUploadGetFileError(qint64 id, qint32 errorCode, const QStrin
             QList<DownloadFile::Ptr> sessionInitialFiles;
             sessionInitialFiles << f;
             mInitialDownloadsMap.insert(newDcSession->sessionId(), sessionInitialFiles);
-            connect(newDcSession, SIGNAL(sessionReady(DC*)), this, SLOT(onUploadGetFileSessionCreated()));
+            connect(newDcSession, &Session::sessionReady, this, &FileHandler::onUploadGetFileSessionCreated);
             newDcSession->connectToServer();
             break;
         }
         }
 
     } else {
-        Q_EMIT error(id, errorCode, errorText);
+        Q_EMIT error(msgId, errorCode, errorText, __FUNCTION__);
     }
 }
 
@@ -420,20 +430,20 @@ qint64 FileHandler::uploadCancelFile(qint64 fileId) {
     return fileId;
 }
 
-void FileHandler::onMessagesSentMedia(qint64 id, const UpdatesType &updates) {
+void FileHandler::onMessagesSentMedia(qint64 msgId, const UpdatesType &result) {
     //recover correlated send media request id -> fileId
-    qint64 fileId = mFileIdsMap.take(id);
+    qint64 fileId = mFileIdsMap.take(msgId);
     if(!fileId) // It's uploaded file
         return;
 
-    Q_EMIT messagesSentMedia(fileId, updates);
+    Q_EMIT messagesSentMedia(fileId, result, QVariant());
 }
 
-void FileHandler::onMessagesSentEncryptedFile(qint64 id, qint32 date, const EncryptedFile &encryptedFile) {
+void FileHandler::onMessagesSentEncryptedFile(qint64 msgId, const MessagesSentEncryptedMessage &result) {
     //recover correlated send media request id -> fileId
-    qint64 fileId = mFileIdsMap.take(id);
+    qint64 fileId = mFileIdsMap.take(msgId);
     Q_ASSERT(fileId);
-    Q_EMIT messagesSendEncryptedFileAnswer(fileId, date, encryptedFile);
+    Q_EMIT messagesSendEncryptedFileAnswer(fileId, result.date(), result.file());
 }
 
 void FileHandler::onUpdateMessageId(qint64 oldMsgId, qint64 newMsgId) {

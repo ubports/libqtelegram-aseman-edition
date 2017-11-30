@@ -6,6 +6,15 @@
 #define LQTG_TYPE_INPUTMEDIA
 
 #include "telegramtypeobject.h"
+
+#include <QMetaType>
+#include <QVariant>
+#include "core/inboundpkt.h"
+#include "core/outboundpkt.h"
+#include "../coretypes.h"
+
+#include <QDataStream>
+
 #include <QString>
 #include <QList>
 #include "documentattribute.h"
@@ -20,14 +29,14 @@
 class LIBQTELEGRAMSHARED_EXPORT InputMedia : public TelegramTypeObject
 {
 public:
-    enum InputMediaType {
+    enum InputMediaClassType {
         typeInputMediaEmpty = 0x9664f57f,
         typeInputMediaUploadedPhoto = 0xf7aff1c0,
         typeInputMediaPhoto = 0xe9bfb4f3,
         typeInputMediaGeoPoint = 0xf9c44144,
         typeInputMediaContact = 0xa6e45987,
-        typeInputMediaUploadedVideo = 0xe13fd4bc,
-        typeInputMediaUploadedThumbVideo = 0x96fb97dc,
+        typeInputMediaUploadedVideo = 0x82713fdf,
+        typeInputMediaUploadedThumbVideo = 0x7780ddf9,
         typeInputMediaVideo = 0x936a4ebd,
         typeInputMediaUploadedAudio = 0x4e498cab,
         typeInputMediaAudio = 0x89938781,
@@ -37,8 +46,9 @@ public:
         typeInputMediaVenue = 0x2827a81a
     };
 
-    InputMedia(InputMediaType classType = typeInputMediaEmpty, InboundPkt *in = 0);
+    InputMedia(InputMediaClassType classType = typeInputMediaEmpty, InboundPkt *in = 0);
     InputMedia(InboundPkt *in);
+    InputMedia(const Null&);
     virtual ~InputMedia();
 
     void setAddress(const QString &address);
@@ -101,13 +111,21 @@ public:
     void setW(qint32 w);
     qint32 w() const;
 
-    void setClassType(InputMediaType classType);
-    InputMediaType classType() const;
+    void setClassType(InputMediaClassType classType);
+    InputMediaClassType classType() const;
 
     bool fetch(InboundPkt *in);
     bool push(OutboundPkt *out) const;
 
-    bool operator ==(const InputMedia &b);
+    QMap<QString, QVariant> toMap() const;
+    static InputMedia fromMap(const QMap<QString, QVariant> &map);
+
+    bool operator ==(const InputMedia &b) const;
+
+    bool operator==(bool stt) const { return isNull() != stt; }
+    bool operator!=(bool stt) const { return !operator ==(stt); }
+
+    QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
     QString m_address;
@@ -130,7 +148,1011 @@ private:
     QString m_title;
     QString m_venueId;
     qint32 m_w;
-    InputMediaType m_classType;
+    InputMediaClassType m_classType;
 };
+
+Q_DECLARE_METATYPE(InputMedia)
+
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator<<(QDataStream &stream, const InputMedia &item);
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, InputMedia &item);
+
+inline InputMedia::InputMedia(InputMediaClassType classType, InboundPkt *in) :
+    m_duration(0),
+    m_h(0),
+    m_w(0),
+    m_classType(classType)
+{
+    if(in) fetch(in);
+}
+
+inline InputMedia::InputMedia(InboundPkt *in) :
+    m_duration(0),
+    m_h(0),
+    m_w(0),
+    m_classType(typeInputMediaEmpty)
+{
+    fetch(in);
+}
+
+inline InputMedia::InputMedia(const Null &null) :
+    TelegramTypeObject(null),
+    m_duration(0),
+    m_h(0),
+    m_w(0),
+    m_classType(typeInputMediaEmpty)
+{
+}
+
+inline InputMedia::~InputMedia() {
+}
+
+inline void InputMedia::setAddress(const QString &address) {
+    m_address = address;
+}
+
+inline QString InputMedia::address() const {
+    return m_address;
+}
+
+inline void InputMedia::setAttributes(const QList<DocumentAttribute> &attributes) {
+    m_attributes = attributes;
+}
+
+inline QList<DocumentAttribute> InputMedia::attributes() const {
+    return m_attributes;
+}
+
+inline void InputMedia::setCaption(const QString &caption) {
+    m_caption = caption;
+}
+
+inline QString InputMedia::caption() const {
+    return m_caption;
+}
+
+inline void InputMedia::setDuration(qint32 duration) {
+    m_duration = duration;
+}
+
+inline qint32 InputMedia::duration() const {
+    return m_duration;
+}
+
+inline void InputMedia::setFile(const InputFile &file) {
+    m_file = file;
+}
+
+inline InputFile InputMedia::file() const {
+    return m_file;
+}
+
+inline void InputMedia::setFirstName(const QString &firstName) {
+    m_firstName = firstName;
+}
+
+inline QString InputMedia::firstName() const {
+    return m_firstName;
+}
+
+inline void InputMedia::setGeoPoint(const InputGeoPoint &geoPoint) {
+    m_geoPoint = geoPoint;
+}
+
+inline InputGeoPoint InputMedia::geoPoint() const {
+    return m_geoPoint;
+}
+
+inline void InputMedia::setH(qint32 h) {
+    m_h = h;
+}
+
+inline qint32 InputMedia::h() const {
+    return m_h;
+}
+
+inline void InputMedia::setIdInputAudio(const InputAudio &idInputAudio) {
+    m_idInputAudio = idInputAudio;
+}
+
+inline InputAudio InputMedia::idInputAudio() const {
+    return m_idInputAudio;
+}
+
+inline void InputMedia::setIdInputDocument(const InputDocument &idInputDocument) {
+    m_idInputDocument = idInputDocument;
+}
+
+inline InputDocument InputMedia::idInputDocument() const {
+    return m_idInputDocument;
+}
+
+inline void InputMedia::setIdInputPhoto(const InputPhoto &idInputPhoto) {
+    m_idInputPhoto = idInputPhoto;
+}
+
+inline InputPhoto InputMedia::idInputPhoto() const {
+    return m_idInputPhoto;
+}
+
+inline void InputMedia::setIdInputVideo(const InputVideo &idInputVideo) {
+    m_idInputVideo = idInputVideo;
+}
+
+inline InputVideo InputMedia::idInputVideo() const {
+    return m_idInputVideo;
+}
+
+inline void InputMedia::setLastName(const QString &lastName) {
+    m_lastName = lastName;
+}
+
+inline QString InputMedia::lastName() const {
+    return m_lastName;
+}
+
+inline void InputMedia::setMimeType(const QString &mimeType) {
+    m_mimeType = mimeType;
+}
+
+inline QString InputMedia::mimeType() const {
+    return m_mimeType;
+}
+
+inline void InputMedia::setPhoneNumber(const QString &phoneNumber) {
+    m_phoneNumber = phoneNumber;
+}
+
+inline QString InputMedia::phoneNumber() const {
+    return m_phoneNumber;
+}
+
+inline void InputMedia::setProvider(const QString &provider) {
+    m_provider = provider;
+}
+
+inline QString InputMedia::provider() const {
+    return m_provider;
+}
+
+inline void InputMedia::setThumb(const InputFile &thumb) {
+    m_thumb = thumb;
+}
+
+inline InputFile InputMedia::thumb() const {
+    return m_thumb;
+}
+
+inline void InputMedia::setTitle(const QString &title) {
+    m_title = title;
+}
+
+inline QString InputMedia::title() const {
+    return m_title;
+}
+
+inline void InputMedia::setVenueId(const QString &venueId) {
+    m_venueId = venueId;
+}
+
+inline QString InputMedia::venueId() const {
+    return m_venueId;
+}
+
+inline void InputMedia::setW(qint32 w) {
+    m_w = w;
+}
+
+inline qint32 InputMedia::w() const {
+    return m_w;
+}
+
+inline bool InputMedia::operator ==(const InputMedia &b) const {
+    return m_classType == b.m_classType &&
+           m_address == b.m_address &&
+           m_attributes == b.m_attributes &&
+           m_caption == b.m_caption &&
+           m_duration == b.m_duration &&
+           m_file == b.m_file &&
+           m_firstName == b.m_firstName &&
+           m_geoPoint == b.m_geoPoint &&
+           m_h == b.m_h &&
+           m_idInputAudio == b.m_idInputAudio &&
+           m_idInputDocument == b.m_idInputDocument &&
+           m_idInputPhoto == b.m_idInputPhoto &&
+           m_idInputVideo == b.m_idInputVideo &&
+           m_lastName == b.m_lastName &&
+           m_mimeType == b.m_mimeType &&
+           m_phoneNumber == b.m_phoneNumber &&
+           m_provider == b.m_provider &&
+           m_thumb == b.m_thumb &&
+           m_title == b.m_title &&
+           m_venueId == b.m_venueId &&
+           m_w == b.m_w;
+}
+
+inline void InputMedia::setClassType(InputMedia::InputMediaClassType classType) {
+    m_classType = classType;
+}
+
+inline InputMedia::InputMediaClassType InputMedia::classType() const {
+    return m_classType;
+}
+
+inline bool InputMedia::fetch(InboundPkt *in) {
+    LQTG_FETCH_LOG;
+    int x = in->fetchInt();
+    switch(x) {
+    case typeInputMediaEmpty: {
+        m_classType = static_cast<InputMediaClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeInputMediaUploadedPhoto: {
+        m_file.fetch(in);
+        m_caption = in->fetchQString();
+        m_classType = static_cast<InputMediaClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeInputMediaPhoto: {
+        m_idInputPhoto.fetch(in);
+        m_caption = in->fetchQString();
+        m_classType = static_cast<InputMediaClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeInputMediaGeoPoint: {
+        m_geoPoint.fetch(in);
+        m_classType = static_cast<InputMediaClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeInputMediaContact: {
+        m_phoneNumber = in->fetchQString();
+        m_firstName = in->fetchQString();
+        m_lastName = in->fetchQString();
+        m_classType = static_cast<InputMediaClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeInputMediaUploadedVideo: {
+        m_file.fetch(in);
+        m_duration = in->fetchInt();
+        m_w = in->fetchInt();
+        m_h = in->fetchInt();
+        m_mimeType = in->fetchQString();
+        m_caption = in->fetchQString();
+        m_classType = static_cast<InputMediaClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeInputMediaUploadedThumbVideo: {
+        m_file.fetch(in);
+        m_thumb.fetch(in);
+        m_duration = in->fetchInt();
+        m_w = in->fetchInt();
+        m_h = in->fetchInt();
+        m_mimeType = in->fetchQString();
+        m_caption = in->fetchQString();
+        m_classType = static_cast<InputMediaClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeInputMediaVideo: {
+        m_idInputVideo.fetch(in);
+        m_caption = in->fetchQString();
+        m_classType = static_cast<InputMediaClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeInputMediaUploadedAudio: {
+        m_file.fetch(in);
+        m_duration = in->fetchInt();
+        m_mimeType = in->fetchQString();
+        m_classType = static_cast<InputMediaClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeInputMediaAudio: {
+        m_idInputAudio.fetch(in);
+        m_classType = static_cast<InputMediaClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeInputMediaUploadedDocument: {
+        m_file.fetch(in);
+        m_mimeType = in->fetchQString();
+        if(in->fetchInt() != (qint32)CoreTypes::typeVector) return false;
+        qint32 m_attributes_length = in->fetchInt();
+        m_attributes.clear();
+        for (qint32 i = 0; i < m_attributes_length; i++) {
+            DocumentAttribute type;
+            type.fetch(in);
+            m_attributes.append(type);
+        }
+        m_classType = static_cast<InputMediaClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeInputMediaUploadedThumbDocument: {
+        m_file.fetch(in);
+        m_thumb.fetch(in);
+        m_mimeType = in->fetchQString();
+        if(in->fetchInt() != (qint32)CoreTypes::typeVector) return false;
+        qint32 m_attributes_length = in->fetchInt();
+        m_attributes.clear();
+        for (qint32 i = 0; i < m_attributes_length; i++) {
+            DocumentAttribute type;
+            type.fetch(in);
+            m_attributes.append(type);
+        }
+        m_classType = static_cast<InputMediaClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeInputMediaDocument: {
+        m_idInputDocument.fetch(in);
+        m_classType = static_cast<InputMediaClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeInputMediaVenue: {
+        m_geoPoint.fetch(in);
+        m_title = in->fetchQString();
+        m_address = in->fetchQString();
+        m_provider = in->fetchQString();
+        m_venueId = in->fetchQString();
+        m_classType = static_cast<InputMediaClassType>(x);
+        return true;
+    }
+        break;
+    
+    default:
+        LQTG_FETCH_ASSERT;
+        return false;
+    }
+}
+
+inline bool InputMedia::push(OutboundPkt *out) const {
+    out->appendInt(m_classType);
+    switch(m_classType) {
+    case typeInputMediaEmpty: {
+        return true;
+    }
+        break;
+    
+    case typeInputMediaUploadedPhoto: {
+        m_file.push(out);
+        out->appendQString(m_caption);
+        return true;
+    }
+        break;
+    
+    case typeInputMediaPhoto: {
+        m_idInputPhoto.push(out);
+        out->appendQString(m_caption);
+        return true;
+    }
+        break;
+    
+    case typeInputMediaGeoPoint: {
+        m_geoPoint.push(out);
+        return true;
+    }
+        break;
+    
+    case typeInputMediaContact: {
+        out->appendQString(m_phoneNumber);
+        out->appendQString(m_firstName);
+        out->appendQString(m_lastName);
+        return true;
+    }
+        break;
+    
+    case typeInputMediaUploadedVideo: {
+        m_file.push(out);
+        out->appendInt(m_duration);
+        out->appendInt(m_w);
+        out->appendInt(m_h);
+        out->appendQString(m_mimeType);
+        out->appendQString(m_caption);
+        return true;
+    }
+        break;
+    
+    case typeInputMediaUploadedThumbVideo: {
+        m_file.push(out);
+        m_thumb.push(out);
+        out->appendInt(m_duration);
+        out->appendInt(m_w);
+        out->appendInt(m_h);
+        out->appendQString(m_mimeType);
+        out->appendQString(m_caption);
+        return true;
+    }
+        break;
+    
+    case typeInputMediaVideo: {
+        m_idInputVideo.push(out);
+        out->appendQString(m_caption);
+        return true;
+    }
+        break;
+    
+    case typeInputMediaUploadedAudio: {
+        m_file.push(out);
+        out->appendInt(m_duration);
+        out->appendQString(m_mimeType);
+        return true;
+    }
+        break;
+    
+    case typeInputMediaAudio: {
+        m_idInputAudio.push(out);
+        return true;
+    }
+        break;
+    
+    case typeInputMediaUploadedDocument: {
+        m_file.push(out);
+        out->appendQString(m_mimeType);
+        out->appendInt(CoreTypes::typeVector);
+        out->appendInt(m_attributes.count());
+        for (qint32 i = 0; i < m_attributes.count(); i++) {
+            m_attributes[i].push(out);
+        }
+        return true;
+    }
+        break;
+    
+    case typeInputMediaUploadedThumbDocument: {
+        m_file.push(out);
+        m_thumb.push(out);
+        out->appendQString(m_mimeType);
+        out->appendInt(CoreTypes::typeVector);
+        out->appendInt(m_attributes.count());
+        for (qint32 i = 0; i < m_attributes.count(); i++) {
+            m_attributes[i].push(out);
+        }
+        return true;
+    }
+        break;
+    
+    case typeInputMediaDocument: {
+        m_idInputDocument.push(out);
+        return true;
+    }
+        break;
+    
+    case typeInputMediaVenue: {
+        m_geoPoint.push(out);
+        out->appendQString(m_title);
+        out->appendQString(m_address);
+        out->appendQString(m_provider);
+        out->appendQString(m_venueId);
+        return true;
+    }
+        break;
+    
+    default:
+        return false;
+    }
+}
+
+inline QMap<QString, QVariant> InputMedia::toMap() const {
+    QMap<QString, QVariant> result;
+    switch(static_cast<int>(m_classType)) {
+    case typeInputMediaEmpty: {
+        result["classType"] = "InputMedia::typeInputMediaEmpty";
+        return result;
+    }
+        break;
+    
+    case typeInputMediaUploadedPhoto: {
+        result["classType"] = "InputMedia::typeInputMediaUploadedPhoto";
+        result["file"] = m_file.toMap();
+        result["caption"] = QVariant::fromValue<QString>(caption());
+        return result;
+    }
+        break;
+    
+    case typeInputMediaPhoto: {
+        result["classType"] = "InputMedia::typeInputMediaPhoto";
+        result["idInputPhoto"] = m_idInputPhoto.toMap();
+        result["caption"] = QVariant::fromValue<QString>(caption());
+        return result;
+    }
+        break;
+    
+    case typeInputMediaGeoPoint: {
+        result["classType"] = "InputMedia::typeInputMediaGeoPoint";
+        result["geoPoint"] = m_geoPoint.toMap();
+        return result;
+    }
+        break;
+    
+    case typeInputMediaContact: {
+        result["classType"] = "InputMedia::typeInputMediaContact";
+        result["phoneNumber"] = QVariant::fromValue<QString>(phoneNumber());
+        result["firstName"] = QVariant::fromValue<QString>(firstName());
+        result["lastName"] = QVariant::fromValue<QString>(lastName());
+        return result;
+    }
+        break;
+    
+    case typeInputMediaUploadedVideo: {
+        result["classType"] = "InputMedia::typeInputMediaUploadedVideo";
+        result["file"] = m_file.toMap();
+        result["duration"] = QVariant::fromValue<qint32>(duration());
+        result["w"] = QVariant::fromValue<qint32>(w());
+        result["h"] = QVariant::fromValue<qint32>(h());
+        result["mimeType"] = QVariant::fromValue<QString>(mimeType());
+        result["caption"] = QVariant::fromValue<QString>(caption());
+        return result;
+    }
+        break;
+    
+    case typeInputMediaUploadedThumbVideo: {
+        result["classType"] = "InputMedia::typeInputMediaUploadedThumbVideo";
+        result["file"] = m_file.toMap();
+        result["thumb"] = m_thumb.toMap();
+        result["duration"] = QVariant::fromValue<qint32>(duration());
+        result["w"] = QVariant::fromValue<qint32>(w());
+        result["h"] = QVariant::fromValue<qint32>(h());
+        result["mimeType"] = QVariant::fromValue<QString>(mimeType());
+        result["caption"] = QVariant::fromValue<QString>(caption());
+        return result;
+    }
+        break;
+    
+    case typeInputMediaVideo: {
+        result["classType"] = "InputMedia::typeInputMediaVideo";
+        result["idInputVideo"] = m_idInputVideo.toMap();
+        result["caption"] = QVariant::fromValue<QString>(caption());
+        return result;
+    }
+        break;
+    
+    case typeInputMediaUploadedAudio: {
+        result["classType"] = "InputMedia::typeInputMediaUploadedAudio";
+        result["file"] = m_file.toMap();
+        result["duration"] = QVariant::fromValue<qint32>(duration());
+        result["mimeType"] = QVariant::fromValue<QString>(mimeType());
+        return result;
+    }
+        break;
+    
+    case typeInputMediaAudio: {
+        result["classType"] = "InputMedia::typeInputMediaAudio";
+        result["idInputAudio"] = m_idInputAudio.toMap();
+        return result;
+    }
+        break;
+    
+    case typeInputMediaUploadedDocument: {
+        result["classType"] = "InputMedia::typeInputMediaUploadedDocument";
+        result["file"] = m_file.toMap();
+        result["mimeType"] = QVariant::fromValue<QString>(mimeType());
+        QList<QVariant> _attributes;
+        Q_FOREACH(const DocumentAttribute &m__type, m_attributes)
+            _attributes << m__type.toMap();
+        result["attributes"] = _attributes;
+        return result;
+    }
+        break;
+    
+    case typeInputMediaUploadedThumbDocument: {
+        result["classType"] = "InputMedia::typeInputMediaUploadedThumbDocument";
+        result["file"] = m_file.toMap();
+        result["thumb"] = m_thumb.toMap();
+        result["mimeType"] = QVariant::fromValue<QString>(mimeType());
+        QList<QVariant> _attributes;
+        Q_FOREACH(const DocumentAttribute &m__type, m_attributes)
+            _attributes << m__type.toMap();
+        result["attributes"] = _attributes;
+        return result;
+    }
+        break;
+    
+    case typeInputMediaDocument: {
+        result["classType"] = "InputMedia::typeInputMediaDocument";
+        result["idInputDocument"] = m_idInputDocument.toMap();
+        return result;
+    }
+        break;
+    
+    case typeInputMediaVenue: {
+        result["classType"] = "InputMedia::typeInputMediaVenue";
+        result["geoPoint"] = m_geoPoint.toMap();
+        result["title"] = QVariant::fromValue<QString>(title());
+        result["address"] = QVariant::fromValue<QString>(address());
+        result["provider"] = QVariant::fromValue<QString>(provider());
+        result["venueId"] = QVariant::fromValue<QString>(venueId());
+        return result;
+    }
+        break;
+    
+    default:
+        return result;
+    }
+}
+
+inline InputMedia InputMedia::fromMap(const QMap<QString, QVariant> &map) {
+    InputMedia result;
+    if(map.value("classType").toString() == "InputMedia::typeInputMediaEmpty") {
+        result.setClassType(typeInputMediaEmpty);
+        return result;
+    }
+    if(map.value("classType").toString() == "InputMedia::typeInputMediaUploadedPhoto") {
+        result.setClassType(typeInputMediaUploadedPhoto);
+        result.setFile( InputFile::fromMap(map.value("file").toMap()) );
+        result.setCaption( map.value("caption").value<QString>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "InputMedia::typeInputMediaPhoto") {
+        result.setClassType(typeInputMediaPhoto);
+        result.setIdInputPhoto( InputPhoto::fromMap(map.value("idInputPhoto").toMap()) );
+        result.setCaption( map.value("caption").value<QString>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "InputMedia::typeInputMediaGeoPoint") {
+        result.setClassType(typeInputMediaGeoPoint);
+        result.setGeoPoint( InputGeoPoint::fromMap(map.value("geoPoint").toMap()) );
+        return result;
+    }
+    if(map.value("classType").toString() == "InputMedia::typeInputMediaContact") {
+        result.setClassType(typeInputMediaContact);
+        result.setPhoneNumber( map.value("phoneNumber").value<QString>() );
+        result.setFirstName( map.value("firstName").value<QString>() );
+        result.setLastName( map.value("lastName").value<QString>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "InputMedia::typeInputMediaUploadedVideo") {
+        result.setClassType(typeInputMediaUploadedVideo);
+        result.setFile( InputFile::fromMap(map.value("file").toMap()) );
+        result.setDuration( map.value("duration").value<qint32>() );
+        result.setW( map.value("w").value<qint32>() );
+        result.setH( map.value("h").value<qint32>() );
+        result.setMimeType( map.value("mimeType").value<QString>() );
+        result.setCaption( map.value("caption").value<QString>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "InputMedia::typeInputMediaUploadedThumbVideo") {
+        result.setClassType(typeInputMediaUploadedThumbVideo);
+        result.setFile( InputFile::fromMap(map.value("file").toMap()) );
+        result.setThumb( InputFile::fromMap(map.value("thumb").toMap()) );
+        result.setDuration( map.value("duration").value<qint32>() );
+        result.setW( map.value("w").value<qint32>() );
+        result.setH( map.value("h").value<qint32>() );
+        result.setMimeType( map.value("mimeType").value<QString>() );
+        result.setCaption( map.value("caption").value<QString>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "InputMedia::typeInputMediaVideo") {
+        result.setClassType(typeInputMediaVideo);
+        result.setIdInputVideo( InputVideo::fromMap(map.value("idInputVideo").toMap()) );
+        result.setCaption( map.value("caption").value<QString>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "InputMedia::typeInputMediaUploadedAudio") {
+        result.setClassType(typeInputMediaUploadedAudio);
+        result.setFile( InputFile::fromMap(map.value("file").toMap()) );
+        result.setDuration( map.value("duration").value<qint32>() );
+        result.setMimeType( map.value("mimeType").value<QString>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "InputMedia::typeInputMediaAudio") {
+        result.setClassType(typeInputMediaAudio);
+        result.setIdInputAudio( InputAudio::fromMap(map.value("idInputAudio").toMap()) );
+        return result;
+    }
+    if(map.value("classType").toString() == "InputMedia::typeInputMediaUploadedDocument") {
+        result.setClassType(typeInputMediaUploadedDocument);
+        result.setFile( InputFile::fromMap(map.value("file").toMap()) );
+        result.setMimeType( map.value("mimeType").value<QString>() );
+        QList<QVariant> map_attributes = map["attributes"].toList();
+        QList<DocumentAttribute> _attributes;
+        Q_FOREACH(const QVariant &var, map_attributes)
+            _attributes << DocumentAttribute::fromMap(var.toMap());
+        result.setAttributes(_attributes);
+        return result;
+    }
+    if(map.value("classType").toString() == "InputMedia::typeInputMediaUploadedThumbDocument") {
+        result.setClassType(typeInputMediaUploadedThumbDocument);
+        result.setFile( InputFile::fromMap(map.value("file").toMap()) );
+        result.setThumb( InputFile::fromMap(map.value("thumb").toMap()) );
+        result.setMimeType( map.value("mimeType").value<QString>() );
+        QList<QVariant> map_attributes = map["attributes"].toList();
+        QList<DocumentAttribute> _attributes;
+        Q_FOREACH(const QVariant &var, map_attributes)
+            _attributes << DocumentAttribute::fromMap(var.toMap());
+        result.setAttributes(_attributes);
+        return result;
+    }
+    if(map.value("classType").toString() == "InputMedia::typeInputMediaDocument") {
+        result.setClassType(typeInputMediaDocument);
+        result.setIdInputDocument( InputDocument::fromMap(map.value("idInputDocument").toMap()) );
+        return result;
+    }
+    if(map.value("classType").toString() == "InputMedia::typeInputMediaVenue") {
+        result.setClassType(typeInputMediaVenue);
+        result.setGeoPoint( InputGeoPoint::fromMap(map.value("geoPoint").toMap()) );
+        result.setTitle( map.value("title").value<QString>() );
+        result.setAddress( map.value("address").value<QString>() );
+        result.setProvider( map.value("provider").value<QString>() );
+        result.setVenueId( map.value("venueId").value<QString>() );
+        return result;
+    }
+    return result;
+}
+
+inline QByteArray InputMedia::getHash(QCryptographicHash::Algorithm alg) const {
+    QByteArray data;
+    QDataStream str(&data, QIODevice::WriteOnly);
+    str << *this;
+    return QCryptographicHash::hash(data, alg);
+}
+
+inline QDataStream &operator<<(QDataStream &stream, const InputMedia &item) {
+    stream << static_cast<uint>(item.classType());
+    switch(item.classType()) {
+    case InputMedia::typeInputMediaEmpty:
+        
+        break;
+    case InputMedia::typeInputMediaUploadedPhoto:
+        stream << item.file();
+        stream << item.caption();
+        break;
+    case InputMedia::typeInputMediaPhoto:
+        stream << item.idInputPhoto();
+        stream << item.caption();
+        break;
+    case InputMedia::typeInputMediaGeoPoint:
+        stream << item.geoPoint();
+        break;
+    case InputMedia::typeInputMediaContact:
+        stream << item.phoneNumber();
+        stream << item.firstName();
+        stream << item.lastName();
+        break;
+    case InputMedia::typeInputMediaUploadedVideo:
+        stream << item.file();
+        stream << item.duration();
+        stream << item.w();
+        stream << item.h();
+        stream << item.mimeType();
+        stream << item.caption();
+        break;
+    case InputMedia::typeInputMediaUploadedThumbVideo:
+        stream << item.file();
+        stream << item.thumb();
+        stream << item.duration();
+        stream << item.w();
+        stream << item.h();
+        stream << item.mimeType();
+        stream << item.caption();
+        break;
+    case InputMedia::typeInputMediaVideo:
+        stream << item.idInputVideo();
+        stream << item.caption();
+        break;
+    case InputMedia::typeInputMediaUploadedAudio:
+        stream << item.file();
+        stream << item.duration();
+        stream << item.mimeType();
+        break;
+    case InputMedia::typeInputMediaAudio:
+        stream << item.idInputAudio();
+        break;
+    case InputMedia::typeInputMediaUploadedDocument:
+        stream << item.file();
+        stream << item.mimeType();
+        stream << item.attributes();
+        break;
+    case InputMedia::typeInputMediaUploadedThumbDocument:
+        stream << item.file();
+        stream << item.thumb();
+        stream << item.mimeType();
+        stream << item.attributes();
+        break;
+    case InputMedia::typeInputMediaDocument:
+        stream << item.idInputDocument();
+        break;
+    case InputMedia::typeInputMediaVenue:
+        stream << item.geoPoint();
+        stream << item.title();
+        stream << item.address();
+        stream << item.provider();
+        stream << item.venueId();
+        break;
+    }
+    return stream;
+}
+
+inline QDataStream &operator>>(QDataStream &stream, InputMedia &item) {
+    uint type = 0;
+    stream >> type;
+    item.setClassType(static_cast<InputMedia::InputMediaClassType>(type));
+    switch(type) {
+    case InputMedia::typeInputMediaEmpty: {
+        
+    }
+        break;
+    case InputMedia::typeInputMediaUploadedPhoto: {
+        InputFile m_file;
+        stream >> m_file;
+        item.setFile(m_file);
+        QString m_caption;
+        stream >> m_caption;
+        item.setCaption(m_caption);
+    }
+        break;
+    case InputMedia::typeInputMediaPhoto: {
+        InputPhoto m_id_InputPhoto;
+        stream >> m_id_InputPhoto;
+        item.setIdInputPhoto(m_id_InputPhoto);
+        QString m_caption;
+        stream >> m_caption;
+        item.setCaption(m_caption);
+    }
+        break;
+    case InputMedia::typeInputMediaGeoPoint: {
+        InputGeoPoint m_geo_point;
+        stream >> m_geo_point;
+        item.setGeoPoint(m_geo_point);
+    }
+        break;
+    case InputMedia::typeInputMediaContact: {
+        QString m_phone_number;
+        stream >> m_phone_number;
+        item.setPhoneNumber(m_phone_number);
+        QString m_first_name;
+        stream >> m_first_name;
+        item.setFirstName(m_first_name);
+        QString m_last_name;
+        stream >> m_last_name;
+        item.setLastName(m_last_name);
+    }
+        break;
+    case InputMedia::typeInputMediaUploadedVideo: {
+        InputFile m_file;
+        stream >> m_file;
+        item.setFile(m_file);
+        qint32 m_duration;
+        stream >> m_duration;
+        item.setDuration(m_duration);
+        qint32 m_w;
+        stream >> m_w;
+        item.setW(m_w);
+        qint32 m_h;
+        stream >> m_h;
+        item.setH(m_h);
+        QString m_mime_type;
+        stream >> m_mime_type;
+        item.setMimeType(m_mime_type);
+        QString m_caption;
+        stream >> m_caption;
+        item.setCaption(m_caption);
+    }
+        break;
+    case InputMedia::typeInputMediaUploadedThumbVideo: {
+        InputFile m_file;
+        stream >> m_file;
+        item.setFile(m_file);
+        InputFile m_thumb;
+        stream >> m_thumb;
+        item.setThumb(m_thumb);
+        qint32 m_duration;
+        stream >> m_duration;
+        item.setDuration(m_duration);
+        qint32 m_w;
+        stream >> m_w;
+        item.setW(m_w);
+        qint32 m_h;
+        stream >> m_h;
+        item.setH(m_h);
+        QString m_mime_type;
+        stream >> m_mime_type;
+        item.setMimeType(m_mime_type);
+        QString m_caption;
+        stream >> m_caption;
+        item.setCaption(m_caption);
+    }
+        break;
+    case InputMedia::typeInputMediaVideo: {
+        InputVideo m_id_InputVideo;
+        stream >> m_id_InputVideo;
+        item.setIdInputVideo(m_id_InputVideo);
+        QString m_caption;
+        stream >> m_caption;
+        item.setCaption(m_caption);
+    }
+        break;
+    case InputMedia::typeInputMediaUploadedAudio: {
+        InputFile m_file;
+        stream >> m_file;
+        item.setFile(m_file);
+        qint32 m_duration;
+        stream >> m_duration;
+        item.setDuration(m_duration);
+        QString m_mime_type;
+        stream >> m_mime_type;
+        item.setMimeType(m_mime_type);
+    }
+        break;
+    case InputMedia::typeInputMediaAudio: {
+        InputAudio m_id_InputAudio;
+        stream >> m_id_InputAudio;
+        item.setIdInputAudio(m_id_InputAudio);
+    }
+        break;
+    case InputMedia::typeInputMediaUploadedDocument: {
+        InputFile m_file;
+        stream >> m_file;
+        item.setFile(m_file);
+        QString m_mime_type;
+        stream >> m_mime_type;
+        item.setMimeType(m_mime_type);
+        QList<DocumentAttribute> m_attributes;
+        stream >> m_attributes;
+        item.setAttributes(m_attributes);
+    }
+        break;
+    case InputMedia::typeInputMediaUploadedThumbDocument: {
+        InputFile m_file;
+        stream >> m_file;
+        item.setFile(m_file);
+        InputFile m_thumb;
+        stream >> m_thumb;
+        item.setThumb(m_thumb);
+        QString m_mime_type;
+        stream >> m_mime_type;
+        item.setMimeType(m_mime_type);
+        QList<DocumentAttribute> m_attributes;
+        stream >> m_attributes;
+        item.setAttributes(m_attributes);
+    }
+        break;
+    case InputMedia::typeInputMediaDocument: {
+        InputDocument m_id_InputDocument;
+        stream >> m_id_InputDocument;
+        item.setIdInputDocument(m_id_InputDocument);
+    }
+        break;
+    case InputMedia::typeInputMediaVenue: {
+        InputGeoPoint m_geo_point;
+        stream >> m_geo_point;
+        item.setGeoPoint(m_geo_point);
+        QString m_title;
+        stream >> m_title;
+        item.setTitle(m_title);
+        QString m_address;
+        stream >> m_address;
+        item.setAddress(m_address);
+        QString m_provider;
+        stream >> m_provider;
+        item.setProvider(m_provider);
+        QString m_venue_id;
+        stream >> m_venue_id;
+        item.setVenueId(m_venue_id);
+    }
+        break;
+    }
+    return stream;
+}
+
 
 #endif // LQTG_TYPE_INPUTMEDIA

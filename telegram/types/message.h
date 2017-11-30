@@ -6,23 +6,36 @@
 #define LQTG_TYPE_MESSAGE
 
 #include "telegramtypeobject.h"
+
+#include <QMetaType>
+#include <QVariant>
+#include "core/inboundpkt.h"
+#include "core/outboundpkt.h"
+#include "../coretypes.h"
+
+#include <QDataStream>
+
 #include "messageaction.h"
 #include <QtGlobal>
+#include <QList>
+#include "messageentity.h"
+#include "peer.h"
 #include "messagemedia.h"
 #include <QString>
-#include "peer.h"
+#include "replymarkup.h"
 
 class LIBQTELEGRAMSHARED_EXPORT Message : public TelegramTypeObject
 {
 public:
-    enum MessageType {
+    enum MessageClassType {
         typeMessageEmpty = 0x83e5de54,
-        typeMessage = 0xa7ab1991,
-        typeMessageService = 0x1d86f70e
+        typeMessage = 0x5ba66c13,
+        typeMessageService = 0xc06b9607
     };
 
-    Message(MessageType classType = typeMessageEmpty, InboundPkt *in = 0);
+    Message(MessageClassType classType = typeMessageEmpty, InboundPkt *in = 0);
     Message(InboundPkt *in);
+    Message(const Null&);
     virtual ~Message();
 
     void setAction(const MessageAction &action);
@@ -30,6 +43,9 @@ public:
 
     void setDate(qint32 date);
     qint32 date() const;
+
+    void setEntities(const QList<MessageEntity> &entities);
+    QList<MessageEntity> entities() const;
 
     void setFlags(qint32 flags);
     qint32 flags() const;
@@ -40,8 +56,8 @@ public:
     void setFwdDate(qint32 fwdDate);
     qint32 fwdDate() const;
 
-    void setFwdFromId(qint32 fwdFromId);
-    qint32 fwdFromId() const;
+    void setFwdFromId(const Peer &fwdFromId);
+    Peer fwdFromId() const;
 
     void setId(qint32 id);
     qint32 id() const;
@@ -49,8 +65,20 @@ public:
     void setMedia(const MessageMedia &media);
     MessageMedia media() const;
 
+    void setMediaUnread(bool mediaUnread);
+    bool mediaUnread() const;
+
+    void setMentioned(bool mentioned);
+    bool mentioned() const;
+
     void setMessage(const QString &message);
     QString message() const;
+
+    void setOut(bool out);
+    bool out() const;
+
+    void setReplyMarkup(const ReplyMarkup &replyMarkup);
+    ReplyMarkup replyMarkup() const;
 
     void setReplyToMsgId(qint32 replyToMsgId);
     qint32 replyToMsgId() const;
@@ -58,27 +86,608 @@ public:
     void setToId(const Peer &toId);
     Peer toId() const;
 
-    void setClassType(MessageType classType);
-    MessageType classType() const;
+    void setUnread(bool unread);
+    bool unread() const;
+
+    void setViews(qint32 views);
+    qint32 views() const;
+
+    void setClassType(MessageClassType classType);
+    MessageClassType classType() const;
 
     bool fetch(InboundPkt *in);
     bool push(OutboundPkt *out) const;
 
-    bool operator ==(const Message &b);
+    QMap<QString, QVariant> toMap() const;
+    static Message fromMap(const QMap<QString, QVariant> &map);
+
+    bool operator ==(const Message &b) const;
+
+    bool operator==(bool stt) const { return isNull() != stt; }
+    bool operator!=(bool stt) const { return !operator ==(stt); }
+
+    QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
     MessageAction m_action;
     qint32 m_date;
+    QList<MessageEntity> m_entities;
     qint32 m_flags;
     qint32 m_fromId;
     qint32 m_fwdDate;
-    qint32 m_fwdFromId;
+    Peer m_fwdFromId;
     qint32 m_id;
     MessageMedia m_media;
     QString m_message;
+    ReplyMarkup m_replyMarkup;
     qint32 m_replyToMsgId;
     Peer m_toId;
-    MessageType m_classType;
+    qint32 m_views;
+    MessageClassType m_classType;
 };
+
+Q_DECLARE_METATYPE(Message)
+
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator<<(QDataStream &stream, const Message &item);
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, Message &item);
+
+inline Message::Message(MessageClassType classType, InboundPkt *in) :
+    m_date(0),
+    m_flags(0),
+    m_fromId(0),
+    m_fwdDate(0),
+    m_id(0),
+    m_replyToMsgId(0),
+    m_views(0),
+    m_classType(classType)
+{
+    if(in) fetch(in);
+}
+
+inline Message::Message(InboundPkt *in) :
+    m_date(0),
+    m_flags(0),
+    m_fromId(0),
+    m_fwdDate(0),
+    m_id(0),
+    m_replyToMsgId(0),
+    m_views(0),
+    m_classType(typeMessageEmpty)
+{
+    fetch(in);
+}
+
+inline Message::Message(const Null &null) :
+    TelegramTypeObject(null),
+    m_date(0),
+    m_flags(0),
+    m_fromId(0),
+    m_fwdDate(0),
+    m_id(0),
+    m_replyToMsgId(0),
+    m_views(0),
+    m_classType(typeMessageEmpty)
+{
+}
+
+inline Message::~Message() {
+}
+
+inline void Message::setAction(const MessageAction &action) {
+    m_action = action;
+}
+
+inline MessageAction Message::action() const {
+    return m_action;
+}
+
+inline void Message::setDate(qint32 date) {
+    m_date = date;
+}
+
+inline qint32 Message::date() const {
+    return m_date;
+}
+
+inline void Message::setEntities(const QList<MessageEntity> &entities) {
+    m_entities = entities;
+}
+
+inline QList<MessageEntity> Message::entities() const {
+    return m_entities;
+}
+
+inline void Message::setFlags(qint32 flags) {
+    m_flags = flags;
+}
+
+inline qint32 Message::flags() const {
+    return m_flags;
+}
+
+inline void Message::setFromId(qint32 fromId) {
+    m_fromId = fromId;
+}
+
+inline qint32 Message::fromId() const {
+    return m_fromId;
+}
+
+inline void Message::setFwdDate(qint32 fwdDate) {
+    m_fwdDate = fwdDate;
+}
+
+inline qint32 Message::fwdDate() const {
+    return m_fwdDate;
+}
+
+inline void Message::setFwdFromId(const Peer &fwdFromId) {
+    m_fwdFromId = fwdFromId;
+}
+
+inline Peer Message::fwdFromId() const {
+    return m_fwdFromId;
+}
+
+inline void Message::setId(qint32 id) {
+    m_id = id;
+}
+
+inline qint32 Message::id() const {
+    return m_id;
+}
+
+inline void Message::setMedia(const MessageMedia &media) {
+    m_media = media;
+}
+
+inline MessageMedia Message::media() const {
+    return m_media;
+}
+
+inline void Message::setMediaUnread(bool mediaUnread) {
+    if(mediaUnread) m_flags = (m_flags | (1<<5));
+    else m_flags = (m_flags & ~(1<<5));
+}
+
+inline bool Message::mediaUnread() const {
+    return (m_flags & 1<<5);
+}
+
+inline void Message::setMentioned(bool mentioned) {
+    if(mentioned) m_flags = (m_flags | (1<<4));
+    else m_flags = (m_flags & ~(1<<4));
+}
+
+inline bool Message::mentioned() const {
+    return (m_flags & 1<<4);
+}
+
+inline void Message::setMessage(const QString &message) {
+    m_message = message;
+}
+
+inline QString Message::message() const {
+    return m_message;
+}
+
+inline void Message::setOut(bool out) {
+    if(out) m_flags = (m_flags | (1<<1));
+    else m_flags = (m_flags & ~(1<<1));
+}
+
+inline bool Message::out() const {
+    return (m_flags & 1<<1);
+}
+
+inline void Message::setReplyMarkup(const ReplyMarkup &replyMarkup) {
+    m_replyMarkup = replyMarkup;
+}
+
+inline ReplyMarkup Message::replyMarkup() const {
+    return m_replyMarkup;
+}
+
+inline void Message::setReplyToMsgId(qint32 replyToMsgId) {
+    m_replyToMsgId = replyToMsgId;
+}
+
+inline qint32 Message::replyToMsgId() const {
+    return m_replyToMsgId;
+}
+
+inline void Message::setToId(const Peer &toId) {
+    m_toId = toId;
+}
+
+inline Peer Message::toId() const {
+    return m_toId;
+}
+
+inline void Message::setUnread(bool unread) {
+    if(unread) m_flags = (m_flags | (1<<0));
+    else m_flags = (m_flags & ~(1<<0));
+}
+
+inline bool Message::unread() const {
+    return (m_flags & 1<<0);
+}
+
+inline void Message::setViews(qint32 views) {
+    m_views = views;
+}
+
+inline qint32 Message::views() const {
+    return m_views;
+}
+
+inline bool Message::operator ==(const Message &b) const {
+    return m_classType == b.m_classType &&
+           m_action == b.m_action &&
+           m_date == b.m_date &&
+           m_entities == b.m_entities &&
+           m_flags == b.m_flags &&
+           m_fromId == b.m_fromId &&
+           m_fwdDate == b.m_fwdDate &&
+           m_fwdFromId == b.m_fwdFromId &&
+           m_id == b.m_id &&
+           m_media == b.m_media &&
+           m_message == b.m_message &&
+           m_replyMarkup == b.m_replyMarkup &&
+           m_replyToMsgId == b.m_replyToMsgId &&
+           m_toId == b.m_toId &&
+           m_views == b.m_views;
+}
+
+inline void Message::setClassType(Message::MessageClassType classType) {
+    m_classType = classType;
+}
+
+inline Message::MessageClassType Message::classType() const {
+    return m_classType;
+}
+
+inline bool Message::fetch(InboundPkt *in) {
+    LQTG_FETCH_LOG;
+    int x = in->fetchInt();
+    switch(x) {
+    case typeMessageEmpty: {
+        m_id = in->fetchInt();
+        m_classType = static_cast<MessageClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeMessage: {
+        m_flags = in->fetchInt();
+        m_id = in->fetchInt();
+        if(m_flags & 1<<8) {
+            m_fromId = in->fetchInt();
+        }
+        m_toId.fetch(in);
+        if(m_flags & 1<<2) {
+            m_fwdFromId.fetch(in);
+        }
+        if(m_flags & 1<<2) {
+            m_fwdDate = in->fetchInt();
+        }
+        if(m_flags & 1<<3) {
+            m_replyToMsgId = in->fetchInt();
+        }
+        m_date = in->fetchInt();
+        m_message = in->fetchQString();
+        if(m_flags & 1<<9) {
+            m_media.fetch(in);
+        }
+        if(m_flags & 1<<6) {
+            m_replyMarkup.fetch(in);
+        }
+        if(m_flags & 1<<7) {
+            if(in->fetchInt() != (qint32)CoreTypes::typeVector) return false;
+            qint32 m_entities_length = in->fetchInt();
+            m_entities.clear();
+            for (qint32 i = 0; i < m_entities_length; i++) {
+                MessageEntity type;
+                if(m_flags & 1<<7) {
+                type.fetch(in);
+            }
+                m_entities.append(type);
+            }
+        }
+        if(m_flags & 1<<10) {
+            m_views = in->fetchInt();
+        }
+        m_classType = static_cast<MessageClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeMessageService: {
+        m_flags = in->fetchInt();
+        m_id = in->fetchInt();
+        if(m_flags & 1<<8) {
+            m_fromId = in->fetchInt();
+        }
+        m_toId.fetch(in);
+        m_date = in->fetchInt();
+        m_action.fetch(in);
+        m_classType = static_cast<MessageClassType>(x);
+        return true;
+    }
+        break;
+    
+    default:
+        LQTG_FETCH_ASSERT;
+        return false;
+    }
+}
+
+inline bool Message::push(OutboundPkt *out) const {
+    out->appendInt(m_classType);
+    switch(m_classType) {
+    case typeMessageEmpty: {
+        out->appendInt(m_id);
+        return true;
+    }
+        break;
+    
+    case typeMessage: {
+        out->appendInt(m_flags);
+        out->appendInt(m_id);
+        out->appendInt(m_fromId);
+        m_toId.push(out);
+        m_fwdFromId.push(out);
+        out->appendInt(m_fwdDate);
+        out->appendInt(m_replyToMsgId);
+        out->appendInt(m_date);
+        out->appendQString(m_message);
+        m_media.push(out);
+        m_replyMarkup.push(out);
+        out->appendInt(CoreTypes::typeVector);
+        out->appendInt(m_entities.count());
+        for (qint32 i = 0; i < m_entities.count(); i++) {
+            m_entities[i].push(out);
+        }
+        out->appendInt(m_views);
+        return true;
+    }
+        break;
+    
+    case typeMessageService: {
+        out->appendInt(m_flags);
+        out->appendInt(m_id);
+        out->appendInt(m_fromId);
+        m_toId.push(out);
+        out->appendInt(m_date);
+        m_action.push(out);
+        return true;
+    }
+        break;
+    
+    default:
+        return false;
+    }
+}
+
+inline QMap<QString, QVariant> Message::toMap() const {
+    QMap<QString, QVariant> result;
+    switch(static_cast<int>(m_classType)) {
+    case typeMessageEmpty: {
+        result["classType"] = "Message::typeMessageEmpty";
+        result["id"] = QVariant::fromValue<qint32>(id());
+        return result;
+    }
+        break;
+    
+    case typeMessage: {
+        result["classType"] = "Message::typeMessage";
+        result["unread"] = QVariant::fromValue<bool>(unread());
+        result["out"] = QVariant::fromValue<bool>(out());
+        result["mentioned"] = QVariant::fromValue<bool>(mentioned());
+        result["mediaUnread"] = QVariant::fromValue<bool>(mediaUnread());
+        result["id"] = QVariant::fromValue<qint32>(id());
+        result["fromId"] = QVariant::fromValue<qint32>(fromId());
+        result["toId"] = m_toId.toMap();
+        result["fwdFromId"] = m_fwdFromId.toMap();
+        result["fwdDate"] = QVariant::fromValue<qint32>(fwdDate());
+        result["replyToMsgId"] = QVariant::fromValue<qint32>(replyToMsgId());
+        result["date"] = QVariant::fromValue<qint32>(date());
+        result["message"] = QVariant::fromValue<QString>(message());
+        result["media"] = m_media.toMap();
+        result["replyMarkup"] = m_replyMarkup.toMap();
+        QList<QVariant> _entities;
+        Q_FOREACH(const MessageEntity &m__type, m_entities)
+            _entities << m__type.toMap();
+        result["entities"] = _entities;
+        result["views"] = QVariant::fromValue<qint32>(views());
+        return result;
+    }
+        break;
+    
+    case typeMessageService: {
+        result["classType"] = "Message::typeMessageService";
+        result["unread"] = QVariant::fromValue<bool>(unread());
+        result["out"] = QVariant::fromValue<bool>(out());
+        result["mentioned"] = QVariant::fromValue<bool>(mentioned());
+        result["mediaUnread"] = QVariant::fromValue<bool>(mediaUnread());
+        result["id"] = QVariant::fromValue<qint32>(id());
+        result["fromId"] = QVariant::fromValue<qint32>(fromId());
+        result["toId"] = m_toId.toMap();
+        result["date"] = QVariant::fromValue<qint32>(date());
+        result["action"] = m_action.toMap();
+        return result;
+    }
+        break;
+    
+    default:
+        return result;
+    }
+}
+
+inline Message Message::fromMap(const QMap<QString, QVariant> &map) {
+    Message result;
+    if(map.value("classType").toString() == "Message::typeMessageEmpty") {
+        result.setClassType(typeMessageEmpty);
+        result.setId( map.value("id").value<qint32>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "Message::typeMessage") {
+        result.setClassType(typeMessage);
+        result.setUnread( map.value("unread").value<bool>() );
+        result.setOut( map.value("out").value<bool>() );
+        result.setMentioned( map.value("mentioned").value<bool>() );
+        result.setMediaUnread( map.value("mediaUnread").value<bool>() );
+        result.setId( map.value("id").value<qint32>() );
+        result.setFromId( map.value("fromId").value<qint32>() );
+        result.setToId( Peer::fromMap(map.value("toId").toMap()) );
+        result.setFwdFromId( Peer::fromMap(map.value("fwdFromId").toMap()) );
+        result.setFwdDate( map.value("fwdDate").value<qint32>() );
+        result.setReplyToMsgId( map.value("replyToMsgId").value<qint32>() );
+        result.setDate( map.value("date").value<qint32>() );
+        result.setMessage( map.value("message").value<QString>() );
+        result.setMedia( MessageMedia::fromMap(map.value("media").toMap()) );
+        result.setReplyMarkup( ReplyMarkup::fromMap(map.value("replyMarkup").toMap()) );
+        QList<QVariant> map_entities = map["entities"].toList();
+        QList<MessageEntity> _entities;
+        Q_FOREACH(const QVariant &var, map_entities)
+            _entities << MessageEntity::fromMap(var.toMap());
+        result.setEntities(_entities);
+        result.setViews( map.value("views").value<qint32>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "Message::typeMessageService") {
+        result.setClassType(typeMessageService);
+        result.setUnread( map.value("unread").value<bool>() );
+        result.setOut( map.value("out").value<bool>() );
+        result.setMentioned( map.value("mentioned").value<bool>() );
+        result.setMediaUnread( map.value("mediaUnread").value<bool>() );
+        result.setId( map.value("id").value<qint32>() );
+        result.setFromId( map.value("fromId").value<qint32>() );
+        result.setToId( Peer::fromMap(map.value("toId").toMap()) );
+        result.setDate( map.value("date").value<qint32>() );
+        result.setAction( MessageAction::fromMap(map.value("action").toMap()) );
+        return result;
+    }
+    return result;
+}
+
+inline QByteArray Message::getHash(QCryptographicHash::Algorithm alg) const {
+    QByteArray data;
+    QDataStream str(&data, QIODevice::WriteOnly);
+    str << *this;
+    return QCryptographicHash::hash(data, alg);
+}
+
+inline QDataStream &operator<<(QDataStream &stream, const Message &item) {
+    stream << static_cast<uint>(item.classType());
+    switch(item.classType()) {
+    case Message::typeMessageEmpty:
+        stream << item.id();
+        break;
+    case Message::typeMessage:
+        stream << item.flags();
+        stream << item.id();
+        stream << item.fromId();
+        stream << item.toId();
+        stream << item.fwdFromId();
+        stream << item.fwdDate();
+        stream << item.replyToMsgId();
+        stream << item.date();
+        stream << item.message();
+        stream << item.media();
+        stream << item.replyMarkup();
+        stream << item.entities();
+        stream << item.views();
+        break;
+    case Message::typeMessageService:
+        stream << item.flags();
+        stream << item.id();
+        stream << item.fromId();
+        stream << item.toId();
+        stream << item.date();
+        stream << item.action();
+        break;
+    }
+    return stream;
+}
+
+inline QDataStream &operator>>(QDataStream &stream, Message &item) {
+    uint type = 0;
+    stream >> type;
+    item.setClassType(static_cast<Message::MessageClassType>(type));
+    switch(type) {
+    case Message::typeMessageEmpty: {
+        qint32 m_id;
+        stream >> m_id;
+        item.setId(m_id);
+    }
+        break;
+    case Message::typeMessage: {
+        qint32 m_flags;
+        stream >> m_flags;
+        item.setFlags(m_flags);
+        qint32 m_id;
+        stream >> m_id;
+        item.setId(m_id);
+        qint32 m_from_id;
+        stream >> m_from_id;
+        item.setFromId(m_from_id);
+        Peer m_to_id;
+        stream >> m_to_id;
+        item.setToId(m_to_id);
+        Peer m_fwd_from_id;
+        stream >> m_fwd_from_id;
+        item.setFwdFromId(m_fwd_from_id);
+        qint32 m_fwd_date;
+        stream >> m_fwd_date;
+        item.setFwdDate(m_fwd_date);
+        qint32 m_reply_to_msg_id;
+        stream >> m_reply_to_msg_id;
+        item.setReplyToMsgId(m_reply_to_msg_id);
+        qint32 m_date;
+        stream >> m_date;
+        item.setDate(m_date);
+        QString m_message;
+        stream >> m_message;
+        item.setMessage(m_message);
+        MessageMedia m_media;
+        stream >> m_media;
+        item.setMedia(m_media);
+        ReplyMarkup m_reply_markup;
+        stream >> m_reply_markup;
+        item.setReplyMarkup(m_reply_markup);
+        QList<MessageEntity> m_entities;
+        stream >> m_entities;
+        item.setEntities(m_entities);
+        qint32 m_views;
+        stream >> m_views;
+        item.setViews(m_views);
+    }
+        break;
+    case Message::typeMessageService: {
+        qint32 m_flags;
+        stream >> m_flags;
+        item.setFlags(m_flags);
+        qint32 m_id;
+        stream >> m_id;
+        item.setId(m_id);
+        qint32 m_from_id;
+        stream >> m_from_id;
+        item.setFromId(m_from_id);
+        Peer m_to_id;
+        stream >> m_to_id;
+        item.setToId(m_to_id);
+        qint32 m_date;
+        stream >> m_date;
+        item.setDate(m_date);
+        MessageAction m_action;
+        stream >> m_action;
+        item.setAction(m_action);
+    }
+        break;
+    }
+    return stream;
+}
+
 
 #endif // LQTG_TYPE_MESSAGE

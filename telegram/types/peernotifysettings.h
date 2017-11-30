@@ -6,19 +6,29 @@
 #define LQTG_TYPE_PEERNOTIFYSETTINGS
 
 #include "telegramtypeobject.h"
+
+#include <QMetaType>
+#include <QVariant>
+#include "core/inboundpkt.h"
+#include "core/outboundpkt.h"
+#include "../coretypes.h"
+
+#include <QDataStream>
+
 #include <QtGlobal>
 #include <QString>
 
 class LIBQTELEGRAMSHARED_EXPORT PeerNotifySettings : public TelegramTypeObject
 {
 public:
-    enum PeerNotifySettingsType {
+    enum PeerNotifySettingsClassType {
         typePeerNotifySettingsEmpty = 0x70a68512,
         typePeerNotifySettings = 0x8d5e11ee
     };
 
-    PeerNotifySettings(PeerNotifySettingsType classType = typePeerNotifySettingsEmpty, InboundPkt *in = 0);
+    PeerNotifySettings(PeerNotifySettingsClassType classType = typePeerNotifySettingsEmpty, InboundPkt *in = 0);
     PeerNotifySettings(InboundPkt *in);
+    PeerNotifySettings(const Null&);
     virtual ~PeerNotifySettings();
 
     void setEventsMask(qint32 eventsMask);
@@ -33,20 +43,252 @@ public:
     void setSound(const QString &sound);
     QString sound() const;
 
-    void setClassType(PeerNotifySettingsType classType);
-    PeerNotifySettingsType classType() const;
+    void setClassType(PeerNotifySettingsClassType classType);
+    PeerNotifySettingsClassType classType() const;
 
     bool fetch(InboundPkt *in);
     bool push(OutboundPkt *out) const;
 
-    bool operator ==(const PeerNotifySettings &b);
+    QMap<QString, QVariant> toMap() const;
+    static PeerNotifySettings fromMap(const QMap<QString, QVariant> &map);
+
+    bool operator ==(const PeerNotifySettings &b) const;
+
+    bool operator==(bool stt) const { return isNull() != stt; }
+    bool operator!=(bool stt) const { return !operator ==(stt); }
+
+    QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
     qint32 m_eventsMask;
     qint32 m_muteUntil;
     bool m_showPreviews;
     QString m_sound;
-    PeerNotifySettingsType m_classType;
+    PeerNotifySettingsClassType m_classType;
 };
+
+Q_DECLARE_METATYPE(PeerNotifySettings)
+
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator<<(QDataStream &stream, const PeerNotifySettings &item);
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, PeerNotifySettings &item);
+
+inline PeerNotifySettings::PeerNotifySettings(PeerNotifySettingsClassType classType, InboundPkt *in) :
+    m_eventsMask(0),
+    m_muteUntil(0),
+    m_showPreviews(false),
+    m_classType(classType)
+{
+    if(in) fetch(in);
+}
+
+inline PeerNotifySettings::PeerNotifySettings(InboundPkt *in) :
+    m_eventsMask(0),
+    m_muteUntil(0),
+    m_showPreviews(false),
+    m_classType(typePeerNotifySettingsEmpty)
+{
+    fetch(in);
+}
+
+inline PeerNotifySettings::PeerNotifySettings(const Null &null) :
+    TelegramTypeObject(null),
+    m_eventsMask(0),
+    m_muteUntil(0),
+    m_showPreviews(false),
+    m_classType(typePeerNotifySettingsEmpty)
+{
+}
+
+inline PeerNotifySettings::~PeerNotifySettings() {
+}
+
+inline void PeerNotifySettings::setEventsMask(qint32 eventsMask) {
+    m_eventsMask = eventsMask;
+}
+
+inline qint32 PeerNotifySettings::eventsMask() const {
+    return m_eventsMask;
+}
+
+inline void PeerNotifySettings::setMuteUntil(qint32 muteUntil) {
+    m_muteUntil = muteUntil;
+}
+
+inline qint32 PeerNotifySettings::muteUntil() const {
+    return m_muteUntil;
+}
+
+inline void PeerNotifySettings::setShowPreviews(bool showPreviews) {
+    m_showPreviews = showPreviews;
+}
+
+inline bool PeerNotifySettings::showPreviews() const {
+    return m_showPreviews;
+}
+
+inline void PeerNotifySettings::setSound(const QString &sound) {
+    m_sound = sound;
+}
+
+inline QString PeerNotifySettings::sound() const {
+    return m_sound;
+}
+
+inline bool PeerNotifySettings::operator ==(const PeerNotifySettings &b) const {
+    return m_classType == b.m_classType &&
+           m_eventsMask == b.m_eventsMask &&
+           m_muteUntil == b.m_muteUntil &&
+           m_showPreviews == b.m_showPreviews &&
+           m_sound == b.m_sound;
+}
+
+inline void PeerNotifySettings::setClassType(PeerNotifySettings::PeerNotifySettingsClassType classType) {
+    m_classType = classType;
+}
+
+inline PeerNotifySettings::PeerNotifySettingsClassType PeerNotifySettings::classType() const {
+    return m_classType;
+}
+
+inline bool PeerNotifySettings::fetch(InboundPkt *in) {
+    LQTG_FETCH_LOG;
+    int x = in->fetchInt();
+    switch(x) {
+    case typePeerNotifySettingsEmpty: {
+        m_classType = static_cast<PeerNotifySettingsClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typePeerNotifySettings: {
+        m_muteUntil = in->fetchInt();
+        m_sound = in->fetchQString();
+        m_showPreviews = in->fetchBool();
+        m_eventsMask = in->fetchInt();
+        m_classType = static_cast<PeerNotifySettingsClassType>(x);
+        return true;
+    }
+        break;
+    
+    default:
+        LQTG_FETCH_ASSERT;
+        return false;
+    }
+}
+
+inline bool PeerNotifySettings::push(OutboundPkt *out) const {
+    out->appendInt(m_classType);
+    switch(m_classType) {
+    case typePeerNotifySettingsEmpty: {
+        return true;
+    }
+        break;
+    
+    case typePeerNotifySettings: {
+        out->appendInt(m_muteUntil);
+        out->appendQString(m_sound);
+        out->appendBool(m_showPreviews);
+        out->appendInt(m_eventsMask);
+        return true;
+    }
+        break;
+    
+    default:
+        return false;
+    }
+}
+
+inline QMap<QString, QVariant> PeerNotifySettings::toMap() const {
+    QMap<QString, QVariant> result;
+    switch(static_cast<int>(m_classType)) {
+    case typePeerNotifySettingsEmpty: {
+        result["classType"] = "PeerNotifySettings::typePeerNotifySettingsEmpty";
+        return result;
+    }
+        break;
+    
+    case typePeerNotifySettings: {
+        result["classType"] = "PeerNotifySettings::typePeerNotifySettings";
+        result["muteUntil"] = QVariant::fromValue<qint32>(muteUntil());
+        result["sound"] = QVariant::fromValue<QString>(sound());
+        result["showPreviews"] = QVariant::fromValue<bool>(showPreviews());
+        result["eventsMask"] = QVariant::fromValue<qint32>(eventsMask());
+        return result;
+    }
+        break;
+    
+    default:
+        return result;
+    }
+}
+
+inline PeerNotifySettings PeerNotifySettings::fromMap(const QMap<QString, QVariant> &map) {
+    PeerNotifySettings result;
+    if(map.value("classType").toString() == "PeerNotifySettings::typePeerNotifySettingsEmpty") {
+        result.setClassType(typePeerNotifySettingsEmpty);
+        return result;
+    }
+    if(map.value("classType").toString() == "PeerNotifySettings::typePeerNotifySettings") {
+        result.setClassType(typePeerNotifySettings);
+        result.setMuteUntil( map.value("muteUntil").value<qint32>() );
+        result.setSound( map.value("sound").value<QString>() );
+        result.setShowPreviews( map.value("showPreviews").value<bool>() );
+        result.setEventsMask( map.value("eventsMask").value<qint32>() );
+        return result;
+    }
+    return result;
+}
+
+inline QByteArray PeerNotifySettings::getHash(QCryptographicHash::Algorithm alg) const {
+    QByteArray data;
+    QDataStream str(&data, QIODevice::WriteOnly);
+    str << *this;
+    return QCryptographicHash::hash(data, alg);
+}
+
+inline QDataStream &operator<<(QDataStream &stream, const PeerNotifySettings &item) {
+    stream << static_cast<uint>(item.classType());
+    switch(item.classType()) {
+    case PeerNotifySettings::typePeerNotifySettingsEmpty:
+        
+        break;
+    case PeerNotifySettings::typePeerNotifySettings:
+        stream << item.muteUntil();
+        stream << item.sound();
+        stream << item.showPreviews();
+        stream << item.eventsMask();
+        break;
+    }
+    return stream;
+}
+
+inline QDataStream &operator>>(QDataStream &stream, PeerNotifySettings &item) {
+    uint type = 0;
+    stream >> type;
+    item.setClassType(static_cast<PeerNotifySettings::PeerNotifySettingsClassType>(type));
+    switch(type) {
+    case PeerNotifySettings::typePeerNotifySettingsEmpty: {
+        
+    }
+        break;
+    case PeerNotifySettings::typePeerNotifySettings: {
+        qint32 m_mute_until;
+        stream >> m_mute_until;
+        item.setMuteUntil(m_mute_until);
+        QString m_sound;
+        stream >> m_sound;
+        item.setSound(m_sound);
+        bool m_show_previews;
+        stream >> m_show_previews;
+        item.setShowPreviews(m_show_previews);
+        qint32 m_events_mask;
+        stream >> m_events_mask;
+        item.setEventsMask(m_events_mask);
+    }
+        break;
+    }
+    return stream;
+}
+
 
 #endif // LQTG_TYPE_PEERNOTIFYSETTINGS

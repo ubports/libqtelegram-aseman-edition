@@ -69,6 +69,7 @@ private:
 
 protected Q_SLOTS:
     void processRpcAnswer(QByteArray response);
+    void onError(QAbstractSocket::SocketError error);
 };
 
 #endif // DCAUTH_H

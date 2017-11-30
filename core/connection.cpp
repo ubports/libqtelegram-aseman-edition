@@ -53,6 +53,8 @@ Connection::Connection(const QString &host, qint32 port, QObject *parent) :
     connect(this, SIGNAL(disconnected()), SLOT(onDisconnected()));
     connect(this, SIGNAL(readyRead()), SLOT(onReadyRead()));
     connect(this, SIGNAL(error(QAbstractSocket::SocketError)), SLOT(onError(QAbstractSocket::SocketError)));
+    connect(this, SIGNAL(error(QAbstractSocket::SocketError)), SIGNAL(connectionError(QAbstractSocket::SocketError)));
+
     connect(this, SIGNAL(stateChanged(QAbstractSocket::SocketState)), SLOT(onStateChanged(QAbstractSocket::SocketState)));
 
     connect(&mAsserter,SIGNAL(fatalError()), SIGNAL(fatalError()));
@@ -138,7 +140,7 @@ void Connection::connectToServer() {
 }
 
 void Connection::onStateChanged(QAbstractSocket::SocketState state) {
-    qCDebug(TG_CORE_CONNECTION) << "Socket state changed to " << state;
+    qCWarning(TG_CORE_CONNECTION) << "Socket state changed to " << state;
 }
 
 /*
@@ -168,13 +170,13 @@ QAbstractSocket::TemporaryError                     22	A temporary error occurre
 QAbstractSocket::UnknownSocketError                 -1	An unidentified error occurred.
 */
 void Connection::onError(QAbstractSocket::SocketError error) {
-    qCWarning(TG_CORE_CONNECTION) << "SocketError:" << QString::number(error) << errorString();
-    if (error <= QAbstractSocket::NetworkError) {
+    qWarning() << "SocketError:" << QString::number(error) << errorString();
+    if (error <= QAbstractSocket::ProxyProtocolError) {
         if (state() == QAbstractSocket::ConnectedState || state() == QAbstractSocket::ConnectingState) {
             disconnectFromHost();
         }
 
-        qint32 reconnectionDelay = 0;
+        qint32 reconnectionDelay = 1000;
         if (errorString().contains("unreachable")) {
             // In this case, there is no way to reach the server because the physical link
             // is broken (disconnected all connections). Don't retry reconnecting continuously
@@ -186,6 +188,8 @@ void Connection::onError(QAbstractSocket::SocketError error) {
         // Let's wait for the event loop spin once
         QTimer::singleShot(reconnectionDelay, this, SLOT(connectToServer()));
     }
+    else
+        qWarning() << "Unknown network error, socket remains closed and connection will permanently be interrrupted!";
 }
 
 void Connection::onConnected() {

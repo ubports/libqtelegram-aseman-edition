@@ -7,7 +7,7 @@
 #include "fileoperation.h"
 #include "downloadfile.h"
 #include "core/dcprovider.h"
-#include "core/api.h"
+#include "telegram/telegramapi.h"
 #include "secret/secretstate.h"
 
 Q_DECLARE_LOGGING_CATEGORY(TG_FILE_FILEHANDLER)
@@ -18,7 +18,7 @@ class FileHandler : public QObject
 public:
     typedef QSharedPointer<FileHandler> Ptr;
 
-    explicit FileHandler(Api* api, CryptoUtils *crypto, Settings *settings, DcProvider &dcProvider, SecretState &secretState, QObject *parent = 0);
+    explicit FileHandler(TelegramCore *core, TelegramApi *api, CryptoUtils *crypto, Settings *settings, DcProvider &dcProvider, SecretState &secretState, QObject *parent = 0);
     ~FileHandler();
 
     qint64 uploadSendFile(FileOperation &op, const QString &fileName, const QByteArray &bytes, const QByteArray &thumbnailBytes = 0, const QString &thumbnailName = QString::null);
@@ -30,13 +30,14 @@ Q_SIGNALS:
     void uploadSendFileAnswer(qint64 fileId, qint32 partId, qint32 uploaded, qint32 totalSize);
     void uploadGetFileAnswer(qint64 fileId, const StorageFileType &type, qint32 mtime, const QByteArray &bytes, qint32 partId, qint32 downloaded, qint32 total);
     void uploadCancelFileAnswer(qint64 fileId, bool cancelled);
-    void error(qint64 id, qint32 errorCode, const QString &errorText);
+    void error(qint64 id, qint32 errorCode, const QString &errorText, const QString &functionName);
 
-    void messagesSentMedia(qint64 fileId, const UpdatesType &updates);
+    void messagesSentMedia(qint64 fileId, const UpdatesType &updates, const QVariant &attachedData);
     void messagesSendEncryptedFileAnswer(qint64 id, qint32 date, const EncryptedFile &encryptedFile = EncryptedFile());
 
 private:
-    Api *mApi;
+    TelegramApi *mApi;
+    TelegramCore *mCore;
     CryptoUtils *mCrypto;
     Settings *mSettings;
     DcProvider &mDcProvider;
@@ -68,13 +69,13 @@ private:
 
 private Q_SLOTS:
     void onUploadSendFileSessionCreated();
-    void onUploadSaveFilePartResult(qint64 msgId, qint64 fileId, bool ok);
+    void onUploadSaveFilePartResult(qint64 msgId, bool ok, const QVariant &attachedData);
     void onUploadGetFileSessionCreated();
-    void onUploadGetFileAnswer(qint64 msgId, const StorageFileType &type, qint32 mtime, QByteArray bytes);
+    void onUploadGetFileAnswer(qint64 msgId, const UploadFile &result);
     void onUploadGetFileError(qint64 id, qint32 errorCode, const QString &errorText);
 
     void onMessagesSentMedia(qint64 id, const UpdatesType &updates);
-    void onMessagesSentEncryptedFile(qint64, qint32 date, const EncryptedFile &encryptedFile = EncryptedFile());
+    void onMessagesSentEncryptedFile(qint64 msgId, const MessagesSentEncryptedMessage &result);
 
     void onUpdateMessageId(qint64 oldMsgId, qint64 newMsgId);
 };

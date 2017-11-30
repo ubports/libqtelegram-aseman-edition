@@ -25,7 +25,7 @@
 #include <QLoggingCategory>
 #include "dc.h"
 #include "dcauth.h"
-#include "api.h"
+#include "telegram/telegramapi.h"
 
 Q_DECLARE_LOGGING_CATEGORY(TG_CORE_DCPROVIDER)
 
@@ -40,7 +40,7 @@ public:
     DC *getDc(qint32 dcNum) const;
     DC *getWorkingDc() const;
     QList<DC *> getDcs() const;
-    Api *getApi() const;
+    TelegramApi *getApi() const;
     void transferAuth();
 
 Q_SIGNALS:
@@ -62,14 +62,16 @@ private:
     void processDcReady(DC *dc);
     void clean();
 
+    QMutex mDcsLock;
     QMap<qint32, DC *> mDcs;
+    QMutex mDcAuthsLock;
     QMap<qint32, DCAuth *> mDcAuths;
     Settings *mSettings;
     CryptoUtils *mCrypto;
 
     //api instance for "internal" operations (config, getNearestDc, etc...). This object could be received
     // from outside, as parameter, when completed external public layer
-    Api *mApi;
+    TelegramApi *mApi;
 
     // counter of the dc's pending to be authenticated. When this counter is zero, all available DCs are
     // authenticated and a signal dcProviderReady() is emitted
@@ -96,10 +98,10 @@ private Q_SLOTS:
     void onDcAuthDisconnected();
     void onApiReady(DC*);
     void onApiError();
-    void onConfigReceived(qint64 msgId, const Config &config);
+    void onConfigReceived(qint64 msgId, const Config &config, const QVariant &attachedData);
     void onTransferSessionReady(DC*);
-    void onAuthExportedAuthorization(qint64, qint32 ourId, const QByteArray &bytes);
-    void onAuthImportedAuthorization(qint64, qint32 expires, const User &);
+    void onAuthExportedAuthorization(qint64, const AuthExportedAuthorization &result);
+    void onAuthImportedAuthorization(qint64, const AuthAuthorization &);
 };
 
 #endif // DCPROVIDER_H

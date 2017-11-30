@@ -117,8 +117,7 @@ void DcProvider::initialize() {
             }
 
             // create a dc authenticator based in dc info
-            mDcs[defaultDcId]->setHost(defaultDcHost);
-            mDcs[defaultDcId]->setPort(defaultDcPort);
+            mDcs[defaultDcId]->addEndpoint(defaultDcHost, defaultDcPort);
             DCAuth *dcAuth = new DCAuth(mDcs[defaultDcId], mSettings, mCrypto, this);
             mDcAuths.insert(defaultDcId, dcAuth);
             connect(dcAuth, SIGNAL(fatalError()), this, SLOT(logOut()));
@@ -169,15 +168,18 @@ void DcProvider::onDcAuthDisconnected() {
 }
 
 void DcProvider::processDcReady(DC *dc) {
+    mDcsLock.lock();
     // create api object if dc is workingDc, and get configuration
     if ((!mApi) && (dc->id() == mSettings->workingDcNum())) {
         Session *session = new Session(dc, mSettings, mCrypto, this);
-        mApi = new Api(session, mSettings, mCrypto, this);
+        mApi = new TelegramApi(session, mSettings, mCrypto, this);
         connect(session, SIGNAL(sessionReady(DC*)), this, SLOT(onApiReady(DC*)));
         connect(session, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onApiError()));
         session->connectToServer();
     } else if (--mPendingDcs == 0) { // if all dcs are authorized, emit provider ready signal
         // save the settings here, after all dcs are ready
+        for(auto dc : mDcs.values())
+            qWarning() << "DC " << dc->id() << ": key hash " << dc->serverSalt();
         mSettings->setDcsList(mDcs.values());
         mSettings->writeAuthFile();
 
@@ -200,6 +202,7 @@ void DcProvider::processDcReady(DC *dc) {
         }
 
     }
+    mDcsLock.unlock();
 }
 
 void DcProvider::onApiError() {
@@ -245,14 +248,14 @@ void DcProvider::onApiReady(DC*) {
     disconnect(session, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onApiError()));
 
     // get the config
-    connect(mApi, SIGNAL(config(qint64,const Config&)), this, SLOT(onConfigReceived(qint64,const Config&)), Qt::UniqueConnection );
+    connect(mApi, SIGNAL(helpGetConfigAnswer(qint64,const Config&, const QVariant&)), this, SLOT(onConfigReceived(qint64,const Config&, const QVariant&)), Qt::UniqueConnection );
 
     qint64 rid = mApi->helpGetConfig();
     mGetConfigRequests[rid] = session;
 }
 
-void DcProvider::onConfigReceived(qint64 msgId, const Config &config) {
-
+void DcProvider::onConfigReceived(qint64 msgId, const Config &config, const QVariant &attachedData) {
+    Q_UNUSED(attachedData)
     qCDebug(TG_CORE_DCPROVIDER) << "onConfigReceived(), msgId =" << QString::number(msgId, 16);
     qCDebug(TG_CORE_DCPROVIDER) << "date =" << config.date();
     qCDebug(TG_CORE_DCPROVIDER) << "testMode =" << config.testMode();
@@ -268,47 +271,58 @@ void DcProvider::onConfigReceived(qint64 msgId, const Config &config) {
     mConfigReceived = true;
 
     const QList<DcOption> &dcOptions = config.dcOptions();
+    QList<qint32> dcIndex = QList<qint32>();
 
-    mPendingDcs = dcOptions.length() -1; //all the received options but the default one, yet used
+    //We start at -1 to reduce the amount of pending DCs by one. The first DC where we got the config from is already processed
+    mPendingDcs = -1;
+    Q_FOREACH (DcOption dcOption, dcOptions) {
+        if (dcIndex.indexOf(dcOption.id())==-1)
+        {
+            dcIndex.append(dcOption.id());
+            mPendingDcs++;
+        }
+    }
 
     Q_FOREACH (DcOption dcOption, dcOptions) {
-        qCDebug(TG_CORE_DCPROVIDER) << "dcOption | id =" << dcOption.id() << ", ipAddress =" << dcOption.ipAddress() <<
-                    ", port =" << dcOption.port() << ", hostname =" << dcOption.hostname();
-
+        qCWarning(TG_CORE_DCPROVIDER) << "dcOption | id =" << dcOption.id() << ", ipAddress =" << dcOption.ipAddress() <<
+                    ", port =" << dcOption.port() << ", hostname =" << dcOption.ipAddress() << ", mediaOnly: " << dcOption.mediaOnly();
         // for every new DC or not authenticated DC, insert into m_dcs and authenticate
         DC *dc = mDcs.value(dcOption.id());
 
         // check if dc is not null or if received host and port are not equals than settings ones
-//        if ((!dc) || ((dc->host() != dcOption.ipAddress()) || (dc->port() != dcOption.port()))) {
-        if ((!dc) || (dc->state() < DC::authKeyCreated && ((dc->host() != dcOption.ipAddress()) || (dc->port() != dcOption.port()))) ) {
-            // if not exists dc or host and port different, create a new dc object for this dcId and add it to m_dcs map
+        if (!dc) {
+            // if the DC entry does not exist or no auth key is created create a new dc object for this dcId and add it to m_dcs map
             dc = new DC(dcOption.id());
-            dc->setHost(dcOption.ipAddress());
-            dc->setPort(dcOption.port());
             mDcs.insert(dcOption.id(), dc);
         }
 
-        // let's see if needed to create shared key for it
-        // In any other case, the host and port have been retrieved from auth file settings and the DC object is already created
-        if (dc->state() < DC::authKeyCreated) {
-            // create a dc authenticator based in dc info
-            DCAuth *dcAuth = new DCAuth(dc, mSettings, mCrypto, this);
-            mDcAuths.insert(dcOption.id(), dcAuth);
-            connect(dcAuth, SIGNAL(fatalError()), this, SLOT(logOut()));
-            connect(dcAuth, SIGNAL(fatalError()), this, SIGNAL(fatalError()));
-            connect(dcAuth, SIGNAL(dcReady(DC*)), this, SLOT(onDcReady(DC*)));
-            dcAuth->createAuthKey();
-        } else if (dcOption.id() != config.thisDc()) {
-            // if authorized and not working dc emit dcReady signal directly
-            onDcReady(dc);
+        if(!dcOption.mediaOnly())
+            dc->addEndpoint(dcOption.ipAddress(), dcOption.port());
+        qint32 currentDc = dcIndex.indexOf(dcOption.id());
+        if (currentDc>-1)
+        {
+            dcIndex.removeAt(currentDc);
+            // let's see if needed to create shared key for it
+            // In any other case, the host and port have been retrieved from auth file settings and the DC object is already created
+            if (dc->state() < DC::authKeyCreated) {
+                // create a dc authenticator based in dc info
+                DCAuth *dcAuth = new DCAuth(dc, mSettings, mCrypto, this);
+                mDcAuths.insert(dcOption.id(), dcAuth);
+                connect(dcAuth, SIGNAL(fatalError()), this, SLOT(logOut()));
+                connect(dcAuth, SIGNAL(fatalError()), this, SIGNAL(fatalError()));
+                connect(dcAuth, SIGNAL(dcReady(DC*)), this, SLOT(onDcReady(DC*)));
+                dcAuth->createAuthKey();
+            } else if (dcOption.id() != config.thisDc()) {
+                // if authorized and not working dc emit dcReady signal directly
+                onDcReady(dc);
+            }
         }
     }
 
     qCDebug(TG_CORE_DCPROVIDER) << "chatMaxSize =" << config.chatSizeMax();
-    qCDebug(TG_CORE_DCPROVIDER) << "broadcastMaxSize =" << config.broadcastSizeMax();
 }
 
-Api *DcProvider::getApi() const {
+TelegramApi *DcProvider::getApi() const {
     return mApi;
 }
 
@@ -345,25 +359,25 @@ void DcProvider::onTransferSessionReady(DC *) {
     Session *session = qobject_cast<Session *>(sender());
     mTransferSessions.append(session);
     if (--mPendingTransferSessions == 0) {
-        connect(mApi, SIGNAL(authExportedAuthorization(qint64,qint32,const QByteArray&)), this, SLOT(onAuthExportedAuthorization(qint64,qint32,const QByteArray&)));
-        connect(mApi, SIGNAL(authImportedAuthorization(qint64,qint32,const User&)), this, SLOT(onAuthImportedAuthorization(qint64,qint32,const User&)));
+        connect(mApi, &TelegramApi::authExportAuthorizationAnswer, this, &DcProvider::onAuthExportedAuthorization);
+        connect(mApi, &TelegramApi::authImportAuthorizationAnswer, this, &DcProvider::onAuthImportedAuthorization);
         mApi->authExportAuthorization(mTransferSessions.first()->dc()->id());
     }
 }
 
-void DcProvider::onAuthExportedAuthorization(qint64, qint32 ourId, const QByteArray &bytes) {
+void DcProvider::onAuthExportedAuthorization(qint64, const AuthExportedAuthorization &result) {
     // Set ourId into settings (It doesn't matter if set before)
-    mSettings->setOurId(ourId);
+    mSettings->setOurId(result.id());
     // Change api dc to first in the transfer dcs list
     mApi->setMainSession(mTransferSessions.first());
     // Execute import in this dc
-    mApi->authImportAuthorization(ourId, bytes);
+    mApi->authImportAuthorization(result.id(), result.bytes());
 }
 
-void DcProvider::onAuthImportedAuthorization(qint64, qint32 expires, const User &) {
+void DcProvider::onAuthImportedAuthorization(qint64, const AuthAuthorization &) {
     Session *session = mTransferSessions.takeFirst();
     DC *authorizedDc = session->dc();
-    authorizedDc->setExpires(expires);
+    authorizedDc->setExpires(0);
     authorizedDc->setState(DC::userSignedIn);
     session->release();
     mApi->setMainSession(mWorkingDcSession);

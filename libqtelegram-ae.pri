@@ -1,6 +1,5 @@
 QT += gui
 QT += network
-QT += multimedia
 
 win32 {
     isEmpty(OPENSSL_LIB_DIR): OPENSSL_LIB_DIR = $${DESTDIR}
@@ -37,15 +36,10 @@ SOURCES += \
     $$PWD/secret/secretstate.cpp \
     $$PWD/secret/secretchat.cpp \
     $$PWD/secret/encrypter.cpp \
-    $$PWD/secret/decryptedmessagebuilder.cpp \
-    $$PWD/secret/decryptedmessage.cpp \
-    $$PWD/secret/decryptedmessageaction.cpp \
-    $$PWD/secret/decryptedmessagemedia.cpp \
     $$PWD/core/outboundpkt.cpp \
     $$PWD/core/eventtimer.cpp \
     $$PWD/core/settings.cpp \
     $$PWD/core/dcprovider.cpp \
-    $$PWD/core/api.cpp \
     $$PWD/core/sessionmanager.cpp \
     $$PWD/core/inboundpkt.cpp \
     $$PWD/core/abstractapi.cpp \
@@ -54,7 +48,8 @@ SOURCES += \
     $$PWD/core/session.cpp \
     $$PWD/core/dcauth.cpp \
     $$PWD/telegram.cpp \
-    $$PWD/file/uploadfileengine.cpp
+    $$PWD/file/uploadfileengine.cpp \
+    $$PWD/core/dc.cpp
 
 HEADERS += \
     $$PWD/util/cryptoutils.h \
@@ -66,15 +61,10 @@ HEADERS += \
     $$PWD/file/file.h \
     $$PWD/file/downloadfile.h \
     $$PWD/file/fileoperation.h \
-    $$PWD/secret/secretchatmessage.h \
-    $$PWD/secret/decryptedmessagebuilder.h \
     $$PWD/secret/decrypter.h \
     $$PWD/secret/secretchat.h \
     $$PWD/secret/encrypter.h \
     $$PWD/secret/secretstate.h \
-    $$PWD/secret/decryptedmessage.h \
-    $$PWD/secret/decryptedmessageaction.h \
-    $$PWD/secret/decryptedmessagemedia.h \
     $$PWD/core/query.h \
     $$PWD/core/session.h \
     $$PWD/core/connection.h \
@@ -84,7 +74,6 @@ HEADERS += \
     $$PWD/core/sessionmanager.h \
     $$PWD/core/dcprovider.h \
     $$PWD/core/abstractapi.h \
-    $$PWD/core/api.h \
     $$PWD/core/inboundpkt.h \
     $$PWD/core/dcauth.h \
     $$PWD/core/endpoint.h \

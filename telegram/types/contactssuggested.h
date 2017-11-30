@@ -6,6 +6,15 @@
 #define LQTG_TYPE_CONTACTSSUGGESTED
 
 #include "telegramtypeobject.h"
+
+#include <QMetaType>
+#include <QVariant>
+#include "core/inboundpkt.h"
+#include "core/outboundpkt.h"
+#include "../coretypes.h"
+
+#include <QDataStream>
+
 #include <QList>
 #include "contactsuggested.h"
 #include "user.h"
@@ -13,12 +22,13 @@
 class LIBQTELEGRAMSHARED_EXPORT ContactsSuggested : public TelegramTypeObject
 {
 public:
-    enum ContactsSuggestedType {
+    enum ContactsSuggestedClassType {
         typeContactsSuggested = 0x5649dcc5
     };
 
-    ContactsSuggested(ContactsSuggestedType classType = typeContactsSuggested, InboundPkt *in = 0);
+    ContactsSuggested(ContactsSuggestedClassType classType = typeContactsSuggested, InboundPkt *in = 0);
     ContactsSuggested(InboundPkt *in);
+    ContactsSuggested(const Null&);
     virtual ~ContactsSuggested();
 
     void setResults(const QList<ContactSuggested> &results);
@@ -27,18 +37,215 @@ public:
     void setUsers(const QList<User> &users);
     QList<User> users() const;
 
-    void setClassType(ContactsSuggestedType classType);
-    ContactsSuggestedType classType() const;
+    void setClassType(ContactsSuggestedClassType classType);
+    ContactsSuggestedClassType classType() const;
 
     bool fetch(InboundPkt *in);
     bool push(OutboundPkt *out) const;
 
-    bool operator ==(const ContactsSuggested &b);
+    QMap<QString, QVariant> toMap() const;
+    static ContactsSuggested fromMap(const QMap<QString, QVariant> &map);
+
+    bool operator ==(const ContactsSuggested &b) const;
+
+    bool operator==(bool stt) const { return isNull() != stt; }
+    bool operator!=(bool stt) const { return !operator ==(stt); }
+
+    QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
     QList<ContactSuggested> m_results;
     QList<User> m_users;
-    ContactsSuggestedType m_classType;
+    ContactsSuggestedClassType m_classType;
 };
+
+Q_DECLARE_METATYPE(ContactsSuggested)
+
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator<<(QDataStream &stream, const ContactsSuggested &item);
+QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, ContactsSuggested &item);
+
+inline ContactsSuggested::ContactsSuggested(ContactsSuggestedClassType classType, InboundPkt *in) :
+    m_classType(classType)
+{
+    if(in) fetch(in);
+}
+
+inline ContactsSuggested::ContactsSuggested(InboundPkt *in) :
+    m_classType(typeContactsSuggested)
+{
+    fetch(in);
+}
+
+inline ContactsSuggested::ContactsSuggested(const Null &null) :
+    TelegramTypeObject(null),
+    m_classType(typeContactsSuggested)
+{
+}
+
+inline ContactsSuggested::~ContactsSuggested() {
+}
+
+inline void ContactsSuggested::setResults(const QList<ContactSuggested> &results) {
+    m_results = results;
+}
+
+inline QList<ContactSuggested> ContactsSuggested::results() const {
+    return m_results;
+}
+
+inline void ContactsSuggested::setUsers(const QList<User> &users) {
+    m_users = users;
+}
+
+inline QList<User> ContactsSuggested::users() const {
+    return m_users;
+}
+
+inline bool ContactsSuggested::operator ==(const ContactsSuggested &b) const {
+    return m_classType == b.m_classType &&
+           m_results == b.m_results &&
+           m_users == b.m_users;
+}
+
+inline void ContactsSuggested::setClassType(ContactsSuggested::ContactsSuggestedClassType classType) {
+    m_classType = classType;
+}
+
+inline ContactsSuggested::ContactsSuggestedClassType ContactsSuggested::classType() const {
+    return m_classType;
+}
+
+inline bool ContactsSuggested::fetch(InboundPkt *in) {
+    LQTG_FETCH_LOG;
+    int x = in->fetchInt();
+    switch(x) {
+    case typeContactsSuggested: {
+        if(in->fetchInt() != (qint32)CoreTypes::typeVector) return false;
+        qint32 m_results_length = in->fetchInt();
+        m_results.clear();
+        for (qint32 i = 0; i < m_results_length; i++) {
+            ContactSuggested type;
+            type.fetch(in);
+            m_results.append(type);
+        }
+        if(in->fetchInt() != (qint32)CoreTypes::typeVector) return false;
+        qint32 m_users_length = in->fetchInt();
+        m_users.clear();
+        for (qint32 i = 0; i < m_users_length; i++) {
+            User type;
+            type.fetch(in);
+            m_users.append(type);
+        }
+        m_classType = static_cast<ContactsSuggestedClassType>(x);
+        return true;
+    }
+        break;
+    
+    default:
+        LQTG_FETCH_ASSERT;
+        return false;
+    }
+}
+
+inline bool ContactsSuggested::push(OutboundPkt *out) const {
+    out->appendInt(m_classType);
+    switch(m_classType) {
+    case typeContactsSuggested: {
+        out->appendInt(CoreTypes::typeVector);
+        out->appendInt(m_results.count());
+        for (qint32 i = 0; i < m_results.count(); i++) {
+            m_results[i].push(out);
+        }
+        out->appendInt(CoreTypes::typeVector);
+        out->appendInt(m_users.count());
+        for (qint32 i = 0; i < m_users.count(); i++) {
+            m_users[i].push(out);
+        }
+        return true;
+    }
+        break;
+    
+    default:
+        return false;
+    }
+}
+
+inline QMap<QString, QVariant> ContactsSuggested::toMap() const {
+    QMap<QString, QVariant> result;
+    switch(static_cast<int>(m_classType)) {
+    case typeContactsSuggested: {
+        result["classType"] = "ContactsSuggested::typeContactsSuggested";
+        QList<QVariant> _results;
+        Q_FOREACH(const ContactSuggested &m__type, m_results)
+            _results << m__type.toMap();
+        result["results"] = _results;
+        QList<QVariant> _users;
+        Q_FOREACH(const User &m__type, m_users)
+            _users << m__type.toMap();
+        result["users"] = _users;
+        return result;
+    }
+        break;
+    
+    default:
+        return result;
+    }
+}
+
+inline ContactsSuggested ContactsSuggested::fromMap(const QMap<QString, QVariant> &map) {
+    ContactsSuggested result;
+    if(map.value("classType").toString() == "ContactsSuggested::typeContactsSuggested") {
+        result.setClassType(typeContactsSuggested);
+        QList<QVariant> map_results = map["results"].toList();
+        QList<ContactSuggested> _results;
+        Q_FOREACH(const QVariant &var, map_results)
+            _results << ContactSuggested::fromMap(var.toMap());
+        result.setResults(_results);
+        QList<QVariant> map_users = map["users"].toList();
+        QList<User> _users;
+        Q_FOREACH(const QVariant &var, map_users)
+            _users << User::fromMap(var.toMap());
+        result.setUsers(_users);
+        return result;
+    }
+    return result;
+}
+
+inline QByteArray ContactsSuggested::getHash(QCryptographicHash::Algorithm alg) const {
+    QByteArray data;
+    QDataStream str(&data, QIODevice::WriteOnly);
+    str << *this;
+    return QCryptographicHash::hash(data, alg);
+}
+
+inline QDataStream &operator<<(QDataStream &stream, const ContactsSuggested &item) {
+    stream << static_cast<uint>(item.classType());
+    switch(item.classType()) {
+    case ContactsSuggested::typeContactsSuggested:
+        stream << item.results();
+        stream << item.users();
+        break;
+    }
+    return stream;
+}
+
+inline QDataStream &operator>>(QDataStream &stream, ContactsSuggested &item) {
+    uint type = 0;
+    stream >> type;
+    item.setClassType(static_cast<ContactsSuggested::ContactsSuggestedClassType>(type));
+    switch(type) {
+    case ContactsSuggested::typeContactsSuggested: {
+        QList<ContactSuggested> m_results;
+        stream >> m_results;
+        item.setResults(m_results);
+        QList<User> m_users;
+        stream >> m_users;
+        item.setUsers(m_users);
+    }
+        break;
+    }
+    return stream;
+}
+
 
 #endif // LQTG_TYPE_CONTACTSSUGGESTED
