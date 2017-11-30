@@ -127,7 +127,7 @@ public:
     qint64 contactsDeleteContact(const InputUser &user);
     qint64 contactsDeleteContacts(const QList<InputUser> &users);
     qint64 contactsSearch(const QString &q, qint32 limit = 0);
-    qint64 contactsResolveUsername(const QString &username);
+    //qint64 contactsResolveUsername(const QString &username);
 
     // Working with blacklist
     qint64 contactsBlock(const InputUser &user);

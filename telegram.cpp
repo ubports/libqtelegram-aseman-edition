@@ -1533,10 +1533,10 @@ qint64 Telegram::contactsSearch(const QString &q, qint32 limit) {
     return mApi->contactsSearch(q, limit);
 }
 
-qint64 Telegram::contactsResolveUsername(const QString &username) {
-    CHECK_API;
-    return mApi->contactsResolveUsername(username);
-}
+//qint64 Telegram::contactsResolveUsername(const QString &username) {
+//    CHECK_API;
+//    return mApi->contactsResolveUsername(username);
+//}
 
 qint64 Telegram::contactsBlock(const InputUser &user) {
     CHECK_API;
