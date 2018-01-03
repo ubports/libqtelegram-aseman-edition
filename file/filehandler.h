@@ -60,6 +60,8 @@ private:
     /* File receiving */
     // requestId -> physical downloading file details (DownloadFile structure includes fileId)
     QMap<qint64, DownloadFile::Ptr> mDownloadsMap;
+    QMutex downloadsMapUpdating;
+
     // sessionId -> list of files waiting for session connection to be ready for being downloaded
     QMap<qint64, QList<DownloadFile::Ptr> > mInitialDownloadsMap;
     // fileId -> true if the file download is in progress. An entry does not exists for that fileId if not downloading

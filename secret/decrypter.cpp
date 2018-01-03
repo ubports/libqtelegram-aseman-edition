@@ -146,85 +146,21 @@ DecryptedMessage Decrypter::decryptEncryptedData(qint64 randomId, const QByteArr
             processMessage = false;
         }
 
-        if (processMessage) {
+if (processMessage) {
             // process internal message
-            if (decryptedMessage.classType() == DecryptedMessage::typeDecryptedMessageService ||
-                    decryptedMessage.classType() == DecryptedMessage::typeDecryptedMessageService_level8) {
+            // TODO Roberto: move this to another method
+            if (decryptedMessage.classType() == DecryptedMessage::typeDecryptedMessageServiceSecret17 ||
+                    decryptedMessage.classType() == DecryptedMessage::typeDecryptedMessageServiceSecret8) {
                 DecryptedMessageAction action = decryptedMessage.action();
                 switch (action.classType()) {
-                    case DecryptedMessageAction::typeDecryptedMessageActionNotifyLayer: {
-                        mSecretChat->setLayer(action.layer());
-                        qCDebug(TG_SECRET_DECRYPTER) << "Received layer" << action.layer() << "from peer";
-                        break;
-                    }
-
-                    //PFS re-keying methods
-                    case DecryptedMessageAction::typeDecryptedMessageActionRequestKey: {
-                        if (mSecretChat->NewKeyExchangeId() == 0)
-                        {
-                            qCInfo(TG_SECRET_DECRYPTER) << "Received valid PFS re-key request, ID: " << action.exchangeId();
-                            mSecretChat->setNewKeyExchangeId(action.exchangeId());
-                            mSecretChat->setNewG_A(action.G_A());
-                        }
-                        else
-                        {
-                            qCWarning(TG_SECRET_DECRYPTER) << "Received invalid PFS re-key request, ID: " << action.exchangeId() << ", our ID: " << mSecretChat->NewKeyExchangeId();
-                            //TODO: Send Cancel to other party
-                        }
-                    }
+                case DecryptedMessageAction::typeDecryptedMessageActionNotifyLayerSecret17: {
+                    mSecretChat->setLayer(action.layer());
+                    qCDebug(TG_SECRET_DECRYPTER) << "Received layer" << action.layer() << "from peer";
                     break;
-
-                    case DecryptedMessageAction::typeDecryptedMessageActionAcceptKey: {
-                    if (mSecretChat->NewKeyExchangeId() == action.exchangeId())
-                    {
-                        qCInfo(TG_SECRET_DECRYPTER) << "Received valid PFS re-key accept, ID: " << action.exchangeId();
-                        mSecretChat->setNewG_B(action.G_B());
-                        mSecretChat->setNewKeyFingerprint(action.keyFingerprint());
-                    }
-                    else
-                    {
-                        qCWarning(TG_SECRET_DECRYPTER) << "Received invalid PFS re-key accept, ID: " << action.exchangeId() << ", our ID: " << mSecretChat->NewKeyExchangeId();
-                        //TODO: Send Cancel to other party
-                    }
-
-
-
-                    }
-                    break;
-
-                    case DecryptedMessageAction::typeDecryptedMessageActionCommitKey: {
-
-                        if (mSecretChat->NewKeyExchangeId() == action.exchangeId())
-                        {
-                            qCInfo(TG_SECRET_DECRYPTER) << "Received valid PFS re-key commit, ID: " << action.exchangeId();
-
-                        }
-                        else
-                        {
-                            qCWarning(TG_SECRET_DECRYPTER) << "Received invalid PFS re-key commit, ID: " << action.exchangeId() << ", our ID: " << mSecretChat->NewKeyExchangeId();
-                            //TODO: Send Cancel to other party
-                        }
-
-                    }
-                    break;
-
-                    case DecryptedMessageAction::typeDecryptedMessageActionAbortKey: {
-                        if (mSecretChat->NewKeyExchangeId() == action.exchangeId())
-                        {
-                        qCInfo(TG_SECRET_DECRYPTER) << "Received valid PFS re-key abort, ID: " << action.exchangeId();
-
-                        }
-                        else
-                        {
-                            qCWarning(TG_SECRET_DECRYPTER) << "Received invalid PFS re-key abort, ID: " << action.exchangeId() << ", our ID: " << mSecretChat->NewKeyExchangeId();
-                            //TODO: Send Cancel to other party
-                        }
-
-                    }
-                    break;
-
-                    default:
-                    break;
+                }
+                default:
+                    ;
+                    //TODO Roberto: implement rest of cases
                 }
             } else {
                 qCDebug(TG_SECRET_DECRYPTER) << "Received message";
@@ -234,7 +170,7 @@ DecryptedMessage Decrypter::decryptEncryptedData(qint64 randomId, const QByteArr
             mSecretChat->appendToSequence(decryptedMessage.randomId());
 
             return decryptedMessage;
-        }
+}
 
         if (gap) {
             // ask server for all the gap messages, including this same message

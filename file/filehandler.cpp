@@ -280,17 +280,22 @@ qint64 FileHandler::uploadGetFile(const InputFileLocation &location, qint32 file
 
     switch (session->state()) {
     case QAbstractSocket::ConnectingState: {
+        qWarning() << "Queuing file to pending session: " << f->id();
         mInitialDownloadsMap[session->sessionId()] << f;
         break;
     }
     case QAbstractSocket::ConnectedState: {
+        qWarning() << "Retrieving file via active session: " << f->id();
+        downloadsMapUpdating.lock();
         qint64 msgId = mApi->uploadGetFile(f->fileLocation(), 0, BLOCK, QVariant(), session);
         mDownloadsMap.insert(msgId, f);
+        downloadsMapUpdating.unlock();
         break;
     }
     default: {
         QList<DownloadFile::Ptr> sessionInitialFiles;
         sessionInitialFiles << f;
+        qWarning() << "Queuing file to new session: " << f->id() << " at DC: " << dc->id();
         mInitialDownloadsMap.insert(session->sessionId(), sessionInitialFiles);
         connect(session, &Session::sessionReady, this, &FileHandler::onUploadGetFileSessionCreated);
         session->connectToServer();
@@ -305,20 +310,28 @@ qint64 FileHandler::uploadGetFile(const InputFileLocation &location, qint32 file
 void FileHandler::onUploadGetFileSessionCreated() {
     Session *session = qobject_cast<Session *>(sender());
     QList<DownloadFile::Ptr> sessionInitialFiles = mInitialDownloadsMap.take(session->sessionId());
+    qWarning() << "new file session session established: " << session->sessionId();
     Q_FOREACH (DownloadFile::Ptr f, sessionInitialFiles) {
+        downloadsMapUpdating.lock();
         qint64 msgId = mApi->uploadGetFile(f->fileLocation(), f->offset(), f->partLength(), QVariant(), f->session());
         mDownloadsMap.insert(msgId, f);
+        downloadsMapUpdating.unlock();
     }
 }
 
 void FileHandler::onUploadGetFileAnswer(qint64 msgId, const UploadFile &result) {
+    downloadsMapUpdating.lock();
+    DownloadFile::Ptr f = mDownloadsMap.take(msgId);
+    downloadsMapUpdating.unlock();
+
+    if(f.isNull())
+    {
+        qWarning() << "onUploadGetFileAnswer(): Message id not found pending: " << msgId;
+        return;
+    }
     StorageFileType type = result.type();
     qint32 mtime = result.mtime();
     QByteArray bytes = result.bytes();
-    DownloadFile::Ptr f = mDownloadsMap.take(msgId);
-
-    if(f.isNull())
-        return;
 
     if (mCancelDownloadsMap.take(f->id())) {
         Q_EMIT uploadCancelFileAnswer(f->id(), true);
@@ -326,6 +339,8 @@ void FileHandler::onUploadGetFileAnswer(qint64 msgId, const UploadFile &result) 
         f.clear();
         return;
     }
+
+    qWarning() << "onUploadGetFileAnswer(): Processing download response for message id: " << msgId << ", file id: " << f->id();
 
     if (f->encrypted()) {
         mCrypto->decryptFilePart(bytes, f->key(), f->iv());
@@ -348,9 +363,12 @@ void FileHandler::onUploadGetFileAnswer(qint64 msgId, const UploadFile &result) 
         }
 
         if (expectedSize == 0 || f->bytes().length() < expectedSize) {
+            downloadsMapUpdating.lock();
             qint64 newMsgId = mApi->uploadGetFile(f->fileLocation(), f->offset(), f->partLength(), QVariant(), f->session());
             mDownloadsMap.insert(newMsgId, f);
+            downloadsMapUpdating.unlock();
         } else {
+            qWarning() << "uploadGetFileAnswer(): received all bytes of request " << f->id();
             Q_EMIT uploadGetFileAnswer(f->id(), type, mtime, f->bytes(), 0, f->length(), expectedSize); //emit signal of finished
             mActiveDownloadsMap.remove(f->id());
             f.clear();
@@ -366,12 +384,14 @@ void FileHandler::onUploadGetFileAnswer(qint64 msgId, const UploadFile &result) 
         if (expectedSize == 0 && (bytes.length() < BLOCK || bytes.length() == 0)) {
             expectedSize = f->offset();
         }
-
+        qWarning() << "uploadGetFileAnswer(): received " << bytes.length() << "/" << expectedSize << " bytes of request " << f->id();
         Q_EMIT uploadGetFileAnswer(f->id(), type, mtime, bytes, thisPartId, downloaded, expectedSize);
 
         if (expectedSize == 0 || f->offset() < expectedSize) {
+            downloadsMapUpdating.lock();
             qint64 newMsgId = mApi->uploadGetFile(f->fileLocation(), f->offset(), f->partLength(), QVariant(), f->session());
             mDownloadsMap.insert(newMsgId, f);
+            downloadsMapUpdating.unlock();
         } else {
             mActiveDownloadsMap.remove(f->id());
             f.clear();
@@ -383,9 +403,12 @@ void FileHandler::onUploadGetFileError(qint64 msgId, qint32 errorCode, const QSt
     // check for error and resend authCheckPhone() request
     if (errorText.contains("_MIGRATE_")) {
         qint32 newDc = errorText.mid(errorText.lastIndexOf("_") + 1).toInt();
-        qCDebug(TG_FILE_FILEHANDLER) << "file migrated to dc" << newDc;
+        qWarning() << "File session needs migration to dc " << newDc;
+        qCWarning(TG_FILE_FILEHANDLER) << "file migrated to dc" << newDc;
         DC *dc = mDcProvider.getDc(newDc);
+        downloadsMapUpdating.lock();
         DownloadFile::Ptr f = mDownloadsMap.take(msgId);
+        downloadsMapUpdating.unlock();
         if(!f)
             return;
         // release previous session
@@ -400,8 +423,10 @@ void FileHandler::onUploadGetFileError(qint64 msgId, qint32 errorCode, const QSt
             break;
         }
         case QAbstractSocket::ConnectedState: {
+            downloadsMapUpdating.lock();
             qint64 msgId = mApi->uploadGetFile(f->fileLocation(), 0, BLOCK, QVariant(), newDcSession);
             mDownloadsMap.insert(msgId, f);
+            downloadsMapUpdating.unlock();
             break;
         }
         default: {
@@ -415,6 +440,7 @@ void FileHandler::onUploadGetFileError(qint64 msgId, qint32 errorCode, const QSt
         }
 
     } else {
+        qWarning() << "uploadGetFile(): error " << errorCode << ": " << errorText;
         Q_EMIT error(msgId, errorCode, errorText, __FUNCTION__);
     }
 }
@@ -447,8 +473,11 @@ void FileHandler::onMessagesSentEncryptedFile(qint64 msgId, const MessagesSentEn
 }
 
 void FileHandler::onUpdateMessageId(qint64 oldMsgId, qint64 newMsgId) {
-    DownloadFile::Ptr file = mDownloadsMap.take(oldMsgId);
+    downloadsMapUpdating.lock();
+    DownloadFile::Ptr file = mDownloadsMap[oldMsgId];
     if (!file.isNull()) {
         mDownloadsMap.insert(newMsgId, file);
+        qWarning() << "onUpdateMessageId(): Fixed a file download id, old: " << oldMsgId << ", new: " << newMsgId;
     }
+    downloadsMapUpdating.unlock();
 }
