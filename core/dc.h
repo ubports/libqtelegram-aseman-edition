@@ -22,6 +22,9 @@
 #ifndef DC_H
 #define DC_H
 
+#define TEST_DEFAULT_DC_ID 1
+#define TEST_DEFAULT_DC_HOST "149.154.175.10"
+#define TEST_DEFAULT_DC_PORT 443
 
 #include <QObject>
 #include <QMutex>
