@@ -27,6 +27,7 @@
 #include "util/asserter.h"
 #include "telegram/coretypes.h"
 #include <QDateTime>
+#include <QTimer>
 
 #if defined(Q_OS_MAC) || defined(Q_OS_WIN)
 #define CLOCK_REALTIME 0
@@ -377,12 +378,10 @@ void DCAuth::rpcSendPacket(OutboundPkt &packet) {
 }
 
 void DCAuth::onError(QAbstractSocket::SocketError error) {
-    if (error <= QAbstractSocket::NetworkError) {
         m_dc->advanceEndpoint();
         QString newHost = m_dc->currentEndpoint().host();
         qint32 newPort = m_dc->currentEndpoint().port();
         setHost(newHost);
         setPort(newPort);
-        qCWarning(TG_CORE_DCAUTH) << "Error " << error << " in tcp socket, retrying endpoint: " << newHost << ":" << newPort;
-    }
+        qWarning() << "Error" << error << "in tcp socket, retrying another endpoint:" << newHost << ":" << newPort;
 }

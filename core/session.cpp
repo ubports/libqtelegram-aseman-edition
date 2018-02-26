@@ -23,9 +23,12 @@
 #include "connection.h"
 #include <openssl/rand.h>
 #include <openssl/sha.h>
-#include <QDateTime>
 #include "util/tlvalues.h"
 #include "telegram/coretypes.h"
+
+#include <QDateTime>
+#include <QTimer>
+
 
 Q_LOGGING_CATEGORY(TG_CORE_SESSION, "tg.core.session")
 
@@ -675,12 +678,10 @@ void Session::sendAcks(const QList<qint64> &msgIds) {
 }
 
 void Session::onError(QAbstractSocket::SocketError error) {
-    if (error <= QAbstractSocket::NetworkError) {
-        //m_dc->advanceEndpoint();
+        m_dc->advanceEndpoint();
         QString newHost = m_dc->currentEndpoint().host();
         qint32 newPort = m_dc->currentEndpoint().port();
         setHost(newHost);
         setPort(newPort);
-        qWarning() << "Error " << error << " in tcp socket, retrying endpoint: " << newHost << ":" << newPort;
-    }
+        qWarning() << "Error" << error << "in tcp socket, retrying another endpoint:" << newHost << ":" << newPort;
 }
