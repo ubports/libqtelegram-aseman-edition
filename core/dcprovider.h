@@ -26,10 +26,11 @@
 #include "dc.h"
 #include "dcauth.h"
 #include "telegram/telegramapi.h"
+#include "telegram/telegramcore.h"
 
 Q_DECLARE_LOGGING_CATEGORY(TG_CORE_DCPROVIDER)
 
-class DcProvider : public QObject
+class DcProvider : public TelegramCore
 {
     Q_OBJECT
 public:
@@ -42,6 +43,8 @@ public:
     QList<DC *> getDcs() const;
     TelegramApi *getApi() const;
     void transferAuth();
+
+    void init();
 
 Q_SIGNALS:
     // emitted when provider has shared key created, now or previously, for all DCs
@@ -68,6 +71,9 @@ private:
     QMap<qint32, DCAuth *> mDcAuths;
     Settings *mSettings;
     CryptoUtils *mCrypto;
+
+    //Connection storage
+    QMetaObject::Connection m_error;
 
     //api instance for "internal" operations (config, getNearestDc, etc...). This object could be received
     // from outside, as parameter, when completed external public layer
@@ -100,8 +106,9 @@ private Q_SLOTS:
     void onApiError();
     void onConfigReceived(qint64 msgId, const Config &config, const QVariant &attachedData);
     void onTransferSessionReady(DC*);
-    void onAuthExportedAuthorization(qint64, const AuthExportedAuthorization &result);
-    void onAuthImportedAuthorization(qint64, const AuthAuthorization &);
+    void onAuthExportedAuthorization(const AuthExportedAuthorization &result);
+    void onAuthImportedAuthorization(const AuthAuthorization &);
+
 };
 
 #endif // DCPROVIDER_H

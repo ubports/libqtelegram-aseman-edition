@@ -209,13 +209,12 @@ void Telegram::init(qint32 timeout) {
     prv->mDcProvider = new DcProvider(prv->mSettings, prv->mCrypto);
     prv->mDcProvider->setParent(this);
 
-    connect(prv->mDcProvider, SIGNAL(fatalError()), this, SIGNAL(fatalError()));
+    connect(prv->mDcProvider, &DcProvider::fatalError, this, &Telegram::fatalError);
     // activate dc provider ready signal
-    connect(prv->mDcProvider, SIGNAL(dcProviderReady()), this, SLOT(onDcProviderReady()));
+    connect(prv->mDcProvider, &DcProvider::dcProviderReady, this, &Telegram::onDcProviderReady);
     // activate rest of dc provider signal connections
-    connect(prv->mDcProvider, SIGNAL(authNeeded()), this, SIGNAL(authNeeded()));
-    connect(prv->mDcProvider, SIGNAL(authTransferCompleted()), this, SLOT(onAuthLoggedIn()));
-    connect(prv->mDcProvider, SIGNAL(error(qint64,qint32,const QString&)), this, SIGNAL(error(qint64,qint32,const QString&)));
+    connect(prv->mDcProvider, &DcProvider::authNeeded, this, &Telegram::authNeeded);
+    connect(prv->mDcProvider, &DcProvider::authTransferCompleted, this, &Telegram::onAuthLoggedIn);
 
     prv->mSecretState = SecretState(prv->mSettings);
     prv->mSecretState.load();
