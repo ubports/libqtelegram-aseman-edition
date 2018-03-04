@@ -180,7 +180,7 @@ QAbstractSocket::UnknownSocketError                 -1	An unidentified error occ
 */
 void Connection::onError(QAbstractSocket::SocketError error) {
     qWarning() << "SocketError:" << QString::number(error) << errorString();
-    SocketState currentState = state();
+    auto currentState = state();
     if (currentState == QAbstractSocket::ConnectedState) {
         disconnectFromHost();
     } else if (currentState == QAbstractSocket::ConnectingState || currentState == QAbstractSocket::HostLookupState)
