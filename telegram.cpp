@@ -1624,12 +1624,6 @@ qint64 Telegram::channelsGetParticipants(const InputChannel &channel, const Chan
     return mApi->channelsGetParticipants(channel, filter, offset, limit);
 }
 
-qint64 Telegram::channelsGetParticipant(const InputChannel &channel, const InputUser &user_id)
-{
-    CHECK_API;
-    return mApi->channelsGetParticipant(channel, user_id);
-}
-
 qint64 Telegram::channelsGetChannels(const QList<InputChannel> &id)
 {
     CHECK_API;

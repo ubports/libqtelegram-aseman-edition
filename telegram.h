@@ -143,7 +143,6 @@ public:
     qint64 channelsReportSpam(const InputChannel &channel, const InputUser &user_id, const QList<qint32> &id);
     qint64 channelsGetMessages(const InputChannel &channel, const QList<qint32> &id);
     qint64 channelsGetParticipants(const InputChannel &channel, const ChannelParticipantsFilter &filter, qint32 offset, qint32 limit);
-    qint64 channelsGetParticipant(const InputChannel &channel, const InputUser &user_id);
     qint64 channelsGetChannels(const QList<InputChannel> &id);
     qint64 channelsGetFullChannel(const InputChannel &channel);
     qint64 channelsCreateChannel(bool broadcast, bool megagroup, const QString &title, const QString &about);
