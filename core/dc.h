@@ -66,6 +66,7 @@ public:
     QList<Endpoint> getEndpoints() { return endpoints; }
 
     void addEndpoint(QString ipAddress, qint32 port);
+    void deleteEndpoint(QString ipAddress, qint32 port);
     void deleteEndpoints();
     void advanceEndpoint();
     Endpoint currentEndpoint();

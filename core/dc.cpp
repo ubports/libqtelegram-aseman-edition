@@ -48,6 +48,22 @@ void DC::addEndpoint(QString ipAddress, qint32 port)
     qWarning() << "DC: " << m_id << ", added Endpoint: " << ipAddress << ":" << port;
 }
 
+void DC::deleteEndpoint(QString ipAddress, qint32 port)
+{
+       endpointsLock.lock();
+       for (int i=0; i < endpoints.length(); ++i)
+       {
+           if (endpoints[i].host() == ipAddress && endpoints[i].port() == port)
+           {
+               endpoints.removeAt(i);
+               qWarning() << "DC: " << m_id << ", removed Endpoint: " << ipAddress << ":" << port;
+               endpointsLock.unlock();
+               return;
+           }
+       }
+       endpointsLock.unlock();
+}
+
 void DC::deleteEndpoints()
 {
     endpointsLock.lock();

@@ -140,11 +140,7 @@ void Connection::connectToServer(bool block) {
     connectToHost(m_host, m_port);
     if (!block && !waitForConnected(15000))
     {
-        qWarning() << "Timeout for socket connection to:" << m_host << ":" << m_port;
-        auto err = error();
-        abort();
-        close();
-        Q_EMIT connectionError(err);
+        qWarning() << "Socket connection to:" << m_host << ":" << m_port << "failed:" << QString::number(error()) << errorString();
     }
 }
 

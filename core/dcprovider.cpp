@@ -180,8 +180,6 @@ void DcProvider::processDcReady(DC *dc) {
         session->connectToServer();
     } else if (--mPendingDcs == 0) { // if all dcs are authorized, emit provider ready signal
         // save the settings here, after all dcs are ready
-        for(auto dc : mDcs.values())
-            qWarning() << "DC " << dc->id() << ": key hash " << dc->serverSalt();
         mSettings->setDcsList(mDcs.values());
         mSettings->writeAuthFile();
 
@@ -287,8 +285,11 @@ void DcProvider::onConfigReceived(qint64 msgId, const Config &config, const QVar
 
     QList<DCAuth *> pendingDCs = QList<DCAuth *>();
 
+    Q_FOREACH (DC *dc, mDcs)
+        dc->deleteEndpoints();
+
     Q_FOREACH (DcOption dcOption, dcOptions) {
-        qWarning(TG_CORE_DCPROVIDER) << "dcOption | id =" << dcOption.id() << ", ipAddress =" << dcOption.ipAddress() <<
+        qCDebug(TG_CORE_DCPROVIDER) << "dcOption | id =" << dcOption.id() << ", ipAddress =" << dcOption.ipAddress() <<
                     ", port =" << dcOption.port() << ", hostname =" << dcOption.ipAddress() << ", mediaOnly: " << dcOption.mediaOnly() << ", IPv6:" << dcOption.ipv6();
         // for every new DC or not authenticated DC, insert into m_dcs and authenticate
         DC *dc = mDcs.value(dcOption.id());
@@ -302,6 +303,12 @@ void DcProvider::onConfigReceived(qint64 msgId, const Config &config, const QVar
 
         if(!dcOption.mediaOnly())
             dc->addEndpoint(dcOption.ipAddress(), dcOption.port());
+        else
+        {
+            //Make sure we remove old entries from the DC option list with mediaonly = true
+            dc->deleteEndpoint(dcOption.ipAddress(), dcOption.port());
+        }
+
         qint32 currentDc = dcIndex.indexOf(dcOption.id());
         if (currentDc>-1)
         {
