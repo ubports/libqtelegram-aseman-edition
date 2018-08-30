@@ -72,7 +72,6 @@ public:
 
     // Registration / authorization
     qint64 authCheckPhone();
-    qint64 authCheckPhone(const QString &phoneNumber);
     qint64 authSendCode();
     qint64 authSendSms();
     qint64 authSignIn(const QString &code);

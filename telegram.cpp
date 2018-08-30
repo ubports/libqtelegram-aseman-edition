@@ -1117,7 +1117,6 @@ TelegramCore::onError(id, errorCode, errorText, functionName, attachedData, acce
 }
 
 void Telegram::onErrorRetry(qint64 id, qint32 errorCode, const QString &errorText) {
-    // check for error and resend authCheckPhone() request
     if (errorText.contains("_MIGRATE_")) {
         qint32 newDc = errorText.mid(errorText.lastIndexOf("_") + 1).toInt();
         qDebug() << "migrated to dc" << newDc;
@@ -1131,7 +1130,7 @@ void Telegram::onErrorRetry(qint64 id, qint32 errorCode, const QString &errorTex
 
 void Telegram::onAuthCheckPhoneDcChanged() {
     if (prv->mLastRetryType != PhoneCheck) return;
-    authCheckPhone(prv->mLastPhoneChecked);
+    TelegramCore::authCheckPhone(prv->mLastPhoneChecked);
 }
 void Telegram::onHelpGetInviteTextDcChanged() {
     if (prv->mLastRetryType != GetInviteText) return;
@@ -1285,14 +1284,9 @@ void Telegram::processDifferences(qint64 id, const QList<Message> &messages, con
 // Requests
 
 qint64 Telegram::authCheckPhone() {
-   return authCheckPhone(prv->mSettings->phoneNumber());
+   return TelegramCore::authCheckPhone(prv->mSettings->phoneNumber());
 }
-qint64 Telegram::authCheckPhone(const QString &phoneNumber) {
-    CHECK_API;
-    prv->mLastRetryType = PhoneCheck;
-    prv->mLastPhoneChecked = phoneNumber;
-    return mApi->authCheckPhone(phoneNumber);
-}
+
 qint64 Telegram::authSendCode() {
     CHECK_API;
     return mApi->authSendCode(prv->mSettings->phoneNumber(), 0, prv->mSettings->appId(), prv->mSettings->appHash(), LANG_CODE);
