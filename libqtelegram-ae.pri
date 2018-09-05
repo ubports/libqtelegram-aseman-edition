@@ -49,7 +49,8 @@ SOURCES += \
     $$PWD/core/dcauth.cpp \
     $$PWD/telegram.cpp \
     $$PWD/file/uploadfileengine.cpp \
-    $$PWD/core/dc.cpp
+    $$PWD/core/dc.cpp \
+    $$PWD/secret/decryptedmessagebuilder.cpp
 
 HEADERS += \
     $$PWD/util/cryptoutils.h \
@@ -81,4 +82,5 @@ HEADERS += \
     $$PWD/core/dc.h \
     $$PWD/telegram.h \
     $$PWD/libqtelegram_global.h \
-    $$PWD/file/uploadfileengine.h
+    $$PWD/file/uploadfileengine.h \
+    $$PWD/secret/decryptedmessagebuilder.h
