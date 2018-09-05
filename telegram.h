@@ -223,7 +223,6 @@ public:
     // Working with updates
     qint64 updatesGetState();
     qint64 updatesGetDifference(qint32 pts, qint32 date, qint32 qts);
-    qint64 updatesGetChannelDifference(const InputChannel &channel, const ChannelMessagesFilter &filter, qint32 pts, qint32 limit);
 
     // Working with files
     qint64 uploadGetFile(const InputFileLocation &file, qint32 fileSize, qint32 dc = 0, const QByteArray &key = QByteArray(), const QByteArray &iv = QByteArray());

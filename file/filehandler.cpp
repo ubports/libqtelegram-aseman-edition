@@ -340,8 +340,6 @@ void FileHandler::onUploadGetFileAnswer(qint64 msgId, const UploadFile &result) 
         return;
     }
 
-    qWarning() << "onUploadGetFileAnswer(): Processing download response for message id: " << msgId << ", file id: " << f->id();
-
     if (f->encrypted()) {
         mCrypto->decryptFilePart(bytes, f->key(), f->iv());
         // if decrypted bytes are more than the last part expected ones, remove surplus
@@ -368,7 +366,6 @@ void FileHandler::onUploadGetFileAnswer(qint64 msgId, const UploadFile &result) 
             mDownloadsMap.insert(newMsgId, f);
             downloadsMapUpdating.unlock();
         } else {
-            qWarning() << "uploadGetFileAnswer(): received all bytes of request " << f->id();
             Q_EMIT uploadGetFileAnswer(f->id(), type, mtime, f->bytes(), 0, f->length(), expectedSize); //emit signal of finished
             mActiveDownloadsMap.remove(f->id());
             f.clear();
@@ -384,7 +381,6 @@ void FileHandler::onUploadGetFileAnswer(qint64 msgId, const UploadFile &result) 
         if (expectedSize == 0 && (bytes.length() < BLOCK || bytes.length() == 0)) {
             expectedSize = f->offset();
         }
-        qWarning() << "uploadGetFileAnswer(): received " << bytes.length() << "/" << expectedSize << " bytes of request " << f->id();
         Q_EMIT uploadGetFileAnswer(f->id(), type, mtime, bytes, thisPartId, downloaded, expectedSize);
 
         if (expectedSize == 0 || f->offset() < expectedSize) {
