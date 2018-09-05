@@ -322,7 +322,14 @@ void Telegram::onDcProviderReady() {
     prv->mLibraryState = CreatedSharedKeys;
     setApi( prv->mDcProvider->getApi() );
 
-    //errors
+    // secret chats
+    connect(mApi, &TelegramApi::messagesRequestEncryptionAnswer, this, &Telegram::onMessagesRequestEncryptionEncryptedChat);
+    connect(mApi, &TelegramApi::messagesAcceptEncryptionAnswer, this, &Telegram::onMessagesAcceptEncryptionEncryptedChat);
+    connect(mApi, &TelegramApi::messagesDiscardEncryptionAnswer, this, &Telegram::onMessagesDiscardEncryptionResult);
+    connect(mApi, &TelegramApi::messagesReadEncryptedHistoryAnswer, this, &Telegram::messagesReadEncryptedHistoryAnswer);
+    connect(mApi, &TelegramApi::messagesSendEncryptedAnswer, this, &Telegram::messagesSendEncryptedAnswer);
+    connect(mApi, &TelegramApi::messagesSendEncryptedFileAnswer, this, &Telegram::messagesSendEncryptedFileAnswer);
+    connect(mApi, &TelegramApi::messagesSendEncryptedServiceAnswer, this, &Telegram::messagesSendEncryptedServiceAnswer);
 
     // updates
     connect(mApi, &TelegramApi::fatalError, this, &Telegram::fatalError);
@@ -672,6 +679,11 @@ qint64 Telegram::generateGAorB(SecretChat *secretChat) {
 
 void Telegram::onMessagesGetDhConfigAnswer(qint64 msgId, const MessagesDhConfig &result, const QVariant &attachedData) {
 
+    if (result.classType() == MessagesDhConfig::MessagesDhConfigClassType::typeMessagesDhConfigNotModified)
+    {
+        onMessagesDhConfigNotModified(msgId, result.random());
+        return;
+    }
     qCDebug(TG_LIB_SECRET) << "received new DH parameters g ="<< result.g() << ",p =" << result.p().toBase64()
                            << ",version =" << result.version();
 
@@ -684,13 +696,11 @@ void Telegram::onMessagesGetDhConfigAnswer(qint64 msgId, const MessagesDhConfig 
         qCCritical(TG_TELEGRAM) << "Diffie-Hellman config parameters are not valid";
 
     } else {
-        messagesDhConfigNotModified(msgId, result.random());
+        onMessagesDhConfigNotModified(msgId, result.random());
     }
-
-    TelegramCore::onMessagesGetDhConfigAnswer(msgId, result, attachedData);
 }
 
-void Telegram::messagesDhConfigNotModified(qint64 msgId, const QByteArray &random) {
+void Telegram::onMessagesDhConfigNotModified(qint64 msgId, const QByteArray &random) {
     qCDebug(TG_LIB_SECRET) << "processing DH parameters";
     SecretChat *secretChat = prv->mSecretState.chats().take(msgId);
     prv->mSecretState.save();

@@ -465,7 +465,7 @@ void FileHandler::onMessagesSentEncryptedFile(qint64 msgId, const MessagesSentEn
     //recover correlated send media request id -> fileId
     qint64 fileId = mFileIdsMap.take(msgId);
     Q_ASSERT(fileId);
-    Q_EMIT messagesSendEncryptedFileAnswer(fileId, result.date(), result.file());
+    Q_EMIT messagesSendEncryptedFileAnswer(fileId, result);
 }
 
 void FileHandler::onUpdateMessageId(qint64 oldMsgId, qint64 newMsgId) {

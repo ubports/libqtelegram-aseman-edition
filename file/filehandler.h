@@ -33,7 +33,7 @@ Q_SIGNALS:
     void error(qint64 id, qint32 errorCode, const QString &errorText, const QString &functionName);
 
     void messagesSentMedia(qint64 fileId, const UpdatesType &updates, const QVariant &attachedData);
-    void messagesSendEncryptedFileAnswer(qint64 id, qint32 date, const EncryptedFile &encryptedFile = EncryptedFile());
+    void messagesSendEncryptedFileAnswer(qint64 id, const MessagesSentEncryptedMessage &result);
 
 private:
     TelegramApi *mApi;

@@ -256,9 +256,9 @@ Q_SIGNALS:
     void messagesEncryptedChatDiscarded(qint32 chatId);
     void messagesSetEncryptedTypingAnswer(qint64 id, bool ok);
     void messagesReadEncryptedHistoryAnswer(qint64 id, bool ok);
-    void messagesSendEncryptedAnswer(qint64 id, qint32 date, const EncryptedFile &encryptedFile = EncryptedFile()); // messagesSentEncryptedMessage/messagesSentEncryptedFile
-    void messagesSendEncryptedFileAnswer(qint64 id, qint32 date, const EncryptedFile &encryptedFile = EncryptedFile()); // messagesSentEncryptedMessage/messagesSentEncryptedFile
-    void messagesSendEncryptedServiceAnswer(qint64 id, qint32 date, EncryptedFile encryptedFile = EncryptedFile()); // messagesSentEncryptedMessage/messagesSentEncryptedFile
+    void messagesSendEncryptedAnswer(qint64 id, const MessagesSentEncryptedMessage &result);
+    void messagesSendEncryptedFileAnswer(qint64 id, const MessagesSentEncryptedMessage &result);
+    void messagesSendEncryptedServiceAnswer(qint64 id, const MessagesSentEncryptedMessage &result);
 
     // Working with updates
     void updatesGetDifferenceAnswer(qint64 id, const QList<Message> &messages, const QList<SecretChatMessage> &secretChatMessages, const QList<Update> &otherUpdates, const QList<Chat> &chats, const QList<User> &users, const UpdatesState &state, bool isIntermediateState);
@@ -307,7 +307,7 @@ private:
     SecretChatMessage toSecretChatMessage(const EncryptedMessage &encryptedMessage);
     void processDifferences(qint64 id, const QList<Message> &messages, const QList<EncryptedMessage> &newEncryptedMessages, const QList<Update> &otherUpdates, const QList<Chat> &chats, const QList<User> &users, const UpdatesState &state, bool isIntermediateState);
     void authorizeUser(qint64 id, const User &user);
-    void messagesDhConfigNotModified(qint64 msgId, const QByteArray &random);
+    void messagesDhConfigNotModified(qint64 msgId, const MessagesDhConfig &result);
 
 protected:
     void onAuthSendCodeAnswer(qint64 msgId, const AuthSentCode &result, const QVariant &attachedData);
@@ -338,6 +338,8 @@ private Q_SLOTS:
     void onUpdateShort(const Update &update);
     void onUpdatesCombined(const QList<Update> &updates);
     void onUpdates(const QList<Update> &udts);
+
+    void onMessagesDhConfigNotModified(qint64 msgId, const QByteArray &random);
     void onMessagesAcceptEncryptionEncryptedChat(qint64, const EncryptedChat &chat);
     void onMessagesDiscardEncryptionResult(qint64, bool ok);
     void onSequenceNumberGap(qint32 chatId, qint32 startSeqNo, qint32 endSeqNo);
