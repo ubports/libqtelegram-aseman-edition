@@ -336,7 +336,6 @@ private Q_SLOTS:
 
     // secret chats slots
     void onUpdateShort(const Update &update);
-    void onUpdatesCombined(const QList<Update> &updates);
     void onUpdates(const QList<Update> &udts);
 
     void onMessagesDhConfigNotModified(qint64 msgId, const QByteArray &random);

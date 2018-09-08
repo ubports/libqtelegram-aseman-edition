@@ -335,7 +335,10 @@ void Telegram::onDcProviderReady() {
     connect(mApi, &TelegramApi::fatalError, this, &Telegram::fatalError);
     connect(mApi, &TelegramApi::updates, this, &Telegram::updates);
     connect(mApi, &TelegramApi::updatesCombined, this, &Telegram::updatesCombined);
+    connect(mApi, &TelegramApi::updates, this, &Telegram::onUpdates);
+    connect(mApi, &TelegramApi::updatesCombined, this, &Telegram::onUpdates);
     connect(mApi, &TelegramApi::updateShort, this, &Telegram::updateShort);
+    connect(mApi, &TelegramApi::updateShort, this, &Telegram::onUpdateShort);
     connect(mApi, &TelegramApi::updateShortChatMessage, this, &Telegram::updateShortChatMessage);
     connect(mApi, &TelegramApi::updateShortMessage, this, &Telegram::updateShortMessage);
     connect(mApi, &TelegramApi::updatesTooLong, this, &Telegram::updatesTooLong);
@@ -813,12 +816,6 @@ void Telegram::onMessagesDiscardEncryptionResult(qint64 requestId, bool ok) {
 
 void Telegram::onUpdateShort(const Update &update) {
     processSecretChatUpdate(update);
-}
-
-void Telegram::onUpdatesCombined(const QList<Update> &updates) {
-    Q_FOREACH (const Update &update, updates) {
-        processSecretChatUpdate(update);
-    }
 }
 
 void Telegram::onUpdates(const QList<Update> &udts) {
