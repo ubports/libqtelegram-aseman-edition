@@ -320,7 +320,7 @@ protected:
     void onMessagesGetDhConfigAnswer(qint64 msgId, const MessagesDhConfig &result, const QVariant &attachedData);
     void onUpdatesGetDifferenceAnswer(qint64 msgId, const UpdatesDifference &result, const QVariant &attachedData);
     void onMessagesAcceptEncryptionAnswer(qint64 msgId, const EncryptedChat &result, const QVariant &attachedData);
-    void onMessagesDiscardEncryptionAnswer(qint64 msgId, bool result, const QVariant &attachedData);
+    //void onMessagesDiscardEncryptionAnswer(qint64 msgId, bool result, const QVariant &attachedData);
 
 private Q_SLOTS:
     void onError(qint64 id, qint32 errorCode, const QString &errorText, const QString &functionName, const QVariant &attachedData, bool &accepted);
@@ -340,7 +340,6 @@ private Q_SLOTS:
 
     void onMessagesDhConfigNotModified(qint64 msgId, const QByteArray &random);
     void onMessagesAcceptEncryptionEncryptedChat(qint64, const EncryptedChat &chat);
-    void onMessagesDiscardEncryptionResult(qint64, bool ok);
     void onSequenceNumberGap(qint32 chatId, qint32 startSeqNo, qint32 endSeqNo);
 
 protected:

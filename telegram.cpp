@@ -325,7 +325,6 @@ void Telegram::onDcProviderReady() {
     // secret chats
     connect(mApi, &TelegramApi::messagesRequestEncryptionAnswer, this, &Telegram::onMessagesRequestEncryptionEncryptedChat);
     connect(mApi, &TelegramApi::messagesAcceptEncryptionAnswer, this, &Telegram::onMessagesAcceptEncryptionEncryptedChat);
-    connect(mApi, &TelegramApi::messagesDiscardEncryptionAnswer, this, &Telegram::onMessagesDiscardEncryptionResult);
     connect(mApi, &TelegramApi::messagesReadEncryptedHistoryAnswer, this, &Telegram::messagesReadEncryptedHistoryAnswer);
     connect(mApi, &TelegramApi::messagesSendEncryptedAnswer, this, &Telegram::messagesSendEncryptedAnswer);
     connect(mApi, &TelegramApi::messagesSendEncryptedFileAnswer, this, &Telegram::messagesSendEncryptedFileAnswer);
@@ -400,11 +399,17 @@ qint64 Telegram::messagesDiscardEncryptedChat(qint32 chatId) {
         return -1;
     }
 
-    qint64 requestId = mApi->messagesDiscardEncryption(chatId);
-    // insert another entry related to this request for deleting chat only when response is ok
-    prv->mSecretState.chats().insert(requestId, secretChat);
-    prv->mSecretState.save();
-    return requestId;
+    TelegramCore::CallbackError error;
+    TelegramCore::Callback<bool> callback = [this, secretChat](TG_MESSAGES_DISCARD_ENCRYPTION_CALLBACK) mutable {
+        qint32 chatId = secretChat->chatId();
+        prv->mSecretState.chats().remove(chatId);
+        prv->mSecretState.save();
+        qCDebug(TG_LIB_SECRET) << "Discarded secret chat" << chatId;
+        delete secretChat;
+        secretChat = 0;
+        Q_EMIT messagesEncryptedChatDiscarded(chatId);
+    };
+    return messagesDiscardEncryption(chatId, callback);
 }
 
 qint64 Telegram::messagesSetEncryptedTTL(qint64 randomId, qint32 chatId, qint32 ttl) {
@@ -795,23 +800,6 @@ void Telegram::onMessagesAcceptEncryptionEncryptedChat(qint64, const EncryptedCh
     prv->mSecretState.save();
 
     qCDebug(TG_LIB_SECRET) << "Notified our layer:" << CoreTypes::typeLayerVersion;
-}
-
-void Telegram::onMessagesDiscardEncryptionResult(qint64 requestId, bool ok) {
-    SecretChat *secretChat = prv->mSecretState.chats().take(requestId);
-    prv->mSecretState.save();
-    ASSERT(secretChat);
-    qint32 chatId = secretChat->chatId();
-    if (ok) {
-        prv->mSecretState.chats().remove(chatId);
-        prv->mSecretState.save();
-        qCDebug(TG_LIB_SECRET) << "Discarded secret chat" << chatId;
-        delete secretChat;
-        secretChat = 0;
-        Q_EMIT messagesEncryptedChatDiscarded(chatId);
-    } else {
-        qCWarning(TG_LIB_SECRET) << "Could not discard secret chat with id" << chatId;
-    }
 }
 
 void Telegram::onUpdateShort(const Update &update) {
@@ -1246,28 +1234,6 @@ void Telegram::onMessagesAcceptEncryptionAnswer(qint64 msgId, const EncryptedCha
 
     qCDebug(TG_LIB_SECRET) << "Notified our layer:" << CoreTypes::typeLayerVersion;
     TelegramCore::onMessagesAcceptEncryptionAnswer(msgId, result, attachedData);
-}
-
-void Telegram::onMessagesDiscardEncryptionAnswer(qint64 msgId, bool result, const QVariant &attachedData)
-{
-    SecretChat *secretChat = prv->mSecretState.chats().take(msgId);
-    if(!secretChat) {
-        onMessagesDiscardEncryptionError(msgId, -1, "LIBQTELEGRAM_SECRETCHAT_ERROR", attachedData);
-        return;
-    }
-
-    qint32 chatId = secretChat->chatId();
-    if (result) {
-        prv->mSecretState.chats().remove(chatId);
-        prv->mSecretState.save();
-        qCDebug(TG_LIB_SECRET) << "Discarded secret chat" << chatId;
-        delete secretChat;
-        secretChat = 0;
-        TelegramCore::onMessagesDiscardEncryptionAnswer(msgId, result, attachedData);
-    } else {
-        qCWarning(TG_LIB_SECRET) << "Could not discard secret chat with id" << chatId;
-        onMessagesDiscardEncryptionError(msgId, -1, "LIBQTELEGRAM_SECRETCHAT_ERROR", attachedData);
-    }
 }
 
 void Telegram::processDifferences(qint64 id, const QList<Message> &messages, const QList<EncryptedMessage> &newEncryptedMessages, const QList<Update> &otherUpdates, const QList<Chat> &chats, const QList<User> &users, const UpdatesState &state, bool isIntermediateState) {
