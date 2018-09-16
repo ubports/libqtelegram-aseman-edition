@@ -9,11 +9,9 @@
 #include "telegram/types/messagemedia.h"
 
 #include <QPointer>
-#include "audioobject.h"
 #include "documentobject.h"
 #include "geopointobject.h"
 #include "photoobject.h"
-#include "videoobject.h"
 #include "webpageobject.h"
 
 class LIBQTELEGRAMSHARED_EXPORT MessageMediaObject : public TelegramTypeQObject
@@ -21,7 +19,6 @@ class LIBQTELEGRAMSHARED_EXPORT MessageMediaObject : public TelegramTypeQObject
     Q_OBJECT
     Q_ENUMS(MessageMediaClassType)
     Q_PROPERTY(QString address READ address WRITE setAddress NOTIFY addressChanged)
-    Q_PROPERTY(AudioObject* audio READ audio WRITE setAudio NOTIFY audioChanged)
     Q_PROPERTY(QString caption READ caption WRITE setCaption NOTIFY captionChanged)
     Q_PROPERTY(DocumentObject* document READ document WRITE setDocument NOTIFY documentChanged)
     Q_PROPERTY(QString firstName READ firstName WRITE setFirstName NOTIFY firstNameChanged)
@@ -33,7 +30,6 @@ class LIBQTELEGRAMSHARED_EXPORT MessageMediaObject : public TelegramTypeQObject
     Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY titleChanged)
     Q_PROPERTY(qint32 userId READ userId WRITE setUserId NOTIFY userIdChanged)
     Q_PROPERTY(QString venueId READ venueId WRITE setVenueId NOTIFY venueIdChanged)
-    Q_PROPERTY(VideoObject* video READ video WRITE setVideo NOTIFY videoChanged)
     Q_PROPERTY(WebPageObject* webpage READ webpage WRITE setWebpage NOTIFY webpageChanged)
     Q_PROPERTY(MessageMedia core READ core WRITE setCore NOTIFY coreChanged)
     Q_PROPERTY(quint32 classType READ classType WRITE setClassType NOTIFY classTypeChanged)
@@ -42,12 +38,10 @@ public:
     enum MessageMediaClassType {
         TypeMessageMediaEmpty,
         TypeMessageMediaPhoto,
-        TypeMessageMediaVideo,
         TypeMessageMediaGeo,
         TypeMessageMediaContact,
         TypeMessageMediaUnsupported,
         TypeMessageMediaDocument,
-        TypeMessageMediaAudio,
         TypeMessageMediaWebPage,
         TypeMessageMediaVenue
     };
@@ -58,9 +52,6 @@ public:
 
     void setAddress(const QString &address);
     QString address() const;
-
-    void setAudio(AudioObject* audio);
-    AudioObject* audio() const;
 
     void setCaption(const QString &caption);
     QString caption() const;
@@ -95,9 +86,6 @@ public:
     void setVenueId(const QString &venueId);
     QString venueId() const;
 
-    void setVideo(VideoObject* video);
-    VideoObject* video() const;
-
     void setWebpage(WebPageObject* webpage);
     WebPageObject* webpage() const;
 
@@ -114,7 +102,6 @@ Q_SIGNALS:
     void coreChanged();
     void classTypeChanged();
     void addressChanged();
-    void audioChanged();
     void captionChanged();
     void documentChanged();
     void firstNameChanged();
@@ -126,71 +113,54 @@ Q_SIGNALS:
     void titleChanged();
     void userIdChanged();
     void venueIdChanged();
-    void videoChanged();
     void webpageChanged();
 
 private Q_SLOTS:
-    void coreAudioChanged();
     void coreDocumentChanged();
     void coreGeoChanged();
     void corePhotoChanged();
-    void coreVideoChanged();
     void coreWebpageChanged();
 
 private:
-    QPointer<AudioObject> m_audio;
     QPointer<DocumentObject> m_document;
     QPointer<GeoPointObject> m_geo;
     QPointer<PhotoObject> m_photo;
-    QPointer<VideoObject> m_video;
     QPointer<WebPageObject> m_webpage;
     MessageMedia m_core;
 };
 
 inline MessageMediaObject::MessageMediaObject(const MessageMedia &core, QObject *parent) :
     TelegramTypeQObject(parent),
-    m_audio(0),
     m_document(0),
     m_geo(0),
     m_photo(0),
-    m_video(0),
     m_webpage(0),
     m_core(core)
 {
-    m_audio = new AudioObject(m_core.audio(), this);
-    connect(m_audio.data(), &AudioObject::coreChanged, this, &MessageMediaObject::coreAudioChanged);
     m_document = new DocumentObject(m_core.document(), this);
     connect(m_document.data(), &DocumentObject::coreChanged, this, &MessageMediaObject::coreDocumentChanged);
     m_geo = new GeoPointObject(m_core.geo(), this);
     connect(m_geo.data(), &GeoPointObject::coreChanged, this, &MessageMediaObject::coreGeoChanged);
     m_photo = new PhotoObject(m_core.photo(), this);
     connect(m_photo.data(), &PhotoObject::coreChanged, this, &MessageMediaObject::corePhotoChanged);
-    m_video = new VideoObject(m_core.video(), this);
-    connect(m_video.data(), &VideoObject::coreChanged, this, &MessageMediaObject::coreVideoChanged);
     m_webpage = new WebPageObject(m_core.webpage(), this);
     connect(m_webpage.data(), &WebPageObject::coreChanged, this, &MessageMediaObject::coreWebpageChanged);
 }
 
 inline MessageMediaObject::MessageMediaObject(QObject *parent) :
     TelegramTypeQObject(parent),
-    m_audio(0),
     m_document(0),
     m_geo(0),
     m_photo(0),
-    m_video(0),
     m_webpage(0),
     m_core()
 {
-    m_audio = new AudioObject(m_core.audio(), this);
-    connect(m_audio.data(), &AudioObject::coreChanged, this, &MessageMediaObject::coreAudioChanged);
     m_document = new DocumentObject(m_core.document(), this);
     connect(m_document.data(), &DocumentObject::coreChanged, this, &MessageMediaObject::coreDocumentChanged);
     m_geo = new GeoPointObject(m_core.geo(), this);
     connect(m_geo.data(), &GeoPointObject::coreChanged, this, &MessageMediaObject::coreGeoChanged);
     m_photo = new PhotoObject(m_core.photo(), this);
     connect(m_photo.data(), &PhotoObject::coreChanged, this, &MessageMediaObject::corePhotoChanged);
-    m_video = new VideoObject(m_core.video(), this);
-    connect(m_video.data(), &VideoObject::coreChanged, this, &MessageMediaObject::coreVideoChanged);
     m_webpage = new WebPageObject(m_core.webpage(), this);
     connect(m_webpage.data(), &WebPageObject::coreChanged, this, &MessageMediaObject::coreWebpageChanged);
 }
@@ -207,23 +177,6 @@ inline void MessageMediaObject::setAddress(const QString &address) {
 
 inline QString MessageMediaObject::address() const {
     return m_core.address();
-}
-
-inline void MessageMediaObject::setAudio(AudioObject* audio) {
-    if(m_audio == audio) return;
-    if(m_audio) delete m_audio;
-    m_audio = audio;
-    if(m_audio) {
-        m_audio->setParent(this);
-        m_core.setAudio(m_audio->core());
-        connect(m_audio.data(), &AudioObject::coreChanged, this, &MessageMediaObject::coreAudioChanged);
-    }
-    Q_EMIT audioChanged();
-    Q_EMIT coreChanged();
-}
-
-inline AudioObject*  MessageMediaObject::audio() const {
-    return m_audio;
 }
 
 inline void MessageMediaObject::setCaption(const QString &caption) {
@@ -365,23 +318,6 @@ inline QString MessageMediaObject::venueId() const {
     return m_core.venueId();
 }
 
-inline void MessageMediaObject::setVideo(VideoObject* video) {
-    if(m_video == video) return;
-    if(m_video) delete m_video;
-    m_video = video;
-    if(m_video) {
-        m_video->setParent(this);
-        m_core.setVideo(m_video->core());
-        connect(m_video.data(), &VideoObject::coreChanged, this, &MessageMediaObject::coreVideoChanged);
-    }
-    Q_EMIT videoChanged();
-    Q_EMIT coreChanged();
-}
-
-inline VideoObject*  MessageMediaObject::video() const {
-    return m_video;
-}
-
 inline void MessageMediaObject::setWebpage(WebPageObject* webpage) {
     if(m_webpage == webpage) return;
     if(m_webpage) delete m_webpage;
@@ -402,15 +338,12 @@ inline WebPageObject*  MessageMediaObject::webpage() const {
 inline MessageMediaObject &MessageMediaObject::operator =(const MessageMedia &b) {
     if(m_core == b) return *this;
     m_core = b;
-    m_audio->setCore(b.audio());
     m_document->setCore(b.document());
     m_geo->setCore(b.geo());
     m_photo->setCore(b.photo());
-    m_video->setCore(b.video());
     m_webpage->setCore(b.webpage());
 
     Q_EMIT addressChanged();
-    Q_EMIT audioChanged();
     Q_EMIT captionChanged();
     Q_EMIT documentChanged();
     Q_EMIT firstNameChanged();
@@ -422,7 +355,6 @@ inline MessageMediaObject &MessageMediaObject::operator =(const MessageMedia &b)
     Q_EMIT titleChanged();
     Q_EMIT userIdChanged();
     Q_EMIT venueIdChanged();
-    Q_EMIT videoChanged();
     Q_EMIT webpageChanged();
     Q_EMIT coreChanged();
     return *this;
@@ -441,9 +373,6 @@ inline void MessageMediaObject::setClassType(quint32 classType) {
     case TypeMessageMediaPhoto:
         result = MessageMedia::typeMessageMediaPhoto;
         break;
-    case TypeMessageMediaVideo:
-        result = MessageMedia::typeMessageMediaVideo;
-        break;
     case TypeMessageMediaGeo:
         result = MessageMedia::typeMessageMediaGeo;
         break;
@@ -455,9 +384,6 @@ inline void MessageMediaObject::setClassType(quint32 classType) {
         break;
     case TypeMessageMediaDocument:
         result = MessageMedia::typeMessageMediaDocument;
-        break;
-    case TypeMessageMediaAudio:
-        result = MessageMedia::typeMessageMediaAudio;
         break;
     case TypeMessageMediaWebPage:
         result = MessageMedia::typeMessageMediaWebPage;
@@ -485,9 +411,6 @@ inline quint32 MessageMediaObject::classType() const {
     case MessageMedia::typeMessageMediaPhoto:
         result = TypeMessageMediaPhoto;
         break;
-    case MessageMedia::typeMessageMediaVideo:
-        result = TypeMessageMediaVideo;
-        break;
     case MessageMedia::typeMessageMediaGeo:
         result = TypeMessageMediaGeo;
         break;
@@ -499,9 +422,6 @@ inline quint32 MessageMediaObject::classType() const {
         break;
     case MessageMedia::typeMessageMediaDocument:
         result = TypeMessageMediaDocument;
-        break;
-    case MessageMedia::typeMessageMediaAudio:
-        result = TypeMessageMediaAudio;
         break;
     case MessageMedia::typeMessageMediaWebPage:
         result = TypeMessageMediaWebPage;
@@ -525,13 +445,6 @@ inline MessageMedia MessageMediaObject::core() const {
     return m_core;
 }
 
-inline void MessageMediaObject::coreAudioChanged() {
-    if(m_core.audio() == m_audio->core()) return;
-    m_core.setAudio(m_audio->core());
-    Q_EMIT audioChanged();
-    Q_EMIT coreChanged();
-}
-
 inline void MessageMediaObject::coreDocumentChanged() {
     if(m_core.document() == m_document->core()) return;
     m_core.setDocument(m_document->core());
@@ -550,13 +463,6 @@ inline void MessageMediaObject::corePhotoChanged() {
     if(m_core.photo() == m_photo->core()) return;
     m_core.setPhoto(m_photo->core());
     Q_EMIT photoChanged();
-    Q_EMIT coreChanged();
-}
-
-inline void MessageMediaObject::coreVideoChanged() {
-    if(m_core.video() == m_video->core()) return;
-    m_core.setVideo(m_video->core());
-    Q_EMIT videoChanged();
     Q_EMIT coreChanged();
 }
 

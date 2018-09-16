@@ -15,7 +15,7 @@
 
 #include <QDataStream>
 
-#include <QString>
+#include <QtGlobal>
 #include <QList>
 #include "stickerset.h"
 
@@ -24,7 +24,7 @@ class LIBQTELEGRAMSHARED_EXPORT MessagesAllStickers : public TelegramTypeObject
 public:
     enum MessagesAllStickersClassType {
         typeMessagesAllStickersNotModified = 0xe86602c3,
-        typeMessagesAllStickers = 0xd51dafdb
+        typeMessagesAllStickers = 0xedfd405f
     };
 
     MessagesAllStickers(MessagesAllStickersClassType classType = typeMessagesAllStickersNotModified, InboundPkt *in = 0);
@@ -32,8 +32,8 @@ public:
     MessagesAllStickers(const Null&);
     virtual ~MessagesAllStickers();
 
-    void setHash(const QString &hash);
-    QString hash() const;
+    void setHash(qint32 hash);
+    qint32 hash() const;
 
     void setSets(const QList<StickerSet> &sets);
     QList<StickerSet> sets() const;
@@ -55,7 +55,7 @@ public:
     QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
-    QString m_hash;
+    qint32 m_hash;
     QList<StickerSet> m_sets;
     MessagesAllStickersClassType m_classType;
 };
@@ -66,12 +66,14 @@ QDataStream LIBQTELEGRAMSHARED_EXPORT &operator<<(QDataStream &stream, const Mes
 QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, MessagesAllStickers &item);
 
 inline MessagesAllStickers::MessagesAllStickers(MessagesAllStickersClassType classType, InboundPkt *in) :
+    m_hash(0),
     m_classType(classType)
 {
     if(in) fetch(in);
 }
 
 inline MessagesAllStickers::MessagesAllStickers(InboundPkt *in) :
+    m_hash(0),
     m_classType(typeMessagesAllStickersNotModified)
 {
     fetch(in);
@@ -79,6 +81,7 @@ inline MessagesAllStickers::MessagesAllStickers(InboundPkt *in) :
 
 inline MessagesAllStickers::MessagesAllStickers(const Null &null) :
     TelegramTypeObject(null),
+    m_hash(0),
     m_classType(typeMessagesAllStickersNotModified)
 {
 }
@@ -86,11 +89,11 @@ inline MessagesAllStickers::MessagesAllStickers(const Null &null) :
 inline MessagesAllStickers::~MessagesAllStickers() {
 }
 
-inline void MessagesAllStickers::setHash(const QString &hash) {
+inline void MessagesAllStickers::setHash(qint32 hash) {
     m_hash = hash;
 }
 
-inline QString MessagesAllStickers::hash() const {
+inline qint32 MessagesAllStickers::hash() const {
     return m_hash;
 }
 
@@ -127,7 +130,7 @@ inline bool MessagesAllStickers::fetch(InboundPkt *in) {
         break;
     
     case typeMessagesAllStickers: {
-        m_hash = in->fetchQString();
+        m_hash = in->fetchInt();
         if(in->fetchInt() != (qint32)CoreTypes::typeVector) return false;
         qint32 m_sets_length = in->fetchInt();
         m_sets.clear();
@@ -156,7 +159,7 @@ inline bool MessagesAllStickers::push(OutboundPkt *out) const {
         break;
     
     case typeMessagesAllStickers: {
-        out->appendQString(m_hash);
+        out->appendInt(m_hash);
         out->appendInt(CoreTypes::typeVector);
         out->appendInt(m_sets.count());
         for (qint32 i = 0; i < m_sets.count(); i++) {
@@ -182,7 +185,7 @@ inline QMap<QString, QVariant> MessagesAllStickers::toMap() const {
     
     case typeMessagesAllStickers: {
         result["classType"] = "MessagesAllStickers::typeMessagesAllStickers";
-        result["hash"] = QVariant::fromValue<QString>(hash());
+        result["hash"] = QVariant::fromValue<qint32>(hash());
         QList<QVariant> _sets;
         Q_FOREACH(const StickerSet &m__type, m_sets)
             _sets << m__type.toMap();
@@ -204,7 +207,7 @@ inline MessagesAllStickers MessagesAllStickers::fromMap(const QMap<QString, QVar
     }
     if(map.value("classType").toString() == "MessagesAllStickers::typeMessagesAllStickers") {
         result.setClassType(typeMessagesAllStickers);
-        result.setHash( map.value("hash").value<QString>() );
+        result.setHash( map.value("hash").value<qint32>() );
         QList<QVariant> map_sets = map["sets"].toList();
         QList<StickerSet> _sets;
         Q_FOREACH(const QVariant &var, map_sets)
@@ -246,7 +249,7 @@ inline QDataStream &operator>>(QDataStream &stream, MessagesAllStickers &item) {
     }
         break;
     case MessagesAllStickers::typeMessagesAllStickers: {
-        QString m_hash;
+        qint32 m_hash;
         stream >> m_hash;
         item.setHash(m_hash);
         QList<StickerSet> m_sets;

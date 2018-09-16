@@ -24,11 +24,10 @@ class LIBQTELEGRAMSHARED_EXPORT BotInfo : public TelegramTypeObject
 {
 public:
     enum BotInfoClassType {
-        typeBotInfoEmpty = 0xbb2e37ce,
-        typeBotInfo = 0x9cf585d
+        typeBotInfo = 0x98e81d3a
     };
 
-    BotInfo(BotInfoClassType classType = typeBotInfoEmpty, InboundPkt *in = 0);
+    BotInfo(BotInfoClassType classType = typeBotInfo, InboundPkt *in = 0);
     BotInfo(InboundPkt *in);
     BotInfo(const Null&);
     virtual ~BotInfo();
@@ -39,14 +38,8 @@ public:
     void setDescription(const QString &description);
     QString description() const;
 
-    void setShareText(const QString &shareText);
-    QString shareText() const;
-
     void setUserId(qint32 userId);
     qint32 userId() const;
-
-    void setVersion(qint32 version);
-    qint32 version() const;
 
     void setClassType(BotInfoClassType classType);
     BotInfoClassType classType() const;
@@ -67,9 +60,7 @@ public:
 private:
     QList<BotCommand> m_commands;
     QString m_description;
-    QString m_shareText;
     qint32 m_userId;
-    qint32 m_version;
     BotInfoClassType m_classType;
 };
 
@@ -80,7 +71,6 @@ QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, BotInfo &
 
 inline BotInfo::BotInfo(BotInfoClassType classType, InboundPkt *in) :
     m_userId(0),
-    m_version(0),
     m_classType(classType)
 {
     if(in) fetch(in);
@@ -88,8 +78,7 @@ inline BotInfo::BotInfo(BotInfoClassType classType, InboundPkt *in) :
 
 inline BotInfo::BotInfo(InboundPkt *in) :
     m_userId(0),
-    m_version(0),
-    m_classType(typeBotInfoEmpty)
+    m_classType(typeBotInfo)
 {
     fetch(in);
 }
@@ -97,8 +86,7 @@ inline BotInfo::BotInfo(InboundPkt *in) :
 inline BotInfo::BotInfo(const Null &null) :
     TelegramTypeObject(null),
     m_userId(0),
-    m_version(0),
-    m_classType(typeBotInfoEmpty)
+    m_classType(typeBotInfo)
 {
 }
 
@@ -121,14 +109,6 @@ inline QString BotInfo::description() const {
     return m_description;
 }
 
-inline void BotInfo::setShareText(const QString &shareText) {
-    m_shareText = shareText;
-}
-
-inline QString BotInfo::shareText() const {
-    return m_shareText;
-}
-
 inline void BotInfo::setUserId(qint32 userId) {
     m_userId = userId;
 }
@@ -137,21 +117,11 @@ inline qint32 BotInfo::userId() const {
     return m_userId;
 }
 
-inline void BotInfo::setVersion(qint32 version) {
-    m_version = version;
-}
-
-inline qint32 BotInfo::version() const {
-    return m_version;
-}
-
 inline bool BotInfo::operator ==(const BotInfo &b) const {
     return m_classType == b.m_classType &&
            m_commands == b.m_commands &&
            m_description == b.m_description &&
-           m_shareText == b.m_shareText &&
-           m_userId == b.m_userId &&
-           m_version == b.m_version;
+           m_userId == b.m_userId;
 }
 
 inline void BotInfo::setClassType(BotInfo::BotInfoClassType classType) {
@@ -166,16 +136,8 @@ inline bool BotInfo::fetch(InboundPkt *in) {
     LQTG_FETCH_LOG;
     int x = in->fetchInt();
     switch(x) {
-    case typeBotInfoEmpty: {
-        m_classType = static_cast<BotInfoClassType>(x);
-        return true;
-    }
-        break;
-    
     case typeBotInfo: {
         m_userId = in->fetchInt();
-        m_version = in->fetchInt();
-        m_shareText = in->fetchQString();
         m_description = in->fetchQString();
         if(in->fetchInt() != (qint32)CoreTypes::typeVector) return false;
         qint32 m_commands_length = in->fetchInt();
@@ -199,15 +161,8 @@ inline bool BotInfo::fetch(InboundPkt *in) {
 inline bool BotInfo::push(OutboundPkt *out) const {
     out->appendInt(m_classType);
     switch(m_classType) {
-    case typeBotInfoEmpty: {
-        return true;
-    }
-        break;
-    
     case typeBotInfo: {
         out->appendInt(m_userId);
-        out->appendInt(m_version);
-        out->appendQString(m_shareText);
         out->appendQString(m_description);
         out->appendInt(CoreTypes::typeVector);
         out->appendInt(m_commands.count());
@@ -226,17 +181,9 @@ inline bool BotInfo::push(OutboundPkt *out) const {
 inline QMap<QString, QVariant> BotInfo::toMap() const {
     QMap<QString, QVariant> result;
     switch(static_cast<int>(m_classType)) {
-    case typeBotInfoEmpty: {
-        result["classType"] = "BotInfo::typeBotInfoEmpty";
-        return result;
-    }
-        break;
-    
     case typeBotInfo: {
         result["classType"] = "BotInfo::typeBotInfo";
         result["userId"] = QVariant::fromValue<qint32>(userId());
-        result["version"] = QVariant::fromValue<qint32>(version());
-        result["shareText"] = QVariant::fromValue<QString>(shareText());
         result["description"] = QVariant::fromValue<QString>(description());
         QList<QVariant> _commands;
         Q_FOREACH(const BotCommand &m__type, m_commands)
@@ -253,15 +200,9 @@ inline QMap<QString, QVariant> BotInfo::toMap() const {
 
 inline BotInfo BotInfo::fromMap(const QMap<QString, QVariant> &map) {
     BotInfo result;
-    if(map.value("classType").toString() == "BotInfo::typeBotInfoEmpty") {
-        result.setClassType(typeBotInfoEmpty);
-        return result;
-    }
     if(map.value("classType").toString() == "BotInfo::typeBotInfo") {
         result.setClassType(typeBotInfo);
         result.setUserId( map.value("userId").value<qint32>() );
-        result.setVersion( map.value("version").value<qint32>() );
-        result.setShareText( map.value("shareText").value<QString>() );
         result.setDescription( map.value("description").value<QString>() );
         QList<QVariant> map_commands = map["commands"].toList();
         QList<BotCommand> _commands;
@@ -283,13 +224,8 @@ inline QByteArray BotInfo::getHash(QCryptographicHash::Algorithm alg) const {
 inline QDataStream &operator<<(QDataStream &stream, const BotInfo &item) {
     stream << static_cast<uint>(item.classType());
     switch(item.classType()) {
-    case BotInfo::typeBotInfoEmpty:
-        
-        break;
     case BotInfo::typeBotInfo:
         stream << item.userId();
-        stream << item.version();
-        stream << item.shareText();
         stream << item.description();
         stream << item.commands();
         break;
@@ -302,20 +238,10 @@ inline QDataStream &operator>>(QDataStream &stream, BotInfo &item) {
     stream >> type;
     item.setClassType(static_cast<BotInfo::BotInfoClassType>(type));
     switch(type) {
-    case BotInfo::typeBotInfoEmpty: {
-        
-    }
-        break;
     case BotInfo::typeBotInfo: {
         qint32 m_user_id;
         stream >> m_user_id;
         item.setUserId(m_user_id);
-        qint32 m_version;
-        stream >> m_version;
-        item.setVersion(m_version);
-        QString m_share_text;
-        stream >> m_share_text;
-        item.setShareText(m_share_text);
         QString m_description;
         stream >> m_description;
         item.setDescription(m_description);

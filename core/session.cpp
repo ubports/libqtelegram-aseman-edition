@@ -315,7 +315,7 @@ void Session::workUpdateShortMessage(InboundPkt &inboundPkt, qint64 msgId) {
     UpdatesType upd(&inboundPkt);
     bool unread = (upd.flags() & 0x1);
     bool out = (upd.flags() & 0x2);
-    Q_EMIT updateShortMessage(upd.id(), upd.userId(), upd.message(), upd.pts(), upd.ptsCount(), upd.date(), upd.fwdFromId(), upd.fwdDate(), upd.replyToMsgId(), unread, out);
+    Q_EMIT updateShortMessage(upd.id(), upd.userId(), upd.message(), upd.pts(), upd.ptsCount(), upd.date(), upd.fwdFrom(), upd.replyToMsgId(), unread, out);
 }
 
 void Session::workUpdateShortChatMessage(InboundPkt &inboundPkt, qint64 msgId) {
@@ -325,7 +325,7 @@ void Session::workUpdateShortChatMessage(InboundPkt &inboundPkt, qint64 msgId) {
     bool unread = (upd.flags() & 0x1);
     bool out = (upd.flags() & 0x2);
 
-    Q_EMIT updateShortChatMessage(upd.id(), upd.fromId(), upd.chatId(), upd.message(), upd.pts(), upd.ptsCount(), upd.date(), upd.fwdFromId(), upd.date(), upd.replyToMsgId(), unread, out);
+    Q_EMIT updateShortChatMessage(upd.id(), upd.fromId(), upd.chatId(), upd.message(), upd.pts(), upd.ptsCount(), upd.date(), upd.fwdFrom(), upd.replyToMsgId(), unread, out);
 }
 
 void Session::workPacked(InboundPkt &inboundPkt, qint64 msgId) {

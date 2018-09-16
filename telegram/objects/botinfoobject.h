@@ -16,15 +16,12 @@ class LIBQTELEGRAMSHARED_EXPORT BotInfoObject : public TelegramTypeQObject
     Q_ENUMS(BotInfoClassType)
     Q_PROPERTY(QList<BotCommand> commands READ commands WRITE setCommands NOTIFY commandsChanged)
     Q_PROPERTY(QString description READ description WRITE setDescription NOTIFY descriptionChanged)
-    Q_PROPERTY(QString shareText READ shareText WRITE setShareText NOTIFY shareTextChanged)
     Q_PROPERTY(qint32 userId READ userId WRITE setUserId NOTIFY userIdChanged)
-    Q_PROPERTY(qint32 version READ version WRITE setVersion NOTIFY versionChanged)
     Q_PROPERTY(BotInfo core READ core WRITE setCore NOTIFY coreChanged)
     Q_PROPERTY(quint32 classType READ classType WRITE setClassType NOTIFY classTypeChanged)
 
 public:
     enum BotInfoClassType {
-        TypeBotInfoEmpty,
         TypeBotInfo
     };
 
@@ -38,14 +35,8 @@ public:
     void setDescription(const QString &description);
     QString description() const;
 
-    void setShareText(const QString &shareText);
-    QString shareText() const;
-
     void setUserId(qint32 userId);
     qint32 userId() const;
-
-    void setVersion(qint32 version);
-    qint32 version() const;
 
     void setClassType(quint32 classType);
     quint32 classType() const;
@@ -61,9 +52,7 @@ Q_SIGNALS:
     void classTypeChanged();
     void commandsChanged();
     void descriptionChanged();
-    void shareTextChanged();
     void userIdChanged();
-    void versionChanged();
 
 private Q_SLOTS:
 
@@ -108,17 +97,6 @@ inline QString BotInfoObject::description() const {
     return m_core.description();
 }
 
-inline void BotInfoObject::setShareText(const QString &shareText) {
-    if(m_core.shareText() == shareText) return;
-    m_core.setShareText(shareText);
-    Q_EMIT shareTextChanged();
-    Q_EMIT coreChanged();
-}
-
-inline QString BotInfoObject::shareText() const {
-    return m_core.shareText();
-}
-
 inline void BotInfoObject::setUserId(qint32 userId) {
     if(m_core.userId() == userId) return;
     m_core.setUserId(userId);
@@ -130,26 +108,13 @@ inline qint32 BotInfoObject::userId() const {
     return m_core.userId();
 }
 
-inline void BotInfoObject::setVersion(qint32 version) {
-    if(m_core.version() == version) return;
-    m_core.setVersion(version);
-    Q_EMIT versionChanged();
-    Q_EMIT coreChanged();
-}
-
-inline qint32 BotInfoObject::version() const {
-    return m_core.version();
-}
-
 inline BotInfoObject &BotInfoObject::operator =(const BotInfo &b) {
     if(m_core == b) return *this;
     m_core = b;
 
     Q_EMIT commandsChanged();
     Q_EMIT descriptionChanged();
-    Q_EMIT shareTextChanged();
     Q_EMIT userIdChanged();
-    Q_EMIT versionChanged();
     Q_EMIT coreChanged();
     return *this;
 }
@@ -161,14 +126,11 @@ inline bool BotInfoObject::operator ==(const BotInfo &b) const {
 inline void BotInfoObject::setClassType(quint32 classType) {
     BotInfo::BotInfoClassType result;
     switch(classType) {
-    case TypeBotInfoEmpty:
-        result = BotInfo::typeBotInfoEmpty;
-        break;
     case TypeBotInfo:
         result = BotInfo::typeBotInfo;
         break;
     default:
-        result = BotInfo::typeBotInfoEmpty;
+        result = BotInfo::typeBotInfo;
         break;
     }
 
@@ -181,14 +143,11 @@ inline void BotInfoObject::setClassType(quint32 classType) {
 inline quint32 BotInfoObject::classType() const {
     int result;
     switch(static_cast<qint64>(m_core.classType())) {
-    case BotInfo::typeBotInfoEmpty:
-        result = TypeBotInfoEmpty;
-        break;
     case BotInfo::typeBotInfo:
         result = TypeBotInfo;
         break;
     default:
-        result = TypeBotInfoEmpty;
+        result = TypeBotInfo;
         break;
     }
 

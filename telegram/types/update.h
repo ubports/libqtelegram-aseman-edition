@@ -18,15 +18,18 @@
 #include "sendmessageaction.h"
 #include <QtGlobal>
 #include "encryptedchat.h"
+#include <QByteArray>
 #include <QList>
 #include "dcoption.h"
 #include <QString>
+#include "draftmessage.h"
 #include "contactlink.h"
-#include "messagegroup.h"
+#include "geopoint.h"
 #include "privacykey.h"
 #include "messagemedia.h"
 #include "encryptedmessage.h"
 #include "message.h"
+#include "inputbotinlinemessageid.h"
 #include "peernotifysettings.h"
 #include "chatparticipants.h"
 #include "notifypeer.h"
@@ -34,6 +37,7 @@
 #include "userprofilephoto.h"
 #include "privacyrule.h"
 #include "userstatus.h"
+#include "messagesstickerset.h"
 #include "webpage.h"
 
 class LIBQTELEGRAMSHARED_EXPORT Update : public TelegramTypeObject
@@ -68,15 +72,27 @@ public:
         typeUpdateReadHistoryOutbox = 0x2f2f21bf,
         typeUpdateWebPage = 0x7f891213,
         typeUpdateReadMessagesContents = 0x68c13933,
-        typeUpdateChannelTooLong = 0x60946422,
+        typeUpdateChannelTooLong = 0xeb0467fb,
         typeUpdateChannel = 0xb6d45656,
-        typeUpdateChannelGroup = 0xc36c1e3c,
         typeUpdateNewChannelMessage = 0x62ba04d9,
         typeUpdateReadChannelInbox = 0x4214f37f,
         typeUpdateDeleteChannelMessages = 0xc37521c9,
         typeUpdateChannelMessageViews = 0x98a12b4b,
         typeUpdateChatAdmins = 0x6e947941,
-        typeUpdateChatParticipantAdmin = 0xb6901959
+        typeUpdateChatParticipantAdmin = 0xb6901959,
+        typeUpdateNewStickerSet = 0x688a30aa,
+        typeUpdateStickerSetsOrder = 0xf0dfb451,
+        typeUpdateStickerSets = 0x43ae3dec,
+        typeUpdateSavedGifs = 0x9375341e,
+        typeUpdateBotInlineQuery = 0x54826690,
+        typeUpdateBotInlineSend = 0xe48f964,
+        typeUpdateEditChannelMessage = 0x1b3f4df7,
+        typeUpdateChannelPinnedMessage = 0x98592475,
+        typeUpdateBotCallbackQuery = 0xa68c688c,
+        typeUpdateEditMessage = 0xe40370a3,
+        typeUpdateInlineBotCallbackQuery = 0x2cbd95af,
+        typeUpdateReadChannelOutbox = 0x25d6c9c7,
+        typeUpdateDraftMessage = 0xee2bb969
     };
 
     Update(UpdateClassType classType = typeUpdateNewMessage, InboundPkt *in = 0);
@@ -102,6 +118,9 @@ public:
     void setChatId(qint32 chatId);
     qint32 chatId() const;
 
+    void setData(const QByteArray &data);
+    QByteArray data() const;
+
     void setDate(qint32 date);
     qint32 date() const;
 
@@ -111,20 +130,29 @@ public:
     void setDevice(const QString &device);
     QString device() const;
 
+    void setDraft(const DraftMessage &draft);
+    DraftMessage draft() const;
+
     void setEnabled(bool enabled);
     bool enabled() const;
 
     void setFirstName(const QString &firstName);
     QString firstName() const;
 
+    void setFlags(qint32 flags);
+    qint32 flags() const;
+
     void setForeignLink(const ContactLink &foreignLink);
     ContactLink foreignLink() const;
 
-    void setGroup(const MessageGroup &group);
-    MessageGroup group() const;
+    void setGeo(const GeoPoint &geo);
+    GeoPoint geo() const;
 
-    void setId(qint32 id);
-    qint32 id() const;
+    void setIdString(const QString &idString);
+    QString idString() const;
+
+    void setIdInt(qint32 idInt);
+    qint32 idInt() const;
 
     void setInviterId(qint32 inviterId);
     qint32 inviterId() const;
@@ -162,11 +190,23 @@ public:
     void setMessages(const QList<qint32> &messages);
     QList<qint32> messages() const;
 
+    void setMsgIdInputBotInlineMessageID(const InputBotInlineMessageID &msgIdInputBotInlineMessageID);
+    InputBotInlineMessageID msgIdInputBotInlineMessageID() const;
+
+    void setMsgIdInt(qint32 msgIdInt);
+    qint32 msgIdInt() const;
+
     void setMyLink(const ContactLink &myLink);
     ContactLink myLink() const;
 
     void setNotifySettings(const PeerNotifySettings &notifySettings);
     PeerNotifySettings notifySettings() const;
+
+    void setOffset(const QString &offset);
+    QString offset() const;
+
+    void setOrder(const QList<qint64> &order);
+    QList<qint64> order() const;
 
     void setParticipants(const ChatParticipants &participants);
     ChatParticipants participants() const;
@@ -198,6 +238,12 @@ public:
     void setQts(qint32 qts);
     qint32 qts() const;
 
+    void setQuery(const QString &query);
+    QString query() const;
+
+    void setQueryId(qint64 queryId);
+    qint64 queryId() const;
+
     void setRandomId(qint64 randomId);
     qint64 randomId() const;
 
@@ -206,6 +252,9 @@ public:
 
     void setStatus(const UserStatus &status);
     UserStatus status() const;
+
+    void setStickerset(const MessagesStickerSet &stickerset);
+    MessagesStickerSet stickerset() const;
 
     void setType(const QString &type);
     QString type() const;
@@ -248,14 +297,18 @@ private:
     qint32 m_channelId;
     EncryptedChat m_chat;
     qint32 m_chatId;
+    QByteArray m_data;
     qint32 m_date;
     QList<DcOption> m_dcOptions;
     QString m_device;
+    DraftMessage m_draft;
     bool m_enabled;
     QString m_firstName;
+    qint32 m_flags;
     ContactLink m_foreignLink;
-    MessageGroup m_group;
-    qint32 m_id;
+    GeoPoint m_geo;
+    QString m_idString;
+    qint32 m_idInt;
     qint32 m_inviterId;
     bool m_isAdmin;
     PrivacyKey m_key;
@@ -268,8 +321,12 @@ private:
     Message m_message;
     QString m_messageString;
     QList<qint32> m_messages;
+    InputBotInlineMessageID m_msgIdInputBotInlineMessageID;
+    qint32 m_msgIdInt;
     ContactLink m_myLink;
     PeerNotifySettings m_notifySettings;
+    QString m_offset;
+    QList<qint64> m_order;
     ChatParticipants m_participants;
     NotifyPeer m_peerNotify;
     Peer m_peer;
@@ -280,9 +337,12 @@ private:
     qint32 m_pts;
     qint32 m_ptsCount;
     qint32 m_qts;
+    QString m_query;
+    qint64 m_queryId;
     qint64 m_randomId;
     QList<PrivacyRule> m_rules;
     UserStatus m_status;
+    MessagesStickerSet m_stickerset;
     QString m_type;
     qint32 m_userId;
     QString m_username;
@@ -304,16 +364,19 @@ inline Update::Update(UpdateClassType classType, InboundPkt *in) :
     m_chatId(0),
     m_date(0),
     m_enabled(false),
-    m_id(0),
+    m_flags(0),
+    m_idInt(0),
     m_inviterId(0),
     m_isAdmin(false),
     m_maxDate(0),
     m_maxId(0),
+    m_msgIdInt(0),
     m_popup(false),
     m_previous(false),
     m_pts(0),
     m_ptsCount(0),
     m_qts(0),
+    m_queryId(0),
     m_randomId(0),
     m_userId(0),
     m_version(0),
@@ -330,16 +393,19 @@ inline Update::Update(InboundPkt *in) :
     m_chatId(0),
     m_date(0),
     m_enabled(false),
-    m_id(0),
+    m_flags(0),
+    m_idInt(0),
     m_inviterId(0),
     m_isAdmin(false),
     m_maxDate(0),
     m_maxId(0),
+    m_msgIdInt(0),
     m_popup(false),
     m_previous(false),
     m_pts(0),
     m_ptsCount(0),
     m_qts(0),
+    m_queryId(0),
     m_randomId(0),
     m_userId(0),
     m_version(0),
@@ -357,16 +423,19 @@ inline Update::Update(const Null &null) :
     m_chatId(0),
     m_date(0),
     m_enabled(false),
-    m_id(0),
+    m_flags(0),
+    m_idInt(0),
     m_inviterId(0),
     m_isAdmin(false),
     m_maxDate(0),
     m_maxId(0),
+    m_msgIdInt(0),
     m_popup(false),
     m_previous(false),
     m_pts(0),
     m_ptsCount(0),
     m_qts(0),
+    m_queryId(0),
     m_randomId(0),
     m_userId(0),
     m_version(0),
@@ -426,6 +495,14 @@ inline qint32 Update::chatId() const {
     return m_chatId;
 }
 
+inline void Update::setData(const QByteArray &data) {
+    m_data = data;
+}
+
+inline QByteArray Update::data() const {
+    return m_data;
+}
+
 inline void Update::setDate(qint32 date) {
     m_date = date;
 }
@@ -450,6 +527,14 @@ inline QString Update::device() const {
     return m_device;
 }
 
+inline void Update::setDraft(const DraftMessage &draft) {
+    m_draft = draft;
+}
+
+inline DraftMessage Update::draft() const {
+    return m_draft;
+}
+
 inline void Update::setEnabled(bool enabled) {
     m_enabled = enabled;
 }
@@ -466,6 +551,14 @@ inline QString Update::firstName() const {
     return m_firstName;
 }
 
+inline void Update::setFlags(qint32 flags) {
+    m_flags = flags;
+}
+
+inline qint32 Update::flags() const {
+    return m_flags;
+}
+
 inline void Update::setForeignLink(const ContactLink &foreignLink) {
     m_foreignLink = foreignLink;
 }
@@ -474,20 +567,28 @@ inline ContactLink Update::foreignLink() const {
     return m_foreignLink;
 }
 
-inline void Update::setGroup(const MessageGroup &group) {
-    m_group = group;
+inline void Update::setGeo(const GeoPoint &geo) {
+    m_geo = geo;
 }
 
-inline MessageGroup Update::group() const {
-    return m_group;
+inline GeoPoint Update::geo() const {
+    return m_geo;
 }
 
-inline void Update::setId(qint32 id) {
-    m_id = id;
+inline void Update::setIdString(const QString &idString) {
+    m_idString = idString;
 }
 
-inline qint32 Update::id() const {
-    return m_id;
+inline QString Update::idString() const {
+    return m_idString;
+}
+
+inline void Update::setIdInt(qint32 idInt) {
+    m_idInt = idInt;
+}
+
+inline qint32 Update::idInt() const {
+    return m_idInt;
 }
 
 inline void Update::setInviterId(qint32 inviterId) {
@@ -586,6 +687,22 @@ inline QList<qint32> Update::messages() const {
     return m_messages;
 }
 
+inline void Update::setMsgIdInputBotInlineMessageID(const InputBotInlineMessageID &msgIdInputBotInlineMessageID) {
+    m_msgIdInputBotInlineMessageID = msgIdInputBotInlineMessageID;
+}
+
+inline InputBotInlineMessageID Update::msgIdInputBotInlineMessageID() const {
+    return m_msgIdInputBotInlineMessageID;
+}
+
+inline void Update::setMsgIdInt(qint32 msgIdInt) {
+    m_msgIdInt = msgIdInt;
+}
+
+inline qint32 Update::msgIdInt() const {
+    return m_msgIdInt;
+}
+
 inline void Update::setMyLink(const ContactLink &myLink) {
     m_myLink = myLink;
 }
@@ -600,6 +717,22 @@ inline void Update::setNotifySettings(const PeerNotifySettings &notifySettings) 
 
 inline PeerNotifySettings Update::notifySettings() const {
     return m_notifySettings;
+}
+
+inline void Update::setOffset(const QString &offset) {
+    m_offset = offset;
+}
+
+inline QString Update::offset() const {
+    return m_offset;
+}
+
+inline void Update::setOrder(const QList<qint64> &order) {
+    m_order = order;
+}
+
+inline QList<qint64> Update::order() const {
+    return m_order;
 }
 
 inline void Update::setParticipants(const ChatParticipants &participants) {
@@ -682,6 +815,22 @@ inline qint32 Update::qts() const {
     return m_qts;
 }
 
+inline void Update::setQuery(const QString &query) {
+    m_query = query;
+}
+
+inline QString Update::query() const {
+    return m_query;
+}
+
+inline void Update::setQueryId(qint64 queryId) {
+    m_queryId = queryId;
+}
+
+inline qint64 Update::queryId() const {
+    return m_queryId;
+}
+
 inline void Update::setRandomId(qint64 randomId) {
     m_randomId = randomId;
 }
@@ -704,6 +853,14 @@ inline void Update::setStatus(const UserStatus &status) {
 
 inline UserStatus Update::status() const {
     return m_status;
+}
+
+inline void Update::setStickerset(const MessagesStickerSet &stickerset) {
+    m_stickerset = stickerset;
+}
+
+inline MessagesStickerSet Update::stickerset() const {
+    return m_stickerset;
 }
 
 inline void Update::setType(const QString &type) {
@@ -762,14 +919,18 @@ inline bool Update::operator ==(const Update &b) const {
            m_channelId == b.m_channelId &&
            m_chat == b.m_chat &&
            m_chatId == b.m_chatId &&
+           m_data == b.m_data &&
            m_date == b.m_date &&
            m_dcOptions == b.m_dcOptions &&
            m_device == b.m_device &&
+           m_draft == b.m_draft &&
            m_enabled == b.m_enabled &&
            m_firstName == b.m_firstName &&
+           m_flags == b.m_flags &&
            m_foreignLink == b.m_foreignLink &&
-           m_group == b.m_group &&
-           m_id == b.m_id &&
+           m_geo == b.m_geo &&
+           m_idString == b.m_idString &&
+           m_idInt == b.m_idInt &&
            m_inviterId == b.m_inviterId &&
            m_isAdmin == b.m_isAdmin &&
            m_key == b.m_key &&
@@ -782,8 +943,12 @@ inline bool Update::operator ==(const Update &b) const {
            m_message == b.m_message &&
            m_messageString == b.m_messageString &&
            m_messages == b.m_messages &&
+           m_msgIdInputBotInlineMessageID == b.m_msgIdInputBotInlineMessageID &&
+           m_msgIdInt == b.m_msgIdInt &&
            m_myLink == b.m_myLink &&
            m_notifySettings == b.m_notifySettings &&
+           m_offset == b.m_offset &&
+           m_order == b.m_order &&
            m_participants == b.m_participants &&
            m_peerNotify == b.m_peerNotify &&
            m_peer == b.m_peer &&
@@ -794,9 +959,12 @@ inline bool Update::operator ==(const Update &b) const {
            m_pts == b.m_pts &&
            m_ptsCount == b.m_ptsCount &&
            m_qts == b.m_qts &&
+           m_query == b.m_query &&
+           m_queryId == b.m_queryId &&
            m_randomId == b.m_randomId &&
            m_rules == b.m_rules &&
            m_status == b.m_status &&
+           m_stickerset == b.m_stickerset &&
            m_type == b.m_type &&
            m_userId == b.m_userId &&
            m_username == b.m_username &&
@@ -827,7 +995,7 @@ inline bool Update::fetch(InboundPkt *in) {
         break;
     
     case typeUpdateMessageID: {
-        m_id = in->fetchInt();
+        m_idInt = in->fetchInt();
         m_randomId = in->fetchLong();
         m_classType = static_cast<UpdateClassType>(x);
         return true;
@@ -1090,7 +1258,11 @@ inline bool Update::fetch(InboundPkt *in) {
         break;
     
     case typeUpdateChannelTooLong: {
+        m_flags = in->fetchInt();
         m_channelId = in->fetchInt();
+        if(m_flags & 1<<0) {
+            m_pts = in->fetchInt();
+        }
         m_classType = static_cast<UpdateClassType>(x);
         return true;
     }
@@ -1098,14 +1270,6 @@ inline bool Update::fetch(InboundPkt *in) {
     
     case typeUpdateChannel: {
         m_channelId = in->fetchInt();
-        m_classType = static_cast<UpdateClassType>(x);
-        return true;
-    }
-        break;
-    
-    case typeUpdateChannelGroup: {
-        m_channelId = in->fetchInt();
-        m_group.fetch(in);
         m_classType = static_cast<UpdateClassType>(x);
         return true;
     }
@@ -1147,7 +1311,7 @@ inline bool Update::fetch(InboundPkt *in) {
     
     case typeUpdateChannelMessageViews: {
         m_channelId = in->fetchInt();
-        m_id = in->fetchInt();
+        m_idInt = in->fetchInt();
         m_views = in->fetchInt();
         m_classType = static_cast<UpdateClassType>(x);
         return true;
@@ -1173,6 +1337,132 @@ inline bool Update::fetch(InboundPkt *in) {
     }
         break;
     
+    case typeUpdateNewStickerSet: {
+        m_stickerset.fetch(in);
+        m_classType = static_cast<UpdateClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeUpdateStickerSetsOrder: {
+        if(in->fetchInt() != (qint32)CoreTypes::typeVector) return false;
+        qint32 m_order_length = in->fetchInt();
+        m_order.clear();
+        for (qint32 i = 0; i < m_order_length; i++) {
+            qint64 type;
+            type = in->fetchLong();
+            m_order.append(type);
+        }
+        m_classType = static_cast<UpdateClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeUpdateStickerSets: {
+        m_classType = static_cast<UpdateClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeUpdateSavedGifs: {
+        m_classType = static_cast<UpdateClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeUpdateBotInlineQuery: {
+        m_flags = in->fetchInt();
+        m_queryId = in->fetchLong();
+        m_userId = in->fetchInt();
+        m_query = in->fetchQString();
+        if(m_flags & 1<<0) {
+            m_geo.fetch(in);
+        }
+        m_offset = in->fetchQString();
+        m_classType = static_cast<UpdateClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeUpdateBotInlineSend: {
+        m_flags = in->fetchInt();
+        m_userId = in->fetchInt();
+        m_query = in->fetchQString();
+        if(m_flags & 1<<0) {
+            m_geo.fetch(in);
+        }
+        m_idString = in->fetchQString();
+        if(m_flags & 1<<1) {
+            m_msgIdInputBotInlineMessageID.fetch(in);
+        }
+        m_classType = static_cast<UpdateClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeUpdateEditChannelMessage: {
+        m_message.fetch(in);
+        m_pts = in->fetchInt();
+        m_ptsCount = in->fetchInt();
+        m_classType = static_cast<UpdateClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeUpdateChannelPinnedMessage: {
+        m_channelId = in->fetchInt();
+        m_idInt = in->fetchInt();
+        m_classType = static_cast<UpdateClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeUpdateBotCallbackQuery: {
+        m_queryId = in->fetchLong();
+        m_userId = in->fetchInt();
+        m_peer.fetch(in);
+        m_msgIdInt = in->fetchInt();
+        m_data = in->fetchBytes();
+        m_classType = static_cast<UpdateClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeUpdateEditMessage: {
+        m_message.fetch(in);
+        m_pts = in->fetchInt();
+        m_ptsCount = in->fetchInt();
+        m_classType = static_cast<UpdateClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeUpdateInlineBotCallbackQuery: {
+        m_queryId = in->fetchLong();
+        m_userId = in->fetchInt();
+        m_msgIdInputBotInlineMessageID.fetch(in);
+        m_data = in->fetchBytes();
+        m_classType = static_cast<UpdateClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeUpdateReadChannelOutbox: {
+        m_channelId = in->fetchInt();
+        m_maxId = in->fetchInt();
+        m_classType = static_cast<UpdateClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeUpdateDraftMessage: {
+        m_peer.fetch(in);
+        m_draft.fetch(in);
+        m_classType = static_cast<UpdateClassType>(x);
+        return true;
+    }
+        break;
+    
     default:
         LQTG_FETCH_ASSERT;
         return false;
@@ -1191,7 +1481,7 @@ inline bool Update::push(OutboundPkt *out) const {
         break;
     
     case typeUpdateMessageID: {
-        out->appendInt(m_id);
+        out->appendInt(m_idInt);
         out->appendLong(m_randomId);
         return true;
     }
@@ -1415,20 +1705,15 @@ inline bool Update::push(OutboundPkt *out) const {
         break;
     
     case typeUpdateChannelTooLong: {
+        out->appendInt(m_flags);
         out->appendInt(m_channelId);
+        out->appendInt(m_pts);
         return true;
     }
         break;
     
     case typeUpdateChannel: {
         out->appendInt(m_channelId);
-        return true;
-    }
-        break;
-    
-    case typeUpdateChannelGroup: {
-        out->appendInt(m_channelId);
-        m_group.push(out);
         return true;
     }
         break;
@@ -1463,7 +1748,7 @@ inline bool Update::push(OutboundPkt *out) const {
     
     case typeUpdateChannelMessageViews: {
         out->appendInt(m_channelId);
-        out->appendInt(m_id);
+        out->appendInt(m_idInt);
         out->appendInt(m_views);
         return true;
     }
@@ -1482,6 +1767,110 @@ inline bool Update::push(OutboundPkt *out) const {
         out->appendInt(m_userId);
         out->appendBool(m_isAdmin);
         out->appendInt(m_version);
+        return true;
+    }
+        break;
+    
+    case typeUpdateNewStickerSet: {
+        m_stickerset.push(out);
+        return true;
+    }
+        break;
+    
+    case typeUpdateStickerSetsOrder: {
+        out->appendInt(CoreTypes::typeVector);
+        out->appendInt(m_order.count());
+        for (qint32 i = 0; i < m_order.count(); i++) {
+            out->appendLong(m_order[i]);
+        }
+        return true;
+    }
+        break;
+    
+    case typeUpdateStickerSets: {
+        return true;
+    }
+        break;
+    
+    case typeUpdateSavedGifs: {
+        return true;
+    }
+        break;
+    
+    case typeUpdateBotInlineQuery: {
+        out->appendInt(m_flags);
+        out->appendLong(m_queryId);
+        out->appendInt(m_userId);
+        out->appendQString(m_query);
+        m_geo.push(out);
+        out->appendQString(m_offset);
+        return true;
+    }
+        break;
+    
+    case typeUpdateBotInlineSend: {
+        out->appendInt(m_flags);
+        out->appendInt(m_userId);
+        out->appendQString(m_query);
+        m_geo.push(out);
+        out->appendQString(m_idString);
+        m_msgIdInputBotInlineMessageID.push(out);
+        return true;
+    }
+        break;
+    
+    case typeUpdateEditChannelMessage: {
+        m_message.push(out);
+        out->appendInt(m_pts);
+        out->appendInt(m_ptsCount);
+        return true;
+    }
+        break;
+    
+    case typeUpdateChannelPinnedMessage: {
+        out->appendInt(m_channelId);
+        out->appendInt(m_idInt);
+        return true;
+    }
+        break;
+    
+    case typeUpdateBotCallbackQuery: {
+        out->appendLong(m_queryId);
+        out->appendInt(m_userId);
+        m_peer.push(out);
+        out->appendInt(m_msgIdInt);
+        out->appendBytes(m_data);
+        return true;
+    }
+        break;
+    
+    case typeUpdateEditMessage: {
+        m_message.push(out);
+        out->appendInt(m_pts);
+        out->appendInt(m_ptsCount);
+        return true;
+    }
+        break;
+    
+    case typeUpdateInlineBotCallbackQuery: {
+        out->appendLong(m_queryId);
+        out->appendInt(m_userId);
+        m_msgIdInputBotInlineMessageID.push(out);
+        out->appendBytes(m_data);
+        return true;
+    }
+        break;
+    
+    case typeUpdateReadChannelOutbox: {
+        out->appendInt(m_channelId);
+        out->appendInt(m_maxId);
+        return true;
+    }
+        break;
+    
+    case typeUpdateDraftMessage: {
+        m_peer.push(out);
+        m_draft.push(out);
         return true;
     }
         break;
@@ -1505,7 +1894,7 @@ inline QMap<QString, QVariant> Update::toMap() const {
     
     case typeUpdateMessageID: {
         result["classType"] = "Update::typeUpdateMessageID";
-        result["id"] = QVariant::fromValue<qint32>(id());
+        result["idInt"] = QVariant::fromValue<qint32>(idInt());
         result["randomId"] = QVariant::fromValue<qint64>(randomId());
         return result;
     }
@@ -1753,6 +2142,7 @@ inline QMap<QString, QVariant> Update::toMap() const {
     case typeUpdateChannelTooLong: {
         result["classType"] = "Update::typeUpdateChannelTooLong";
         result["channelId"] = QVariant::fromValue<qint32>(channelId());
+        result["pts"] = QVariant::fromValue<qint32>(pts());
         return result;
     }
         break;
@@ -1760,14 +2150,6 @@ inline QMap<QString, QVariant> Update::toMap() const {
     case typeUpdateChannel: {
         result["classType"] = "Update::typeUpdateChannel";
         result["channelId"] = QVariant::fromValue<qint32>(channelId());
-        return result;
-    }
-        break;
-    
-    case typeUpdateChannelGroup: {
-        result["classType"] = "Update::typeUpdateChannelGroup";
-        result["channelId"] = QVariant::fromValue<qint32>(channelId());
-        result["group"] = m_group.toMap();
         return result;
     }
         break;
@@ -1805,7 +2187,7 @@ inline QMap<QString, QVariant> Update::toMap() const {
     case typeUpdateChannelMessageViews: {
         result["classType"] = "Update::typeUpdateChannelMessageViews";
         result["channelId"] = QVariant::fromValue<qint32>(channelId());
-        result["id"] = QVariant::fromValue<qint32>(id());
+        result["idInt"] = QVariant::fromValue<qint32>(idInt());
         result["views"] = QVariant::fromValue<qint32>(views());
         return result;
     }
@@ -1830,6 +2212,120 @@ inline QMap<QString, QVariant> Update::toMap() const {
     }
         break;
     
+    case typeUpdateNewStickerSet: {
+        result["classType"] = "Update::typeUpdateNewStickerSet";
+        result["stickerset"] = m_stickerset.toMap();
+        return result;
+    }
+        break;
+    
+    case typeUpdateStickerSetsOrder: {
+        result["classType"] = "Update::typeUpdateStickerSetsOrder";
+        QList<QVariant> _order;
+        Q_FOREACH(const qint64 &m__type, m_order)
+            _order << QVariant::fromValue<qint64>(m__type);
+        result["order"] = _order;
+        return result;
+    }
+        break;
+    
+    case typeUpdateStickerSets: {
+        result["classType"] = "Update::typeUpdateStickerSets";
+        return result;
+    }
+        break;
+    
+    case typeUpdateSavedGifs: {
+        result["classType"] = "Update::typeUpdateSavedGifs";
+        return result;
+    }
+        break;
+    
+    case typeUpdateBotInlineQuery: {
+        result["classType"] = "Update::typeUpdateBotInlineQuery";
+        result["queryId"] = QVariant::fromValue<qint64>(queryId());
+        result["userId"] = QVariant::fromValue<qint32>(userId());
+        result["query"] = QVariant::fromValue<QString>(query());
+        result["geo"] = m_geo.toMap();
+        result["offset"] = QVariant::fromValue<QString>(offset());
+        return result;
+    }
+        break;
+    
+    case typeUpdateBotInlineSend: {
+        result["classType"] = "Update::typeUpdateBotInlineSend";
+        result["userId"] = QVariant::fromValue<qint32>(userId());
+        result["query"] = QVariant::fromValue<QString>(query());
+        result["geo"] = m_geo.toMap();
+        result["idString"] = QVariant::fromValue<QString>(idString());
+        result["msgIdInputBotInlineMessageID"] = m_msgIdInputBotInlineMessageID.toMap();
+        return result;
+    }
+        break;
+    
+    case typeUpdateEditChannelMessage: {
+        result["classType"] = "Update::typeUpdateEditChannelMessage";
+        result["message"] = m_message.toMap();
+        result["pts"] = QVariant::fromValue<qint32>(pts());
+        result["ptsCount"] = QVariant::fromValue<qint32>(ptsCount());
+        return result;
+    }
+        break;
+    
+    case typeUpdateChannelPinnedMessage: {
+        result["classType"] = "Update::typeUpdateChannelPinnedMessage";
+        result["channelId"] = QVariant::fromValue<qint32>(channelId());
+        result["idInt"] = QVariant::fromValue<qint32>(idInt());
+        return result;
+    }
+        break;
+    
+    case typeUpdateBotCallbackQuery: {
+        result["classType"] = "Update::typeUpdateBotCallbackQuery";
+        result["queryId"] = QVariant::fromValue<qint64>(queryId());
+        result["userId"] = QVariant::fromValue<qint32>(userId());
+        result["peer"] = m_peer.toMap();
+        result["msgIdInt"] = QVariant::fromValue<qint32>(msgIdInt());
+        result["data"] = QVariant::fromValue<QByteArray>(data());
+        return result;
+    }
+        break;
+    
+    case typeUpdateEditMessage: {
+        result["classType"] = "Update::typeUpdateEditMessage";
+        result["message"] = m_message.toMap();
+        result["pts"] = QVariant::fromValue<qint32>(pts());
+        result["ptsCount"] = QVariant::fromValue<qint32>(ptsCount());
+        return result;
+    }
+        break;
+    
+    case typeUpdateInlineBotCallbackQuery: {
+        result["classType"] = "Update::typeUpdateInlineBotCallbackQuery";
+        result["queryId"] = QVariant::fromValue<qint64>(queryId());
+        result["userId"] = QVariant::fromValue<qint32>(userId());
+        result["msgIdInputBotInlineMessageID"] = m_msgIdInputBotInlineMessageID.toMap();
+        result["data"] = QVariant::fromValue<QByteArray>(data());
+        return result;
+    }
+        break;
+    
+    case typeUpdateReadChannelOutbox: {
+        result["classType"] = "Update::typeUpdateReadChannelOutbox";
+        result["channelId"] = QVariant::fromValue<qint32>(channelId());
+        result["maxId"] = QVariant::fromValue<qint32>(maxId());
+        return result;
+    }
+        break;
+    
+    case typeUpdateDraftMessage: {
+        result["classType"] = "Update::typeUpdateDraftMessage";
+        result["peer"] = m_peer.toMap();
+        result["draft"] = m_draft.toMap();
+        return result;
+    }
+        break;
+    
     default:
         return result;
     }
@@ -1846,7 +2342,7 @@ inline Update Update::fromMap(const QMap<QString, QVariant> &map) {
     }
     if(map.value("classType").toString() == "Update::typeUpdateMessageID") {
         result.setClassType(typeUpdateMessageID);
-        result.setId( map.value("id").value<qint32>() );
+        result.setIdInt( map.value("idInt").value<qint32>() );
         result.setRandomId( map.value("randomId").value<qint64>() );
         return result;
     }
@@ -2044,17 +2540,12 @@ inline Update Update::fromMap(const QMap<QString, QVariant> &map) {
     if(map.value("classType").toString() == "Update::typeUpdateChannelTooLong") {
         result.setClassType(typeUpdateChannelTooLong);
         result.setChannelId( map.value("channelId").value<qint32>() );
+        result.setPts( map.value("pts").value<qint32>() );
         return result;
     }
     if(map.value("classType").toString() == "Update::typeUpdateChannel") {
         result.setClassType(typeUpdateChannel);
         result.setChannelId( map.value("channelId").value<qint32>() );
-        return result;
-    }
-    if(map.value("classType").toString() == "Update::typeUpdateChannelGroup") {
-        result.setClassType(typeUpdateChannelGroup);
-        result.setChannelId( map.value("channelId").value<qint32>() );
-        result.setGroup( MessageGroup::fromMap(map.value("group").toMap()) );
         return result;
     }
     if(map.value("classType").toString() == "Update::typeUpdateNewChannelMessage") {
@@ -2085,7 +2576,7 @@ inline Update Update::fromMap(const QMap<QString, QVariant> &map) {
     if(map.value("classType").toString() == "Update::typeUpdateChannelMessageViews") {
         result.setClassType(typeUpdateChannelMessageViews);
         result.setChannelId( map.value("channelId").value<qint32>() );
-        result.setId( map.value("id").value<qint32>() );
+        result.setIdInt( map.value("idInt").value<qint32>() );
         result.setViews( map.value("views").value<qint32>() );
         return result;
     }
@@ -2102,6 +2593,95 @@ inline Update Update::fromMap(const QMap<QString, QVariant> &map) {
         result.setUserId( map.value("userId").value<qint32>() );
         result.setIsAdmin( map.value("isAdmin").value<bool>() );
         result.setVersion( map.value("version").value<qint32>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "Update::typeUpdateNewStickerSet") {
+        result.setClassType(typeUpdateNewStickerSet);
+        result.setStickerset( MessagesStickerSet::fromMap(map.value("stickerset").toMap()) );
+        return result;
+    }
+    if(map.value("classType").toString() == "Update::typeUpdateStickerSetsOrder") {
+        result.setClassType(typeUpdateStickerSetsOrder);
+        QList<QVariant> map_order = map["order"].toList();
+        QList<qint64> _order;
+        Q_FOREACH(const QVariant &var, map_order)
+            _order << var.value<qint64>();;
+        result.setOrder(_order);
+        return result;
+    }
+    if(map.value("classType").toString() == "Update::typeUpdateStickerSets") {
+        result.setClassType(typeUpdateStickerSets);
+        return result;
+    }
+    if(map.value("classType").toString() == "Update::typeUpdateSavedGifs") {
+        result.setClassType(typeUpdateSavedGifs);
+        return result;
+    }
+    if(map.value("classType").toString() == "Update::typeUpdateBotInlineQuery") {
+        result.setClassType(typeUpdateBotInlineQuery);
+        result.setQueryId( map.value("queryId").value<qint64>() );
+        result.setUserId( map.value("userId").value<qint32>() );
+        result.setQuery( map.value("query").value<QString>() );
+        result.setGeo( GeoPoint::fromMap(map.value("geo").toMap()) );
+        result.setOffset( map.value("offset").value<QString>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "Update::typeUpdateBotInlineSend") {
+        result.setClassType(typeUpdateBotInlineSend);
+        result.setUserId( map.value("userId").value<qint32>() );
+        result.setQuery( map.value("query").value<QString>() );
+        result.setGeo( GeoPoint::fromMap(map.value("geo").toMap()) );
+        result.setIdString( map.value("idString").value<QString>() );
+        result.setMsgIdInputBotInlineMessageID( InputBotInlineMessageID::fromMap(map.value("msgIdInputBotInlineMessageID").toMap()) );
+        return result;
+    }
+    if(map.value("classType").toString() == "Update::typeUpdateEditChannelMessage") {
+        result.setClassType(typeUpdateEditChannelMessage);
+        result.setMessage( Message::fromMap(map.value("message").toMap()) );
+        result.setPts( map.value("pts").value<qint32>() );
+        result.setPtsCount( map.value("ptsCount").value<qint32>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "Update::typeUpdateChannelPinnedMessage") {
+        result.setClassType(typeUpdateChannelPinnedMessage);
+        result.setChannelId( map.value("channelId").value<qint32>() );
+        result.setIdInt( map.value("idInt").value<qint32>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "Update::typeUpdateBotCallbackQuery") {
+        result.setClassType(typeUpdateBotCallbackQuery);
+        result.setQueryId( map.value("queryId").value<qint64>() );
+        result.setUserId( map.value("userId").value<qint32>() );
+        result.setPeer( Peer::fromMap(map.value("peer").toMap()) );
+        result.setMsgIdInt( map.value("msgIdInt").value<qint32>() );
+        result.setData( map.value("data").value<QByteArray>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "Update::typeUpdateEditMessage") {
+        result.setClassType(typeUpdateEditMessage);
+        result.setMessage( Message::fromMap(map.value("message").toMap()) );
+        result.setPts( map.value("pts").value<qint32>() );
+        result.setPtsCount( map.value("ptsCount").value<qint32>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "Update::typeUpdateInlineBotCallbackQuery") {
+        result.setClassType(typeUpdateInlineBotCallbackQuery);
+        result.setQueryId( map.value("queryId").value<qint64>() );
+        result.setUserId( map.value("userId").value<qint32>() );
+        result.setMsgIdInputBotInlineMessageID( InputBotInlineMessageID::fromMap(map.value("msgIdInputBotInlineMessageID").toMap()) );
+        result.setData( map.value("data").value<QByteArray>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "Update::typeUpdateReadChannelOutbox") {
+        result.setClassType(typeUpdateReadChannelOutbox);
+        result.setChannelId( map.value("channelId").value<qint32>() );
+        result.setMaxId( map.value("maxId").value<qint32>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "Update::typeUpdateDraftMessage") {
+        result.setClassType(typeUpdateDraftMessage);
+        result.setPeer( Peer::fromMap(map.value("peer").toMap()) );
+        result.setDraft( DraftMessage::fromMap(map.value("draft").toMap()) );
         return result;
     }
     return result;
@@ -2123,7 +2703,7 @@ inline QDataStream &operator<<(QDataStream &stream, const Update &item) {
         stream << item.ptsCount();
         break;
     case Update::typeUpdateMessageID:
-        stream << item.id();
+        stream << item.idInt();
         stream << item.randomId();
         break;
     case Update::typeUpdateDeleteMessages:
@@ -2250,14 +2830,12 @@ inline QDataStream &operator<<(QDataStream &stream, const Update &item) {
         stream << item.ptsCount();
         break;
     case Update::typeUpdateChannelTooLong:
+        stream << item.flags();
         stream << item.channelId();
+        stream << item.pts();
         break;
     case Update::typeUpdateChannel:
         stream << item.channelId();
-        break;
-    case Update::typeUpdateChannelGroup:
-        stream << item.channelId();
-        stream << item.group();
         break;
     case Update::typeUpdateNewChannelMessage:
         stream << item.message();
@@ -2276,7 +2854,7 @@ inline QDataStream &operator<<(QDataStream &stream, const Update &item) {
         break;
     case Update::typeUpdateChannelMessageViews:
         stream << item.channelId();
-        stream << item.id();
+        stream << item.idInt();
         stream << item.views();
         break;
     case Update::typeUpdateChatAdmins:
@@ -2289,6 +2867,69 @@ inline QDataStream &operator<<(QDataStream &stream, const Update &item) {
         stream << item.userId();
         stream << item.isAdmin();
         stream << item.version();
+        break;
+    case Update::typeUpdateNewStickerSet:
+        stream << item.stickerset();
+        break;
+    case Update::typeUpdateStickerSetsOrder:
+        stream << item.order();
+        break;
+    case Update::typeUpdateStickerSets:
+        
+        break;
+    case Update::typeUpdateSavedGifs:
+        
+        break;
+    case Update::typeUpdateBotInlineQuery:
+        stream << item.flags();
+        stream << item.queryId();
+        stream << item.userId();
+        stream << item.query();
+        stream << item.geo();
+        stream << item.offset();
+        break;
+    case Update::typeUpdateBotInlineSend:
+        stream << item.flags();
+        stream << item.userId();
+        stream << item.query();
+        stream << item.geo();
+        stream << item.idString();
+        stream << item.msgIdInputBotInlineMessageID();
+        break;
+    case Update::typeUpdateEditChannelMessage:
+        stream << item.message();
+        stream << item.pts();
+        stream << item.ptsCount();
+        break;
+    case Update::typeUpdateChannelPinnedMessage:
+        stream << item.channelId();
+        stream << item.idInt();
+        break;
+    case Update::typeUpdateBotCallbackQuery:
+        stream << item.queryId();
+        stream << item.userId();
+        stream << item.peer();
+        stream << item.msgIdInt();
+        stream << item.data();
+        break;
+    case Update::typeUpdateEditMessage:
+        stream << item.message();
+        stream << item.pts();
+        stream << item.ptsCount();
+        break;
+    case Update::typeUpdateInlineBotCallbackQuery:
+        stream << item.queryId();
+        stream << item.userId();
+        stream << item.msgIdInputBotInlineMessageID();
+        stream << item.data();
+        break;
+    case Update::typeUpdateReadChannelOutbox:
+        stream << item.channelId();
+        stream << item.maxId();
+        break;
+    case Update::typeUpdateDraftMessage:
+        stream << item.peer();
+        stream << item.draft();
         break;
     }
     return stream;
@@ -2312,9 +2953,9 @@ inline QDataStream &operator>>(QDataStream &stream, Update &item) {
     }
         break;
     case Update::typeUpdateMessageID: {
-        qint32 m_id;
-        stream >> m_id;
-        item.setId(m_id);
+        qint32 m_id_int;
+        stream >> m_id_int;
+        item.setIdInt(m_id_int);
         qint64 m_random_id;
         stream >> m_random_id;
         item.setRandomId(m_random_id);
@@ -2612,24 +3253,21 @@ inline QDataStream &operator>>(QDataStream &stream, Update &item) {
     }
         break;
     case Update::typeUpdateChannelTooLong: {
+        qint32 m_flags;
+        stream >> m_flags;
+        item.setFlags(m_flags);
         qint32 m_channel_id;
         stream >> m_channel_id;
         item.setChannelId(m_channel_id);
+        qint32 m_pts;
+        stream >> m_pts;
+        item.setPts(m_pts);
     }
         break;
     case Update::typeUpdateChannel: {
         qint32 m_channel_id;
         stream >> m_channel_id;
         item.setChannelId(m_channel_id);
-    }
-        break;
-    case Update::typeUpdateChannelGroup: {
-        qint32 m_channel_id;
-        stream >> m_channel_id;
-        item.setChannelId(m_channel_id);
-        MessageGroup m_group;
-        stream >> m_group;
-        item.setGroup(m_group);
     }
         break;
     case Update::typeUpdateNewChannelMessage: {
@@ -2672,9 +3310,9 @@ inline QDataStream &operator>>(QDataStream &stream, Update &item) {
         qint32 m_channel_id;
         stream >> m_channel_id;
         item.setChannelId(m_channel_id);
-        qint32 m_id;
-        stream >> m_id;
-        item.setId(m_id);
+        qint32 m_id_int;
+        stream >> m_id_int;
+        item.setIdInt(m_id_int);
         qint32 m_views;
         stream >> m_views;
         item.setViews(m_views);
@@ -2705,6 +3343,152 @@ inline QDataStream &operator>>(QDataStream &stream, Update &item) {
         qint32 m_version;
         stream >> m_version;
         item.setVersion(m_version);
+    }
+        break;
+    case Update::typeUpdateNewStickerSet: {
+        MessagesStickerSet m_stickerset;
+        stream >> m_stickerset;
+        item.setStickerset(m_stickerset);
+    }
+        break;
+    case Update::typeUpdateStickerSetsOrder: {
+        QList<qint64> m_order;
+        stream >> m_order;
+        item.setOrder(m_order);
+    }
+        break;
+    case Update::typeUpdateStickerSets: {
+        
+    }
+        break;
+    case Update::typeUpdateSavedGifs: {
+        
+    }
+        break;
+    case Update::typeUpdateBotInlineQuery: {
+        qint32 m_flags;
+        stream >> m_flags;
+        item.setFlags(m_flags);
+        qint64 m_query_id;
+        stream >> m_query_id;
+        item.setQueryId(m_query_id);
+        qint32 m_user_id;
+        stream >> m_user_id;
+        item.setUserId(m_user_id);
+        QString m_query;
+        stream >> m_query;
+        item.setQuery(m_query);
+        GeoPoint m_geo;
+        stream >> m_geo;
+        item.setGeo(m_geo);
+        QString m_offset;
+        stream >> m_offset;
+        item.setOffset(m_offset);
+    }
+        break;
+    case Update::typeUpdateBotInlineSend: {
+        qint32 m_flags;
+        stream >> m_flags;
+        item.setFlags(m_flags);
+        qint32 m_user_id;
+        stream >> m_user_id;
+        item.setUserId(m_user_id);
+        QString m_query;
+        stream >> m_query;
+        item.setQuery(m_query);
+        GeoPoint m_geo;
+        stream >> m_geo;
+        item.setGeo(m_geo);
+        QString m_id_string;
+        stream >> m_id_string;
+        item.setIdString(m_id_string);
+        InputBotInlineMessageID m_msg_id_InputBotInlineMessageID;
+        stream >> m_msg_id_InputBotInlineMessageID;
+        item.setMsgIdInputBotInlineMessageID(m_msg_id_InputBotInlineMessageID);
+    }
+        break;
+    case Update::typeUpdateEditChannelMessage: {
+        Message m_message;
+        stream >> m_message;
+        item.setMessage(m_message);
+        qint32 m_pts;
+        stream >> m_pts;
+        item.setPts(m_pts);
+        qint32 m_pts_count;
+        stream >> m_pts_count;
+        item.setPtsCount(m_pts_count);
+    }
+        break;
+    case Update::typeUpdateChannelPinnedMessage: {
+        qint32 m_channel_id;
+        stream >> m_channel_id;
+        item.setChannelId(m_channel_id);
+        qint32 m_id_int;
+        stream >> m_id_int;
+        item.setIdInt(m_id_int);
+    }
+        break;
+    case Update::typeUpdateBotCallbackQuery: {
+        qint64 m_query_id;
+        stream >> m_query_id;
+        item.setQueryId(m_query_id);
+        qint32 m_user_id;
+        stream >> m_user_id;
+        item.setUserId(m_user_id);
+        Peer m_peer;
+        stream >> m_peer;
+        item.setPeer(m_peer);
+        qint32 m_msg_id_int;
+        stream >> m_msg_id_int;
+        item.setMsgIdInt(m_msg_id_int);
+        QByteArray m_data;
+        stream >> m_data;
+        item.setData(m_data);
+    }
+        break;
+    case Update::typeUpdateEditMessage: {
+        Message m_message;
+        stream >> m_message;
+        item.setMessage(m_message);
+        qint32 m_pts;
+        stream >> m_pts;
+        item.setPts(m_pts);
+        qint32 m_pts_count;
+        stream >> m_pts_count;
+        item.setPtsCount(m_pts_count);
+    }
+        break;
+    case Update::typeUpdateInlineBotCallbackQuery: {
+        qint64 m_query_id;
+        stream >> m_query_id;
+        item.setQueryId(m_query_id);
+        qint32 m_user_id;
+        stream >> m_user_id;
+        item.setUserId(m_user_id);
+        InputBotInlineMessageID m_msg_id_InputBotInlineMessageID;
+        stream >> m_msg_id_InputBotInlineMessageID;
+        item.setMsgIdInputBotInlineMessageID(m_msg_id_InputBotInlineMessageID);
+        QByteArray m_data;
+        stream >> m_data;
+        item.setData(m_data);
+    }
+        break;
+    case Update::typeUpdateReadChannelOutbox: {
+        qint32 m_channel_id;
+        stream >> m_channel_id;
+        item.setChannelId(m_channel_id);
+        qint32 m_max_id;
+        stream >> m_max_id;
+        item.setMaxId(m_max_id);
+    }
+        break;
+    case Update::typeUpdateDraftMessage: {
+        Peer m_peer;
+        stream >> m_peer;
+        item.setPeer(m_peer);
+        DraftMessage m_draft;
+        stream >> m_draft;
+        item.setDraft(m_draft);
     }
         break;
     }

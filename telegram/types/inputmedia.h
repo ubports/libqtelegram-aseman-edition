@@ -18,13 +18,10 @@
 #include <QString>
 #include <QList>
 #include "documentattribute.h"
-#include <QtGlobal>
 #include "inputfile.h"
 #include "inputgeopoint.h"
-#include "inputaudio.h"
 #include "inputdocument.h"
 #include "inputphoto.h"
-#include "inputvideo.h"
 
 class LIBQTELEGRAMSHARED_EXPORT InputMedia : public TelegramTypeObject
 {
@@ -35,15 +32,11 @@ public:
         typeInputMediaPhoto = 0xe9bfb4f3,
         typeInputMediaGeoPoint = 0xf9c44144,
         typeInputMediaContact = 0xa6e45987,
-        typeInputMediaUploadedVideo = 0x82713fdf,
-        typeInputMediaUploadedThumbVideo = 0x7780ddf9,
-        typeInputMediaVideo = 0x936a4ebd,
-        typeInputMediaUploadedAudio = 0x4e498cab,
-        typeInputMediaAudio = 0x89938781,
-        typeInputMediaUploadedDocument = 0xffe76b78,
-        typeInputMediaUploadedThumbDocument = 0x41481486,
-        typeInputMediaDocument = 0xd184e841,
-        typeInputMediaVenue = 0x2827a81a
+        typeInputMediaUploadedDocument = 0x1d89306d,
+        typeInputMediaUploadedThumbDocument = 0xad613491,
+        typeInputMediaDocument = 0x1a77f29c,
+        typeInputMediaVenue = 0x2827a81a,
+        typeInputMediaGifExternal = 0x4843b0fd
     };
 
     InputMedia(InputMediaClassType classType = typeInputMediaEmpty, InboundPkt *in = 0);
@@ -60,9 +53,6 @@ public:
     void setCaption(const QString &caption);
     QString caption() const;
 
-    void setDuration(qint32 duration);
-    qint32 duration() const;
-
     void setFile(const InputFile &file);
     InputFile file() const;
 
@@ -72,20 +62,11 @@ public:
     void setGeoPoint(const InputGeoPoint &geoPoint);
     InputGeoPoint geoPoint() const;
 
-    void setH(qint32 h);
-    qint32 h() const;
-
-    void setIdInputAudio(const InputAudio &idInputAudio);
-    InputAudio idInputAudio() const;
-
     void setIdInputDocument(const InputDocument &idInputDocument);
     InputDocument idInputDocument() const;
 
     void setIdInputPhoto(const InputPhoto &idInputPhoto);
     InputPhoto idInputPhoto() const;
-
-    void setIdInputVideo(const InputVideo &idInputVideo);
-    InputVideo idInputVideo() const;
 
     void setLastName(const QString &lastName);
     QString lastName() const;
@@ -99,17 +80,20 @@ public:
     void setProvider(const QString &provider);
     QString provider() const;
 
+    void setQ(const QString &q);
+    QString q() const;
+
     void setThumb(const InputFile &thumb);
     InputFile thumb() const;
 
     void setTitle(const QString &title);
     QString title() const;
 
+    void setUrl(const QString &url);
+    QString url() const;
+
     void setVenueId(const QString &venueId);
     QString venueId() const;
-
-    void setW(qint32 w);
-    qint32 w() const;
 
     void setClassType(InputMediaClassType classType);
     InputMediaClassType classType() const;
@@ -131,23 +115,20 @@ private:
     QString m_address;
     QList<DocumentAttribute> m_attributes;
     QString m_caption;
-    qint32 m_duration;
     InputFile m_file;
     QString m_firstName;
     InputGeoPoint m_geoPoint;
-    qint32 m_h;
-    InputAudio m_idInputAudio;
     InputDocument m_idInputDocument;
     InputPhoto m_idInputPhoto;
-    InputVideo m_idInputVideo;
     QString m_lastName;
     QString m_mimeType;
     QString m_phoneNumber;
     QString m_provider;
+    QString m_q;
     InputFile m_thumb;
     QString m_title;
+    QString m_url;
     QString m_venueId;
-    qint32 m_w;
     InputMediaClassType m_classType;
 };
 
@@ -157,18 +138,12 @@ QDataStream LIBQTELEGRAMSHARED_EXPORT &operator<<(QDataStream &stream, const Inp
 QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, InputMedia &item);
 
 inline InputMedia::InputMedia(InputMediaClassType classType, InboundPkt *in) :
-    m_duration(0),
-    m_h(0),
-    m_w(0),
     m_classType(classType)
 {
     if(in) fetch(in);
 }
 
 inline InputMedia::InputMedia(InboundPkt *in) :
-    m_duration(0),
-    m_h(0),
-    m_w(0),
     m_classType(typeInputMediaEmpty)
 {
     fetch(in);
@@ -176,9 +151,6 @@ inline InputMedia::InputMedia(InboundPkt *in) :
 
 inline InputMedia::InputMedia(const Null &null) :
     TelegramTypeObject(null),
-    m_duration(0),
-    m_h(0),
-    m_w(0),
     m_classType(typeInputMediaEmpty)
 {
 }
@@ -210,14 +182,6 @@ inline QString InputMedia::caption() const {
     return m_caption;
 }
 
-inline void InputMedia::setDuration(qint32 duration) {
-    m_duration = duration;
-}
-
-inline qint32 InputMedia::duration() const {
-    return m_duration;
-}
-
 inline void InputMedia::setFile(const InputFile &file) {
     m_file = file;
 }
@@ -242,22 +206,6 @@ inline InputGeoPoint InputMedia::geoPoint() const {
     return m_geoPoint;
 }
 
-inline void InputMedia::setH(qint32 h) {
-    m_h = h;
-}
-
-inline qint32 InputMedia::h() const {
-    return m_h;
-}
-
-inline void InputMedia::setIdInputAudio(const InputAudio &idInputAudio) {
-    m_idInputAudio = idInputAudio;
-}
-
-inline InputAudio InputMedia::idInputAudio() const {
-    return m_idInputAudio;
-}
-
 inline void InputMedia::setIdInputDocument(const InputDocument &idInputDocument) {
     m_idInputDocument = idInputDocument;
 }
@@ -272,14 +220,6 @@ inline void InputMedia::setIdInputPhoto(const InputPhoto &idInputPhoto) {
 
 inline InputPhoto InputMedia::idInputPhoto() const {
     return m_idInputPhoto;
-}
-
-inline void InputMedia::setIdInputVideo(const InputVideo &idInputVideo) {
-    m_idInputVideo = idInputVideo;
-}
-
-inline InputVideo InputMedia::idInputVideo() const {
-    return m_idInputVideo;
 }
 
 inline void InputMedia::setLastName(const QString &lastName) {
@@ -314,6 +254,14 @@ inline QString InputMedia::provider() const {
     return m_provider;
 }
 
+inline void InputMedia::setQ(const QString &q) {
+    m_q = q;
+}
+
+inline QString InputMedia::q() const {
+    return m_q;
+}
+
 inline void InputMedia::setThumb(const InputFile &thumb) {
     m_thumb = thumb;
 }
@@ -330,6 +278,14 @@ inline QString InputMedia::title() const {
     return m_title;
 }
 
+inline void InputMedia::setUrl(const QString &url) {
+    m_url = url;
+}
+
+inline QString InputMedia::url() const {
+    return m_url;
+}
+
 inline void InputMedia::setVenueId(const QString &venueId) {
     m_venueId = venueId;
 }
@@ -338,36 +294,25 @@ inline QString InputMedia::venueId() const {
     return m_venueId;
 }
 
-inline void InputMedia::setW(qint32 w) {
-    m_w = w;
-}
-
-inline qint32 InputMedia::w() const {
-    return m_w;
-}
-
 inline bool InputMedia::operator ==(const InputMedia &b) const {
     return m_classType == b.m_classType &&
            m_address == b.m_address &&
            m_attributes == b.m_attributes &&
            m_caption == b.m_caption &&
-           m_duration == b.m_duration &&
            m_file == b.m_file &&
            m_firstName == b.m_firstName &&
            m_geoPoint == b.m_geoPoint &&
-           m_h == b.m_h &&
-           m_idInputAudio == b.m_idInputAudio &&
            m_idInputDocument == b.m_idInputDocument &&
            m_idInputPhoto == b.m_idInputPhoto &&
-           m_idInputVideo == b.m_idInputVideo &&
            m_lastName == b.m_lastName &&
            m_mimeType == b.m_mimeType &&
            m_phoneNumber == b.m_phoneNumber &&
            m_provider == b.m_provider &&
+           m_q == b.m_q &&
            m_thumb == b.m_thumb &&
            m_title == b.m_title &&
-           m_venueId == b.m_venueId &&
-           m_w == b.m_w;
+           m_url == b.m_url &&
+           m_venueId == b.m_venueId;
 }
 
 inline void InputMedia::setClassType(InputMedia::InputMediaClassType classType) {
@@ -420,55 +365,6 @@ inline bool InputMedia::fetch(InboundPkt *in) {
     }
         break;
     
-    case typeInputMediaUploadedVideo: {
-        m_file.fetch(in);
-        m_duration = in->fetchInt();
-        m_w = in->fetchInt();
-        m_h = in->fetchInt();
-        m_mimeType = in->fetchQString();
-        m_caption = in->fetchQString();
-        m_classType = static_cast<InputMediaClassType>(x);
-        return true;
-    }
-        break;
-    
-    case typeInputMediaUploadedThumbVideo: {
-        m_file.fetch(in);
-        m_thumb.fetch(in);
-        m_duration = in->fetchInt();
-        m_w = in->fetchInt();
-        m_h = in->fetchInt();
-        m_mimeType = in->fetchQString();
-        m_caption = in->fetchQString();
-        m_classType = static_cast<InputMediaClassType>(x);
-        return true;
-    }
-        break;
-    
-    case typeInputMediaVideo: {
-        m_idInputVideo.fetch(in);
-        m_caption = in->fetchQString();
-        m_classType = static_cast<InputMediaClassType>(x);
-        return true;
-    }
-        break;
-    
-    case typeInputMediaUploadedAudio: {
-        m_file.fetch(in);
-        m_duration = in->fetchInt();
-        m_mimeType = in->fetchQString();
-        m_classType = static_cast<InputMediaClassType>(x);
-        return true;
-    }
-        break;
-    
-    case typeInputMediaAudio: {
-        m_idInputAudio.fetch(in);
-        m_classType = static_cast<InputMediaClassType>(x);
-        return true;
-    }
-        break;
-    
     case typeInputMediaUploadedDocument: {
         m_file.fetch(in);
         m_mimeType = in->fetchQString();
@@ -480,6 +376,7 @@ inline bool InputMedia::fetch(InboundPkt *in) {
             type.fetch(in);
             m_attributes.append(type);
         }
+        m_caption = in->fetchQString();
         m_classType = static_cast<InputMediaClassType>(x);
         return true;
     }
@@ -497,6 +394,7 @@ inline bool InputMedia::fetch(InboundPkt *in) {
             type.fetch(in);
             m_attributes.append(type);
         }
+        m_caption = in->fetchQString();
         m_classType = static_cast<InputMediaClassType>(x);
         return true;
     }
@@ -504,6 +402,7 @@ inline bool InputMedia::fetch(InboundPkt *in) {
     
     case typeInputMediaDocument: {
         m_idInputDocument.fetch(in);
+        m_caption = in->fetchQString();
         m_classType = static_cast<InputMediaClassType>(x);
         return true;
     }
@@ -515,6 +414,14 @@ inline bool InputMedia::fetch(InboundPkt *in) {
         m_address = in->fetchQString();
         m_provider = in->fetchQString();
         m_venueId = in->fetchQString();
+        m_classType = static_cast<InputMediaClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeInputMediaGifExternal: {
+        m_url = in->fetchQString();
+        m_q = in->fetchQString();
         m_classType = static_cast<InputMediaClassType>(x);
         return true;
     }
@@ -562,50 +469,6 @@ inline bool InputMedia::push(OutboundPkt *out) const {
     }
         break;
     
-    case typeInputMediaUploadedVideo: {
-        m_file.push(out);
-        out->appendInt(m_duration);
-        out->appendInt(m_w);
-        out->appendInt(m_h);
-        out->appendQString(m_mimeType);
-        out->appendQString(m_caption);
-        return true;
-    }
-        break;
-    
-    case typeInputMediaUploadedThumbVideo: {
-        m_file.push(out);
-        m_thumb.push(out);
-        out->appendInt(m_duration);
-        out->appendInt(m_w);
-        out->appendInt(m_h);
-        out->appendQString(m_mimeType);
-        out->appendQString(m_caption);
-        return true;
-    }
-        break;
-    
-    case typeInputMediaVideo: {
-        m_idInputVideo.push(out);
-        out->appendQString(m_caption);
-        return true;
-    }
-        break;
-    
-    case typeInputMediaUploadedAudio: {
-        m_file.push(out);
-        out->appendInt(m_duration);
-        out->appendQString(m_mimeType);
-        return true;
-    }
-        break;
-    
-    case typeInputMediaAudio: {
-        m_idInputAudio.push(out);
-        return true;
-    }
-        break;
-    
     case typeInputMediaUploadedDocument: {
         m_file.push(out);
         out->appendQString(m_mimeType);
@@ -614,6 +477,7 @@ inline bool InputMedia::push(OutboundPkt *out) const {
         for (qint32 i = 0; i < m_attributes.count(); i++) {
             m_attributes[i].push(out);
         }
+        out->appendQString(m_caption);
         return true;
     }
         break;
@@ -627,12 +491,14 @@ inline bool InputMedia::push(OutboundPkt *out) const {
         for (qint32 i = 0; i < m_attributes.count(); i++) {
             m_attributes[i].push(out);
         }
+        out->appendQString(m_caption);
         return true;
     }
         break;
     
     case typeInputMediaDocument: {
         m_idInputDocument.push(out);
+        out->appendQString(m_caption);
         return true;
     }
         break;
@@ -643,6 +509,13 @@ inline bool InputMedia::push(OutboundPkt *out) const {
         out->appendQString(m_address);
         out->appendQString(m_provider);
         out->appendQString(m_venueId);
+        return true;
+    }
+        break;
+    
+    case typeInputMediaGifExternal: {
+        out->appendQString(m_url);
+        out->appendQString(m_q);
         return true;
     }
         break;
@@ -693,55 +566,6 @@ inline QMap<QString, QVariant> InputMedia::toMap() const {
     }
         break;
     
-    case typeInputMediaUploadedVideo: {
-        result["classType"] = "InputMedia::typeInputMediaUploadedVideo";
-        result["file"] = m_file.toMap();
-        result["duration"] = QVariant::fromValue<qint32>(duration());
-        result["w"] = QVariant::fromValue<qint32>(w());
-        result["h"] = QVariant::fromValue<qint32>(h());
-        result["mimeType"] = QVariant::fromValue<QString>(mimeType());
-        result["caption"] = QVariant::fromValue<QString>(caption());
-        return result;
-    }
-        break;
-    
-    case typeInputMediaUploadedThumbVideo: {
-        result["classType"] = "InputMedia::typeInputMediaUploadedThumbVideo";
-        result["file"] = m_file.toMap();
-        result["thumb"] = m_thumb.toMap();
-        result["duration"] = QVariant::fromValue<qint32>(duration());
-        result["w"] = QVariant::fromValue<qint32>(w());
-        result["h"] = QVariant::fromValue<qint32>(h());
-        result["mimeType"] = QVariant::fromValue<QString>(mimeType());
-        result["caption"] = QVariant::fromValue<QString>(caption());
-        return result;
-    }
-        break;
-    
-    case typeInputMediaVideo: {
-        result["classType"] = "InputMedia::typeInputMediaVideo";
-        result["idInputVideo"] = m_idInputVideo.toMap();
-        result["caption"] = QVariant::fromValue<QString>(caption());
-        return result;
-    }
-        break;
-    
-    case typeInputMediaUploadedAudio: {
-        result["classType"] = "InputMedia::typeInputMediaUploadedAudio";
-        result["file"] = m_file.toMap();
-        result["duration"] = QVariant::fromValue<qint32>(duration());
-        result["mimeType"] = QVariant::fromValue<QString>(mimeType());
-        return result;
-    }
-        break;
-    
-    case typeInputMediaAudio: {
-        result["classType"] = "InputMedia::typeInputMediaAudio";
-        result["idInputAudio"] = m_idInputAudio.toMap();
-        return result;
-    }
-        break;
-    
     case typeInputMediaUploadedDocument: {
         result["classType"] = "InputMedia::typeInputMediaUploadedDocument";
         result["file"] = m_file.toMap();
@@ -750,6 +574,7 @@ inline QMap<QString, QVariant> InputMedia::toMap() const {
         Q_FOREACH(const DocumentAttribute &m__type, m_attributes)
             _attributes << m__type.toMap();
         result["attributes"] = _attributes;
+        result["caption"] = QVariant::fromValue<QString>(caption());
         return result;
     }
         break;
@@ -763,6 +588,7 @@ inline QMap<QString, QVariant> InputMedia::toMap() const {
         Q_FOREACH(const DocumentAttribute &m__type, m_attributes)
             _attributes << m__type.toMap();
         result["attributes"] = _attributes;
+        result["caption"] = QVariant::fromValue<QString>(caption());
         return result;
     }
         break;
@@ -770,6 +596,7 @@ inline QMap<QString, QVariant> InputMedia::toMap() const {
     case typeInputMediaDocument: {
         result["classType"] = "InputMedia::typeInputMediaDocument";
         result["idInputDocument"] = m_idInputDocument.toMap();
+        result["caption"] = QVariant::fromValue<QString>(caption());
         return result;
     }
         break;
@@ -781,6 +608,14 @@ inline QMap<QString, QVariant> InputMedia::toMap() const {
         result["address"] = QVariant::fromValue<QString>(address());
         result["provider"] = QVariant::fromValue<QString>(provider());
         result["venueId"] = QVariant::fromValue<QString>(venueId());
+        return result;
+    }
+        break;
+    
+    case typeInputMediaGifExternal: {
+        result["classType"] = "InputMedia::typeInputMediaGifExternal";
+        result["url"] = QVariant::fromValue<QString>(url());
+        result["q"] = QVariant::fromValue<QString>(q());
         return result;
     }
         break;
@@ -820,45 +655,6 @@ inline InputMedia InputMedia::fromMap(const QMap<QString, QVariant> &map) {
         result.setLastName( map.value("lastName").value<QString>() );
         return result;
     }
-    if(map.value("classType").toString() == "InputMedia::typeInputMediaUploadedVideo") {
-        result.setClassType(typeInputMediaUploadedVideo);
-        result.setFile( InputFile::fromMap(map.value("file").toMap()) );
-        result.setDuration( map.value("duration").value<qint32>() );
-        result.setW( map.value("w").value<qint32>() );
-        result.setH( map.value("h").value<qint32>() );
-        result.setMimeType( map.value("mimeType").value<QString>() );
-        result.setCaption( map.value("caption").value<QString>() );
-        return result;
-    }
-    if(map.value("classType").toString() == "InputMedia::typeInputMediaUploadedThumbVideo") {
-        result.setClassType(typeInputMediaUploadedThumbVideo);
-        result.setFile( InputFile::fromMap(map.value("file").toMap()) );
-        result.setThumb( InputFile::fromMap(map.value("thumb").toMap()) );
-        result.setDuration( map.value("duration").value<qint32>() );
-        result.setW( map.value("w").value<qint32>() );
-        result.setH( map.value("h").value<qint32>() );
-        result.setMimeType( map.value("mimeType").value<QString>() );
-        result.setCaption( map.value("caption").value<QString>() );
-        return result;
-    }
-    if(map.value("classType").toString() == "InputMedia::typeInputMediaVideo") {
-        result.setClassType(typeInputMediaVideo);
-        result.setIdInputVideo( InputVideo::fromMap(map.value("idInputVideo").toMap()) );
-        result.setCaption( map.value("caption").value<QString>() );
-        return result;
-    }
-    if(map.value("classType").toString() == "InputMedia::typeInputMediaUploadedAudio") {
-        result.setClassType(typeInputMediaUploadedAudio);
-        result.setFile( InputFile::fromMap(map.value("file").toMap()) );
-        result.setDuration( map.value("duration").value<qint32>() );
-        result.setMimeType( map.value("mimeType").value<QString>() );
-        return result;
-    }
-    if(map.value("classType").toString() == "InputMedia::typeInputMediaAudio") {
-        result.setClassType(typeInputMediaAudio);
-        result.setIdInputAudio( InputAudio::fromMap(map.value("idInputAudio").toMap()) );
-        return result;
-    }
     if(map.value("classType").toString() == "InputMedia::typeInputMediaUploadedDocument") {
         result.setClassType(typeInputMediaUploadedDocument);
         result.setFile( InputFile::fromMap(map.value("file").toMap()) );
@@ -868,6 +664,7 @@ inline InputMedia InputMedia::fromMap(const QMap<QString, QVariant> &map) {
         Q_FOREACH(const QVariant &var, map_attributes)
             _attributes << DocumentAttribute::fromMap(var.toMap());
         result.setAttributes(_attributes);
+        result.setCaption( map.value("caption").value<QString>() );
         return result;
     }
     if(map.value("classType").toString() == "InputMedia::typeInputMediaUploadedThumbDocument") {
@@ -880,11 +677,13 @@ inline InputMedia InputMedia::fromMap(const QMap<QString, QVariant> &map) {
         Q_FOREACH(const QVariant &var, map_attributes)
             _attributes << DocumentAttribute::fromMap(var.toMap());
         result.setAttributes(_attributes);
+        result.setCaption( map.value("caption").value<QString>() );
         return result;
     }
     if(map.value("classType").toString() == "InputMedia::typeInputMediaDocument") {
         result.setClassType(typeInputMediaDocument);
         result.setIdInputDocument( InputDocument::fromMap(map.value("idInputDocument").toMap()) );
+        result.setCaption( map.value("caption").value<QString>() );
         return result;
     }
     if(map.value("classType").toString() == "InputMedia::typeInputMediaVenue") {
@@ -894,6 +693,12 @@ inline InputMedia InputMedia::fromMap(const QMap<QString, QVariant> &map) {
         result.setAddress( map.value("address").value<QString>() );
         result.setProvider( map.value("provider").value<QString>() );
         result.setVenueId( map.value("venueId").value<QString>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "InputMedia::typeInputMediaGifExternal") {
+        result.setClassType(typeInputMediaGifExternal);
+        result.setUrl( map.value("url").value<QString>() );
+        result.setQ( map.value("q").value<QString>() );
         return result;
     }
     return result;
@@ -928,48 +733,22 @@ inline QDataStream &operator<<(QDataStream &stream, const InputMedia &item) {
         stream << item.firstName();
         stream << item.lastName();
         break;
-    case InputMedia::typeInputMediaUploadedVideo:
-        stream << item.file();
-        stream << item.duration();
-        stream << item.w();
-        stream << item.h();
-        stream << item.mimeType();
-        stream << item.caption();
-        break;
-    case InputMedia::typeInputMediaUploadedThumbVideo:
-        stream << item.file();
-        stream << item.thumb();
-        stream << item.duration();
-        stream << item.w();
-        stream << item.h();
-        stream << item.mimeType();
-        stream << item.caption();
-        break;
-    case InputMedia::typeInputMediaVideo:
-        stream << item.idInputVideo();
-        stream << item.caption();
-        break;
-    case InputMedia::typeInputMediaUploadedAudio:
-        stream << item.file();
-        stream << item.duration();
-        stream << item.mimeType();
-        break;
-    case InputMedia::typeInputMediaAudio:
-        stream << item.idInputAudio();
-        break;
     case InputMedia::typeInputMediaUploadedDocument:
         stream << item.file();
         stream << item.mimeType();
         stream << item.attributes();
+        stream << item.caption();
         break;
     case InputMedia::typeInputMediaUploadedThumbDocument:
         stream << item.file();
         stream << item.thumb();
         stream << item.mimeType();
         stream << item.attributes();
+        stream << item.caption();
         break;
     case InputMedia::typeInputMediaDocument:
         stream << item.idInputDocument();
+        stream << item.caption();
         break;
     case InputMedia::typeInputMediaVenue:
         stream << item.geoPoint();
@@ -977,6 +756,10 @@ inline QDataStream &operator<<(QDataStream &stream, const InputMedia &item) {
         stream << item.address();
         stream << item.provider();
         stream << item.venueId();
+        break;
+    case InputMedia::typeInputMediaGifExternal:
+        stream << item.url();
+        stream << item.q();
         break;
     }
     return stream;
@@ -1027,78 +810,6 @@ inline QDataStream &operator>>(QDataStream &stream, InputMedia &item) {
         item.setLastName(m_last_name);
     }
         break;
-    case InputMedia::typeInputMediaUploadedVideo: {
-        InputFile m_file;
-        stream >> m_file;
-        item.setFile(m_file);
-        qint32 m_duration;
-        stream >> m_duration;
-        item.setDuration(m_duration);
-        qint32 m_w;
-        stream >> m_w;
-        item.setW(m_w);
-        qint32 m_h;
-        stream >> m_h;
-        item.setH(m_h);
-        QString m_mime_type;
-        stream >> m_mime_type;
-        item.setMimeType(m_mime_type);
-        QString m_caption;
-        stream >> m_caption;
-        item.setCaption(m_caption);
-    }
-        break;
-    case InputMedia::typeInputMediaUploadedThumbVideo: {
-        InputFile m_file;
-        stream >> m_file;
-        item.setFile(m_file);
-        InputFile m_thumb;
-        stream >> m_thumb;
-        item.setThumb(m_thumb);
-        qint32 m_duration;
-        stream >> m_duration;
-        item.setDuration(m_duration);
-        qint32 m_w;
-        stream >> m_w;
-        item.setW(m_w);
-        qint32 m_h;
-        stream >> m_h;
-        item.setH(m_h);
-        QString m_mime_type;
-        stream >> m_mime_type;
-        item.setMimeType(m_mime_type);
-        QString m_caption;
-        stream >> m_caption;
-        item.setCaption(m_caption);
-    }
-        break;
-    case InputMedia::typeInputMediaVideo: {
-        InputVideo m_id_InputVideo;
-        stream >> m_id_InputVideo;
-        item.setIdInputVideo(m_id_InputVideo);
-        QString m_caption;
-        stream >> m_caption;
-        item.setCaption(m_caption);
-    }
-        break;
-    case InputMedia::typeInputMediaUploadedAudio: {
-        InputFile m_file;
-        stream >> m_file;
-        item.setFile(m_file);
-        qint32 m_duration;
-        stream >> m_duration;
-        item.setDuration(m_duration);
-        QString m_mime_type;
-        stream >> m_mime_type;
-        item.setMimeType(m_mime_type);
-    }
-        break;
-    case InputMedia::typeInputMediaAudio: {
-        InputAudio m_id_InputAudio;
-        stream >> m_id_InputAudio;
-        item.setIdInputAudio(m_id_InputAudio);
-    }
-        break;
     case InputMedia::typeInputMediaUploadedDocument: {
         InputFile m_file;
         stream >> m_file;
@@ -1109,6 +820,9 @@ inline QDataStream &operator>>(QDataStream &stream, InputMedia &item) {
         QList<DocumentAttribute> m_attributes;
         stream >> m_attributes;
         item.setAttributes(m_attributes);
+        QString m_caption;
+        stream >> m_caption;
+        item.setCaption(m_caption);
     }
         break;
     case InputMedia::typeInputMediaUploadedThumbDocument: {
@@ -1124,12 +838,18 @@ inline QDataStream &operator>>(QDataStream &stream, InputMedia &item) {
         QList<DocumentAttribute> m_attributes;
         stream >> m_attributes;
         item.setAttributes(m_attributes);
+        QString m_caption;
+        stream >> m_caption;
+        item.setCaption(m_caption);
     }
         break;
     case InputMedia::typeInputMediaDocument: {
         InputDocument m_id_InputDocument;
         stream >> m_id_InputDocument;
         item.setIdInputDocument(m_id_InputDocument);
+        QString m_caption;
+        stream >> m_caption;
+        item.setCaption(m_caption);
     }
         break;
     case InputMedia::typeInputMediaVenue: {
@@ -1148,6 +868,15 @@ inline QDataStream &operator>>(QDataStream &stream, InputMedia &item) {
         QString m_venue_id;
         stream >> m_venue_id;
         item.setVenueId(m_venue_id);
+    }
+        break;
+    case InputMedia::typeInputMediaGifExternal: {
+        QString m_url;
+        stream >> m_url;
+        item.setUrl(m_url);
+        QString m_q;
+        stream >> m_q;
+        item.setQ(m_q);
     }
         break;
     }

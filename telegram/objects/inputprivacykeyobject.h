@@ -19,7 +19,8 @@ class LIBQTELEGRAMSHARED_EXPORT InputPrivacyKeyObject : public TelegramTypeQObje
 
 public:
     enum InputPrivacyKeyClassType {
-        TypeInputPrivacyKeyStatusTimestamp
+        TypeInputPrivacyKeyStatusTimestamp,
+        TypeInputPrivacyKeyChatInvite
     };
 
     InputPrivacyKeyObject(const InputPrivacyKey &core, QObject *parent = 0);
@@ -78,6 +79,9 @@ inline void InputPrivacyKeyObject::setClassType(quint32 classType) {
     case TypeInputPrivacyKeyStatusTimestamp:
         result = InputPrivacyKey::typeInputPrivacyKeyStatusTimestamp;
         break;
+    case TypeInputPrivacyKeyChatInvite:
+        result = InputPrivacyKey::typeInputPrivacyKeyChatInvite;
+        break;
     default:
         result = InputPrivacyKey::typeInputPrivacyKeyStatusTimestamp;
         break;
@@ -94,6 +98,9 @@ inline quint32 InputPrivacyKeyObject::classType() const {
     switch(static_cast<qint64>(m_core.classType())) {
     case InputPrivacyKey::typeInputPrivacyKeyStatusTimestamp:
         result = TypeInputPrivacyKeyStatusTimestamp;
+        break;
+    case InputPrivacyKey::typeInputPrivacyKeyChatInvite:
+        result = TypeInputPrivacyKeyChatInvite;
         break;
     default:
         result = TypeInputPrivacyKeyStatusTimestamp;

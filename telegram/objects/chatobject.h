@@ -23,6 +23,7 @@ class LIBQTELEGRAMSHARED_EXPORT ChatObject : public TelegramTypeQObject
     Q_PROPERTY(bool creator READ creator WRITE setCreator NOTIFY creatorChanged)
     Q_PROPERTY(qint32 date READ date WRITE setDate NOTIFY dateChanged)
     Q_PROPERTY(bool deactivated READ deactivated WRITE setDeactivated NOTIFY deactivatedChanged)
+    Q_PROPERTY(bool democracy READ democracy WRITE setDemocracy NOTIFY democracyChanged)
     Q_PROPERTY(bool editor READ editor WRITE setEditor NOTIFY editorChanged)
     Q_PROPERTY(qint32 flags READ flags WRITE setFlags NOTIFY flagsChanged)
     Q_PROPERTY(qint32 id READ id WRITE setId NOTIFY idChanged)
@@ -30,9 +31,13 @@ class LIBQTELEGRAMSHARED_EXPORT ChatObject : public TelegramTypeQObject
     Q_PROPERTY(bool left READ left WRITE setLeft NOTIFY leftChanged)
     Q_PROPERTY(bool megagroup READ megagroup WRITE setMegagroup NOTIFY megagroupChanged)
     Q_PROPERTY(InputChannelObject* migratedTo READ migratedTo WRITE setMigratedTo NOTIFY migratedToChanged)
+    Q_PROPERTY(bool min READ min WRITE setMin NOTIFY minChanged)
     Q_PROPERTY(bool moderator READ moderator WRITE setModerator NOTIFY moderatorChanged)
     Q_PROPERTY(qint32 participantsCount READ participantsCount WRITE setParticipantsCount NOTIFY participantsCountChanged)
     Q_PROPERTY(ChatPhotoObject* photo READ photo WRITE setPhoto NOTIFY photoChanged)
+    Q_PROPERTY(bool restricted READ restricted WRITE setRestricted NOTIFY restrictedChanged)
+    Q_PROPERTY(QString restrictionReason READ restrictionReason WRITE setRestrictionReason NOTIFY restrictionReasonChanged)
+    Q_PROPERTY(bool signatures READ signatures WRITE setSignatures NOTIFY signaturesChanged)
     Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY titleChanged)
     Q_PROPERTY(QString username READ username WRITE setUsername NOTIFY usernameChanged)
     Q_PROPERTY(bool verified READ verified WRITE setVerified NOTIFY verifiedChanged)
@@ -74,6 +79,9 @@ public:
     void setDeactivated(bool deactivated);
     bool deactivated() const;
 
+    void setDemocracy(bool democracy);
+    bool democracy() const;
+
     void setEditor(bool editor);
     bool editor() const;
 
@@ -95,6 +103,9 @@ public:
     void setMigratedTo(InputChannelObject* migratedTo);
     InputChannelObject* migratedTo() const;
 
+    void setMin(bool min);
+    bool min() const;
+
     void setModerator(bool moderator);
     bool moderator() const;
 
@@ -103,6 +114,15 @@ public:
 
     void setPhoto(ChatPhotoObject* photo);
     ChatPhotoObject* photo() const;
+
+    void setRestricted(bool restricted);
+    bool restricted() const;
+
+    void setRestrictionReason(const QString &restrictionReason);
+    QString restrictionReason() const;
+
+    void setSignatures(bool signatures);
+    bool signatures() const;
 
     void setTitle(const QString &title);
     QString title() const;
@@ -135,6 +155,7 @@ Q_SIGNALS:
     void creatorChanged();
     void dateChanged();
     void deactivatedChanged();
+    void democracyChanged();
     void editorChanged();
     void flagsChanged();
     void idChanged();
@@ -142,9 +163,13 @@ Q_SIGNALS:
     void leftChanged();
     void megagroupChanged();
     void migratedToChanged();
+    void minChanged();
     void moderatorChanged();
     void participantsCountChanged();
     void photoChanged();
+    void restrictedChanged();
+    void restrictionReasonChanged();
+    void signaturesChanged();
     void titleChanged();
     void usernameChanged();
     void verifiedChanged();
@@ -264,6 +289,17 @@ inline bool ChatObject::deactivated() const {
     return m_core.deactivated();
 }
 
+inline void ChatObject::setDemocracy(bool democracy) {
+    if(m_core.democracy() == democracy) return;
+    m_core.setDemocracy(democracy);
+    Q_EMIT democracyChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool ChatObject::democracy() const {
+    return m_core.democracy();
+}
+
 inline void ChatObject::setEditor(bool editor) {
     if(m_core.editor() == editor) return;
     m_core.setEditor(editor);
@@ -347,6 +383,17 @@ inline InputChannelObject*  ChatObject::migratedTo() const {
     return m_migratedTo;
 }
 
+inline void ChatObject::setMin(bool min) {
+    if(m_core.min() == min) return;
+    m_core.setMin(min);
+    Q_EMIT minChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool ChatObject::min() const {
+    return m_core.min();
+}
+
 inline void ChatObject::setModerator(bool moderator) {
     if(m_core.moderator() == moderator) return;
     m_core.setModerator(moderator);
@@ -384,6 +431,39 @@ inline void ChatObject::setPhoto(ChatPhotoObject* photo) {
 
 inline ChatPhotoObject*  ChatObject::photo() const {
     return m_photo;
+}
+
+inline void ChatObject::setRestricted(bool restricted) {
+    if(m_core.restricted() == restricted) return;
+    m_core.setRestricted(restricted);
+    Q_EMIT restrictedChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool ChatObject::restricted() const {
+    return m_core.restricted();
+}
+
+inline void ChatObject::setRestrictionReason(const QString &restrictionReason) {
+    if(m_core.restrictionReason() == restrictionReason) return;
+    m_core.setRestrictionReason(restrictionReason);
+    Q_EMIT restrictionReasonChanged();
+    Q_EMIT coreChanged();
+}
+
+inline QString ChatObject::restrictionReason() const {
+    return m_core.restrictionReason();
+}
+
+inline void ChatObject::setSignatures(bool signatures) {
+    if(m_core.signatures() == signatures) return;
+    m_core.setSignatures(signatures);
+    Q_EMIT signaturesChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool ChatObject::signatures() const {
+    return m_core.signatures();
 }
 
 inline void ChatObject::setTitle(const QString &title) {
@@ -443,6 +523,7 @@ inline ChatObject &ChatObject::operator =(const Chat &b) {
     Q_EMIT creatorChanged();
     Q_EMIT dateChanged();
     Q_EMIT deactivatedChanged();
+    Q_EMIT democracyChanged();
     Q_EMIT editorChanged();
     Q_EMIT flagsChanged();
     Q_EMIT idChanged();
@@ -450,9 +531,13 @@ inline ChatObject &ChatObject::operator =(const Chat &b) {
     Q_EMIT leftChanged();
     Q_EMIT megagroupChanged();
     Q_EMIT migratedToChanged();
+    Q_EMIT minChanged();
     Q_EMIT moderatorChanged();
     Q_EMIT participantsCountChanged();
     Q_EMIT photoChanged();
+    Q_EMIT restrictedChanged();
+    Q_EMIT restrictionReasonChanged();
+    Q_EMIT signaturesChanged();
     Q_EMIT titleChanged();
     Q_EMIT usernameChanged();
     Q_EMIT verifiedChanged();

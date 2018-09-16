@@ -20,6 +20,8 @@ class LIBQTELEGRAMSHARED_EXPORT UserObject : public TelegramTypeQObject
     Q_PROPERTY(bool bot READ bot WRITE setBot NOTIFY botChanged)
     Q_PROPERTY(bool botChatHistory READ botChatHistory WRITE setBotChatHistory NOTIFY botChatHistoryChanged)
     Q_PROPERTY(qint32 botInfoVersion READ botInfoVersion WRITE setBotInfoVersion NOTIFY botInfoVersionChanged)
+    Q_PROPERTY(bool botInlineGeo READ botInlineGeo WRITE setBotInlineGeo NOTIFY botInlineGeoChanged)
+    Q_PROPERTY(QString botInlinePlaceholder READ botInlinePlaceholder WRITE setBotInlinePlaceholder NOTIFY botInlinePlaceholderChanged)
     Q_PROPERTY(bool botNochats READ botNochats WRITE setBotNochats NOTIFY botNochatsChanged)
     Q_PROPERTY(bool contact READ contact WRITE setContact NOTIFY contactChanged)
     Q_PROPERTY(bool deleted READ deleted WRITE setDeleted NOTIFY deletedChanged)
@@ -27,9 +29,12 @@ class LIBQTELEGRAMSHARED_EXPORT UserObject : public TelegramTypeQObject
     Q_PROPERTY(qint32 flags READ flags WRITE setFlags NOTIFY flagsChanged)
     Q_PROPERTY(qint32 id READ id WRITE setId NOTIFY idChanged)
     Q_PROPERTY(QString lastName READ lastName WRITE setLastName NOTIFY lastNameChanged)
+    Q_PROPERTY(bool min READ min WRITE setMin NOTIFY minChanged)
     Q_PROPERTY(bool mutualContact READ mutualContact WRITE setMutualContact NOTIFY mutualContactChanged)
     Q_PROPERTY(QString phone READ phone WRITE setPhone NOTIFY phoneChanged)
     Q_PROPERTY(UserProfilePhotoObject* photo READ photo WRITE setPhoto NOTIFY photoChanged)
+    Q_PROPERTY(bool restricted READ restricted WRITE setRestricted NOTIFY restrictedChanged)
+    Q_PROPERTY(QString restrictionReason READ restrictionReason WRITE setRestrictionReason NOTIFY restrictionReasonChanged)
     Q_PROPERTY(bool self READ self WRITE setSelf NOTIFY selfChanged)
     Q_PROPERTY(UserStatusObject* status READ status WRITE setStatus NOTIFY statusChanged)
     Q_PROPERTY(QString username READ username WRITE setUsername NOTIFY usernameChanged)
@@ -59,6 +64,12 @@ public:
     void setBotInfoVersion(qint32 botInfoVersion);
     qint32 botInfoVersion() const;
 
+    void setBotInlineGeo(bool botInlineGeo);
+    bool botInlineGeo() const;
+
+    void setBotInlinePlaceholder(const QString &botInlinePlaceholder);
+    QString botInlinePlaceholder() const;
+
     void setBotNochats(bool botNochats);
     bool botNochats() const;
 
@@ -80,6 +91,9 @@ public:
     void setLastName(const QString &lastName);
     QString lastName() const;
 
+    void setMin(bool min);
+    bool min() const;
+
     void setMutualContact(bool mutualContact);
     bool mutualContact() const;
 
@@ -88,6 +102,12 @@ public:
 
     void setPhoto(UserProfilePhotoObject* photo);
     UserProfilePhotoObject* photo() const;
+
+    void setRestricted(bool restricted);
+    bool restricted() const;
+
+    void setRestrictionReason(const QString &restrictionReason);
+    QString restrictionReason() const;
 
     void setSelf(bool self);
     bool self() const;
@@ -117,6 +137,8 @@ Q_SIGNALS:
     void botChanged();
     void botChatHistoryChanged();
     void botInfoVersionChanged();
+    void botInlineGeoChanged();
+    void botInlinePlaceholderChanged();
     void botNochatsChanged();
     void contactChanged();
     void deletedChanged();
@@ -124,9 +146,12 @@ Q_SIGNALS:
     void flagsChanged();
     void idChanged();
     void lastNameChanged();
+    void minChanged();
     void mutualContactChanged();
     void phoneChanged();
     void photoChanged();
+    void restrictedChanged();
+    void restrictionReasonChanged();
     void selfChanged();
     void statusChanged();
     void usernameChanged();
@@ -213,6 +238,28 @@ inline qint32 UserObject::botInfoVersion() const {
     return m_core.botInfoVersion();
 }
 
+inline void UserObject::setBotInlineGeo(bool botInlineGeo) {
+    if(m_core.botInlineGeo() == botInlineGeo) return;
+    m_core.setBotInlineGeo(botInlineGeo);
+    Q_EMIT botInlineGeoChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool UserObject::botInlineGeo() const {
+    return m_core.botInlineGeo();
+}
+
+inline void UserObject::setBotInlinePlaceholder(const QString &botInlinePlaceholder) {
+    if(m_core.botInlinePlaceholder() == botInlinePlaceholder) return;
+    m_core.setBotInlinePlaceholder(botInlinePlaceholder);
+    Q_EMIT botInlinePlaceholderChanged();
+    Q_EMIT coreChanged();
+}
+
+inline QString UserObject::botInlinePlaceholder() const {
+    return m_core.botInlinePlaceholder();
+}
+
 inline void UserObject::setBotNochats(bool botNochats) {
     if(m_core.botNochats() == botNochats) return;
     m_core.setBotNochats(botNochats);
@@ -290,6 +337,17 @@ inline QString UserObject::lastName() const {
     return m_core.lastName();
 }
 
+inline void UserObject::setMin(bool min) {
+    if(m_core.min() == min) return;
+    m_core.setMin(min);
+    Q_EMIT minChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool UserObject::min() const {
+    return m_core.min();
+}
+
 inline void UserObject::setMutualContact(bool mutualContact) {
     if(m_core.mutualContact() == mutualContact) return;
     m_core.setMutualContact(mutualContact);
@@ -327,6 +385,28 @@ inline void UserObject::setPhoto(UserProfilePhotoObject* photo) {
 
 inline UserProfilePhotoObject*  UserObject::photo() const {
     return m_photo;
+}
+
+inline void UserObject::setRestricted(bool restricted) {
+    if(m_core.restricted() == restricted) return;
+    m_core.setRestricted(restricted);
+    Q_EMIT restrictedChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool UserObject::restricted() const {
+    return m_core.restricted();
+}
+
+inline void UserObject::setRestrictionReason(const QString &restrictionReason) {
+    if(m_core.restrictionReason() == restrictionReason) return;
+    m_core.setRestrictionReason(restrictionReason);
+    Q_EMIT restrictionReasonChanged();
+    Q_EMIT coreChanged();
+}
+
+inline QString UserObject::restrictionReason() const {
+    return m_core.restrictionReason();
 }
 
 inline void UserObject::setSelf(bool self) {
@@ -389,6 +469,8 @@ inline UserObject &UserObject::operator =(const User &b) {
     Q_EMIT botChanged();
     Q_EMIT botChatHistoryChanged();
     Q_EMIT botInfoVersionChanged();
+    Q_EMIT botInlineGeoChanged();
+    Q_EMIT botInlinePlaceholderChanged();
     Q_EMIT botNochatsChanged();
     Q_EMIT contactChanged();
     Q_EMIT deletedChanged();
@@ -396,9 +478,12 @@ inline UserObject &UserObject::operator =(const User &b) {
     Q_EMIT flagsChanged();
     Q_EMIT idChanged();
     Q_EMIT lastNameChanged();
+    Q_EMIT minChanged();
     Q_EMIT mutualContactChanged();
     Q_EMIT phoneChanged();
     Q_EMIT photoChanged();
+    Q_EMIT restrictedChanged();
+    Q_EMIT restrictionReasonChanged();
     Q_EMIT selfChanged();
     Q_EMIT statusChanged();
     Q_EMIT usernameChanged();

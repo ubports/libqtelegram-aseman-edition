@@ -6,11 +6,13 @@
 * [typeInputMessagesFilterPhotos](#messagesfiltertypeinputmessagesfilterphotos)
 * [typeInputMessagesFilterVideo](#messagesfiltertypeinputmessagesfiltervideo)
 * [typeInputMessagesFilterPhotoVideo](#messagesfiltertypeinputmessagesfilterphotovideo)
-* [typeInputMessagesFilterAudio](#messagesfiltertypeinputmessagesfilteraudio)
 * [typeInputMessagesFilterDocument](#messagesfiltertypeinputmessagesfilterdocument)
 * [typeInputMessagesFilterPhotoVideoDocuments](#messagesfiltertypeinputmessagesfilterphotovideodocuments)
-* [typeInputMessagesFilterAudioDocuments](#messagesfiltertypeinputmessagesfilteraudiodocuments)
 * [typeInputMessagesFilterUrl](#messagesfiltertypeinputmessagesfilterurl)
+* [typeInputMessagesFilterGif](#messagesfiltertypeinputmessagesfiltergif)
+* [typeInputMessagesFilterVoice](#messagesfiltertypeinputmessagesfiltervoice)
+* [typeInputMessagesFilterMusic](#messagesfiltertypeinputmessagesfiltermusic)
+* [typeInputMessagesFilterChatPhotos](#messagesfiltertypeinputmessagesfilterchatphotos)
 
 ## MessagesFilter::typeInputMessagesFilterEmpty
 
@@ -56,17 +58,6 @@ inputMessagesFilterPhotoVideo#56e9f0e4 = MessagesFilter;
 #### Parameters:
 
 
-## MessagesFilter::typeInputMessagesFilterAudio
-
-#### Schema:
-
-```c++
-inputMessagesFilterAudio#cfc87522 = MessagesFilter;
-```
-
-#### Parameters:
-
-
 ## MessagesFilter::typeInputMessagesFilterDocument
 
 #### Schema:
@@ -89,23 +80,56 @@ inputMessagesFilterPhotoVideoDocuments#d95e73bb = MessagesFilter;
 #### Parameters:
 
 
-## MessagesFilter::typeInputMessagesFilterAudioDocuments
-
-#### Schema:
-
-```c++
-inputMessagesFilterAudioDocuments#5afbf764 = MessagesFilter;
-```
-
-#### Parameters:
-
-
 ## MessagesFilter::typeInputMessagesFilterUrl
 
 #### Schema:
 
 ```c++
 inputMessagesFilterUrl#7ef0dd87 = MessagesFilter;
+```
+
+#### Parameters:
+
+
+## MessagesFilter::typeInputMessagesFilterGif
+
+#### Schema:
+
+```c++
+inputMessagesFilterGif#ffc86587 = MessagesFilter;
+```
+
+#### Parameters:
+
+
+## MessagesFilter::typeInputMessagesFilterVoice
+
+#### Schema:
+
+```c++
+inputMessagesFilterVoice#50f5c392 = MessagesFilter;
+```
+
+#### Parameters:
+
+
+## MessagesFilter::typeInputMessagesFilterMusic
+
+#### Schema:
+
+```c++
+inputMessagesFilterMusic#3751b49e = MessagesFilter;
+```
+
+#### Parameters:
+
+
+## MessagesFilter::typeInputMessagesFilterChatPhotos
+
+#### Schema:
+
+```c++
+inputMessagesFilterChatPhotos#3a20ecb8 = MessagesFilter;
 ```
 
 #### Parameters:

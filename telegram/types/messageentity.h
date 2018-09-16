@@ -17,6 +17,7 @@
 
 #include <QString>
 #include <QtGlobal>
+#include "inputuser.h"
 
 class LIBQTELEGRAMSHARED_EXPORT MessageEntity : public TelegramTypeObject
 {
@@ -32,7 +33,9 @@ public:
         typeMessageEntityItalic = 0x826f8b60,
         typeMessageEntityCode = 0x28a20571,
         typeMessageEntityPre = 0x73924be0,
-        typeMessageEntityTextUrl = 0x76a6d327
+        typeMessageEntityTextUrl = 0x76a6d327,
+        typeMessageEntityMentionName = 0x352dca58,
+        typeInputMessageEntityMentionName = 0x208e68c9
     };
 
     MessageEntity(MessageEntityClassType classType = typeMessageEntityUnknown, InboundPkt *in = 0);
@@ -51,6 +54,12 @@ public:
 
     void setUrl(const QString &url);
     QString url() const;
+
+    void setUserIdInputUser(const InputUser &userIdInputUser);
+    InputUser userIdInputUser() const;
+
+    void setUserIdInt(qint32 userIdInt);
+    qint32 userIdInt() const;
 
     void setClassType(MessageEntityClassType classType);
     MessageEntityClassType classType() const;
@@ -73,6 +82,8 @@ private:
     qint32 m_length;
     qint32 m_offset;
     QString m_url;
+    InputUser m_userIdInputUser;
+    qint32 m_userIdInt;
     MessageEntityClassType m_classType;
 };
 
@@ -84,6 +95,7 @@ QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, MessageEn
 inline MessageEntity::MessageEntity(MessageEntityClassType classType, InboundPkt *in) :
     m_length(0),
     m_offset(0),
+    m_userIdInt(0),
     m_classType(classType)
 {
     if(in) fetch(in);
@@ -92,6 +104,7 @@ inline MessageEntity::MessageEntity(MessageEntityClassType classType, InboundPkt
 inline MessageEntity::MessageEntity(InboundPkt *in) :
     m_length(0),
     m_offset(0),
+    m_userIdInt(0),
     m_classType(typeMessageEntityUnknown)
 {
     fetch(in);
@@ -101,6 +114,7 @@ inline MessageEntity::MessageEntity(const Null &null) :
     TelegramTypeObject(null),
     m_length(0),
     m_offset(0),
+    m_userIdInt(0),
     m_classType(typeMessageEntityUnknown)
 {
 }
@@ -140,12 +154,30 @@ inline QString MessageEntity::url() const {
     return m_url;
 }
 
+inline void MessageEntity::setUserIdInputUser(const InputUser &userIdInputUser) {
+    m_userIdInputUser = userIdInputUser;
+}
+
+inline InputUser MessageEntity::userIdInputUser() const {
+    return m_userIdInputUser;
+}
+
+inline void MessageEntity::setUserIdInt(qint32 userIdInt) {
+    m_userIdInt = userIdInt;
+}
+
+inline qint32 MessageEntity::userIdInt() const {
+    return m_userIdInt;
+}
+
 inline bool MessageEntity::operator ==(const MessageEntity &b) const {
     return m_classType == b.m_classType &&
            m_language == b.m_language &&
            m_length == b.m_length &&
            m_offset == b.m_offset &&
-           m_url == b.m_url;
+           m_url == b.m_url &&
+           m_userIdInputUser == b.m_userIdInputUser &&
+           m_userIdInt == b.m_userIdInt;
 }
 
 inline void MessageEntity::setClassType(MessageEntity::MessageEntityClassType classType) {
@@ -250,6 +282,24 @@ inline bool MessageEntity::fetch(InboundPkt *in) {
     }
         break;
     
+    case typeMessageEntityMentionName: {
+        m_offset = in->fetchInt();
+        m_length = in->fetchInt();
+        m_userIdInt = in->fetchInt();
+        m_classType = static_cast<MessageEntityClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeInputMessageEntityMentionName: {
+        m_offset = in->fetchInt();
+        m_length = in->fetchInt();
+        m_userIdInputUser.fetch(in);
+        m_classType = static_cast<MessageEntityClassType>(x);
+        return true;
+    }
+        break;
+    
     default:
         LQTG_FETCH_ASSERT;
         return false;
@@ -334,6 +384,22 @@ inline bool MessageEntity::push(OutboundPkt *out) const {
         out->appendInt(m_offset);
         out->appendInt(m_length);
         out->appendQString(m_url);
+        return true;
+    }
+        break;
+    
+    case typeMessageEntityMentionName: {
+        out->appendInt(m_offset);
+        out->appendInt(m_length);
+        out->appendInt(m_userIdInt);
+        return true;
+    }
+        break;
+    
+    case typeInputMessageEntityMentionName: {
+        out->appendInt(m_offset);
+        out->appendInt(m_length);
+        m_userIdInputUser.push(out);
         return true;
     }
         break;
@@ -436,6 +502,24 @@ inline QMap<QString, QVariant> MessageEntity::toMap() const {
     }
         break;
     
+    case typeMessageEntityMentionName: {
+        result["classType"] = "MessageEntity::typeMessageEntityMentionName";
+        result["offset"] = QVariant::fromValue<qint32>(offset());
+        result["length"] = QVariant::fromValue<qint32>(length());
+        result["userIdInt"] = QVariant::fromValue<qint32>(userIdInt());
+        return result;
+    }
+        break;
+    
+    case typeInputMessageEntityMentionName: {
+        result["classType"] = "MessageEntity::typeInputMessageEntityMentionName";
+        result["offset"] = QVariant::fromValue<qint32>(offset());
+        result["length"] = QVariant::fromValue<qint32>(length());
+        result["userIdInputUser"] = m_userIdInputUser.toMap();
+        return result;
+    }
+        break;
+    
     default:
         return result;
     }
@@ -511,6 +595,20 @@ inline MessageEntity MessageEntity::fromMap(const QMap<QString, QVariant> &map) 
         result.setUrl( map.value("url").value<QString>() );
         return result;
     }
+    if(map.value("classType").toString() == "MessageEntity::typeMessageEntityMentionName") {
+        result.setClassType(typeMessageEntityMentionName);
+        result.setOffset( map.value("offset").value<qint32>() );
+        result.setLength( map.value("length").value<qint32>() );
+        result.setUserIdInt( map.value("userIdInt").value<qint32>() );
+        return result;
+    }
+    if(map.value("classType").toString() == "MessageEntity::typeInputMessageEntityMentionName") {
+        result.setClassType(typeInputMessageEntityMentionName);
+        result.setOffset( map.value("offset").value<qint32>() );
+        result.setLength( map.value("length").value<qint32>() );
+        result.setUserIdInputUser( InputUser::fromMap(map.value("userIdInputUser").toMap()) );
+        return result;
+    }
     return result;
 }
 
@@ -569,6 +667,16 @@ inline QDataStream &operator<<(QDataStream &stream, const MessageEntity &item) {
         stream << item.offset();
         stream << item.length();
         stream << item.url();
+        break;
+    case MessageEntity::typeMessageEntityMentionName:
+        stream << item.offset();
+        stream << item.length();
+        stream << item.userIdInt();
+        break;
+    case MessageEntity::typeInputMessageEntityMentionName:
+        stream << item.offset();
+        stream << item.length();
+        stream << item.userIdInputUser();
         break;
     }
     return stream;
@@ -682,6 +790,30 @@ inline QDataStream &operator>>(QDataStream &stream, MessageEntity &item) {
         QString m_url;
         stream >> m_url;
         item.setUrl(m_url);
+    }
+        break;
+    case MessageEntity::typeMessageEntityMentionName: {
+        qint32 m_offset;
+        stream >> m_offset;
+        item.setOffset(m_offset);
+        qint32 m_length;
+        stream >> m_length;
+        item.setLength(m_length);
+        qint32 m_user_id_int;
+        stream >> m_user_id_int;
+        item.setUserIdInt(m_user_id_int);
+    }
+        break;
+    case MessageEntity::typeInputMessageEntityMentionName: {
+        qint32 m_offset;
+        stream >> m_offset;
+        item.setOffset(m_offset);
+        qint32 m_length;
+        stream >> m_length;
+        item.setLength(m_length);
+        InputUser m_user_id_InputUser;
+        stream >> m_user_id_InputUser;
+        item.setUserIdInputUser(m_user_id_InputUser);
     }
         break;
     }

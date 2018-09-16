@@ -21,13 +21,13 @@ messages.allStickersNotModified#e86602c3 = messages.AllStickers;
 #### Schema:
 
 ```c++
-messages.allStickers#d51dafdb hash:string sets:Vector<StickerSet> = messages.AllStickers;
+messages.allStickers#edfd405f hash:int sets:Vector<StickerSet> = messages.AllStickers;
 ```
 
 #### Parameters:
 
 |Name|Type|
 |----|----|
-|hash|QString|
+|hash|qint32|
 |sets|QList&lt;[StickerSet](stickerset.md)&gt;|
 

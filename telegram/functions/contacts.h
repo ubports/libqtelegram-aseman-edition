@@ -23,7 +23,9 @@
 #include "telegram/types/contactsblocked.h"
 #include "telegram/types/user.h"
 #include "telegram/types/contactsresolvedpeer.h"
-#include "telegram/types/contactssuggested.h"
+#include "telegram/types/contactstoppeers.h"
+#include "telegram/types/toppeercategory.h"
+#include "telegram/types/inputpeer.h"
 
 namespace Tg {
 namespace Functions {
@@ -44,7 +46,8 @@ public:
         fncContactsExportCard = 0x84e53737,
         fncContactsImportCard = 0x4fe196fe,
         fncContactsResolveUsername = 0xf93ccba3,
-        fncContactsGetSuggested = 0xcd773428
+        fncContactsGetTopPeers = 0xd4982db5,
+        fncContactsResetTopPeerRating = 0x1ae373ac
     };
 
     Contacts();
@@ -86,8 +89,11 @@ public:
     static bool resolveUsername(OutboundPkt *out, const QString &username);
     static ContactsResolvedPeer resolveUsernameResult(InboundPkt *in);
 
-    static bool getSuggested(OutboundPkt *out, qint32 limit);
-    static ContactsSuggested getSuggestedResult(InboundPkt *in);
+    static bool getTopPeers(OutboundPkt *out, bool correspondents, bool botsPm, bool botsInline, bool groups, bool channels, qint32 offset, qint32 limit, qint32 hash);
+    static ContactsTopPeers getTopPeersResult(InboundPkt *in);
+
+    static bool resetTopPeerRating(OutboundPkt *out, const TopPeerCategory &category, const InputPeer &peer);
+    static bool resetTopPeerRatingResult(InboundPkt *in);
 
 };
 
@@ -269,15 +275,39 @@ inline ContactsResolvedPeer Functions::Contacts::resolveUsernameResult(InboundPk
     return result;
 }
 
-inline bool Functions::Contacts::getSuggested(OutboundPkt *out, qint32 limit) {
-    out->appendInt(fncContactsGetSuggested);
+inline bool Functions::Contacts::getTopPeers(OutboundPkt *out, bool correspondents, bool botsPm, bool botsInline, bool groups, bool channels, qint32 offset, qint32 limit, qint32 hash) {
+    out->appendInt(fncContactsGetTopPeers);
+    
+    qint32 flags = 0;
+    if(correspondents != 0) flags = (1<<0 | flags);
+    if(botsPm != 0) flags = (1<<1 | flags);
+    if(botsInline != 0) flags = (1<<2 | flags);
+    if(groups != 0) flags = (1<<10 | flags);
+    if(channels != 0) flags = (1<<15 | flags);
+    
+    out->appendInt(flags);
+    out->appendInt(offset);
     out->appendInt(limit);
+    out->appendInt(hash);
     return true;
 }
 
-inline ContactsSuggested Functions::Contacts::getSuggestedResult(InboundPkt *in) {
-    ContactsSuggested result;
+inline ContactsTopPeers Functions::Contacts::getTopPeersResult(InboundPkt *in) {
+    ContactsTopPeers result;
     if(!result.fetch(in)) return result;
+    return result;
+}
+
+inline bool Functions::Contacts::resetTopPeerRating(OutboundPkt *out, const TopPeerCategory &category, const InputPeer &peer) {
+    out->appendInt(fncContactsResetTopPeerRating);
+    if(!category.push(out)) return false;
+    if(!peer.push(out)) return false;
+    return true;
+}
+
+inline bool Functions::Contacts::resetTopPeerRatingResult(InboundPkt *in) {
+    bool result;
+    result = in->fetchBool();
     return result;
 }
 

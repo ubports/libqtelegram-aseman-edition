@@ -649,7 +649,7 @@ qint64 Telegram::messagesGetStickers(const QString &emoticon, const QString &has
     return mApi->messagesGetStickers(emoticon, hash);
 }
 
-qint64 Telegram::messagesGetAllStickers(const QString &hash) {
+qint64 Telegram::messagesGetAllStickers(const qint32 &hash) {
     CHECK_API;
     return mApi->messagesGetAllStickers(hash);
 }
@@ -1129,7 +1129,7 @@ void Telegram::onAuthCheckPhoneDcChanged() {
 }
 void Telegram::onHelpGetInviteTextDcChanged() {
     if (prv->mLastRetryType != GetInviteText) return;
-    helpGetInviteText(prv->mLastLangCode);
+    helpGetInviteText();
 }
 void Telegram::onImportContactsDcChanged() {
     if (prv->mLastRetryType != ImportContacts)
@@ -1262,17 +1262,7 @@ qint64 Telegram::authCheckPhone() {
 
 qint64 Telegram::authSendCode() {
     CHECK_API;
-    return mApi->authSendCode(prv->mSettings->phoneNumber(), 0, prv->mSettings->appId(), prv->mSettings->appHash(), LANG_CODE);
-}
-
-qint64 Telegram::authSendSms() {
-    CHECK_API;
-    return mApi->authSendSms(prv->mSettings->phoneNumber(), prv->m_phoneCodeHash);
-}
-
-qint64 Telegram::authSendCall() {
-    CHECK_API;
-    return mApi->authSendCall(prv->mSettings->phoneNumber(), prv->m_phoneCodeHash);
+    return mApi->authSendCode(true, prv->mSettings->phoneNumber(), true, prv->mSettings->appId(), prv->mSettings->appHash());
 }
 
 qint64 Telegram::authSignIn(const QString &code) {
@@ -1316,7 +1306,7 @@ qint64 Telegram::accountRegisterDevice(const QString &token, const QString &appV
         version = Utils::getAppVersion();
     }
     qCDebug(TG_TELEGRAM) << "registering device for push - app version" << version;
-    return mApi->accountRegisterDevice(UBUNTU_PHONE_TOKEN_TYPE, token, Utils::getDeviceModel(), Utils::getSystemVersion(), version, appSandbox, prv->mSettings->langCode());
+    return mApi->accountRegisterDevice(UBUNTU_PHONE_TOKEN_TYPE, token);
 }
 
 qint64 Telegram::accountUnregisterDevice(const QString &token) {
@@ -1341,7 +1331,7 @@ qint64 Telegram::accountResetNotifySettings() {
 
 qint64 Telegram::accountUpdateProfile(const QString &firstName, const QString &lastName) {
     CHECK_API;
-    return mApi->accountUpdateProfile(firstName, lastName);
+    return mApi->accountUpdateProfile(firstName, lastName, QString());
 }
 
 qint64 Telegram::accountUpdateStatus(bool offline) {
@@ -1396,7 +1386,7 @@ qint64 Telegram::accountUpdateDeviceLocked(int period) {
 
 qint64 Telegram::accountSendChangePhoneCode(const QString &phone_number) {
     CHECK_API;
-    return mApi->accountSendChangePhoneCode(phone_number);
+    return mApi->accountSendChangePhoneCode(true, phone_number, true);
 }
 
 qint64 Telegram::accountChangePhone(const QString &phone_number, const QString &phone_code_hash, const QString &phone_code) {
@@ -1544,12 +1534,6 @@ qint64 Telegram::contactsGetContacts() {
 
 // Working with channels
 
-qint64 Telegram::channelsGetImportantHistory(const InputChannel &channel, qint32 offset_id, qint32 add_offset, qint32 limit, qint32 max_id, qint32 min_id)
-{
-    CHECK_API;
-    return mApi->channelsGetImportantHistory(channel, offset_id, add_offset, limit, max_id, min_id);
-}
-
 qint64 Telegram::channelsReadHistory(const InputChannel &channel, qint32 max_id)
 {
     CHECK_API;
@@ -1620,12 +1604,6 @@ qint64 Telegram::channelsEditPhoto(const InputChannel &channel, const InputChatP
 {
     CHECK_API;
     return mApi->channelsEditPhoto(channel, photo);
-}
-
-qint64 Telegram::channelsToggleComments(const InputChannel &channel, bool enabled)
-{
-    CHECK_API;
-    return mApi->channelsToggleComments(channel, enabled);
 }
 
 qint64 Telegram::channelsCheckUsername(const InputChannel &channel, const QString &username)
@@ -1700,7 +1678,7 @@ qint64 Telegram::messagesSendGeoPoint(const InputPeer &peer, qint64 randomId, co
     CHECK_API;
     InputMedia inputMedia(InputMedia::typeInputMediaGeoPoint);
     inputMedia.setGeoPoint(inputGeoPoint);
-    qint64 msgId = mApi->messagesSendMedia(false, peer, replyToMsgId, inputMedia, randomId, ReplyMarkup());
+    qint64 msgId = mApi->messagesSendMedia(false, false, true, peer, replyToMsgId, inputMedia, randomId, ReplyMarkup());
     prv->pendingMediaSends[msgId] = inputMedia.classType();
     return msgId;
 }
@@ -1711,16 +1689,13 @@ qint64 Telegram::messagesSendContact(const InputPeer &peer, qint64 randomId, con
     inputMedia.setPhoneNumber(phoneNumber);
     inputMedia.setFirstName(firstName);
     inputMedia.setLastName(lastName);
-    qint64 msgId = mApi->messagesSendMedia(false, peer, replyToMsgId, inputMedia, randomId, ReplyMarkup());
+    qint64 msgId = mApi->messagesSendMedia(false, false, true, peer, replyToMsgId, inputMedia, randomId, ReplyMarkup());
     prv->pendingMediaSends[msgId] = inputMedia.classType();
     return msgId;
 }
 
 qint64 Telegram::messagesSendVideo(const InputPeer &peer, qint64 randomId, const QByteArray &bytes, const QString &fileName, qint32 duration, qint32 width, qint32 height, const QString &mimeType, const QByteArray &thumbnailBytes, const QString &thumbnailName, qint32 replyToMsgId) {
-    InputMedia inputMedia(InputMedia::typeInputMediaUploadedVideo);
-    inputMedia.setDuration(duration);
-    inputMedia.setW(width);
-    inputMedia.setH(height);
+    InputMedia inputMedia(InputMedia::typeInputMediaUploadedDocument);
     inputMedia.setMimeType(mimeType);
     FileOperation *op = new FileOperation(FileOperation::sendMedia);
     op->setInputPeer(peer);
@@ -1731,10 +1706,7 @@ qint64 Telegram::messagesSendVideo(const InputPeer &peer, qint64 randomId, const
 }
 
 qint64 Telegram::messagesSendVideo(const InputPeer &peer, qint64 randomId, const QString &filePath, qint32 duration, qint32 width, qint32 height, const QString &thumbnailFilePath, qint32 replyToMsgId) {
-    InputMedia inputMedia(InputMedia::typeInputMediaUploadedVideo);
-    inputMedia.setDuration(duration);
-    inputMedia.setW(width);
-    inputMedia.setH(height);
+    InputMedia inputMedia(InputMedia::typeInputMediaUploadedDocument);
     inputMedia.setMimeType(QMimeDatabase().mimeTypeForFile(QFileInfo(filePath)).name());
     FileOperation *op = new FileOperation(FileOperation::sendMedia);
     op->setInputPeer(peer);
@@ -1745,9 +1717,7 @@ qint64 Telegram::messagesSendVideo(const InputPeer &peer, qint64 randomId, const
 }
 
 qint64 Telegram::messagesSendAudio(const InputPeer &peer, qint64 randomId, const QByteArray &bytes, const QString &fileName, qint32 duration, const QString &mimeType, qint32 replyToMsgId) {
-    InputMedia inputMedia(InputMedia::typeInputMediaUploadedAudio);
-    inputMedia.setDuration(duration);
-    inputMedia.setMimeType(mimeType);
+    InputMedia inputMedia(InputMedia::typeInputMediaUploadedDocument);
     FileOperation *op = new FileOperation(FileOperation::sendMedia);
     op->setInputPeer(peer);
     op->setInputMedia(inputMedia);
@@ -1757,8 +1727,7 @@ qint64 Telegram::messagesSendAudio(const InputPeer &peer, qint64 randomId, const
 }
 
 qint64 Telegram::messagesSendAudio(const InputPeer &peer, qint64 randomId, const QString &filePath, qint32 duration, qint32 replyToMsgId) {
-    InputMedia inputMedia(InputMedia::typeInputMediaUploadedAudio);
-    inputMedia.setDuration(duration);
+    InputMedia inputMedia(InputMedia::typeInputMediaUploadedDocument);
     inputMedia.setMimeType(QMimeDatabase().mimeTypeForFile(QFileInfo(filePath)).name());
     FileOperation *op = new FileOperation(FileOperation::sendMedia);
     op->setInputPeer(peer);
@@ -1834,27 +1803,27 @@ qint64 Telegram::messagesForwardPhoto(const InputPeer &peer, qint64 randomId, qi
     inputPhoto.setAccessHash(accessHash);
     InputMedia inputMedia(InputMedia::typeInputMediaPhoto);
     inputMedia.setIdInputPhoto(inputPhoto);
-    return messagesSendMedia(false, peer, replyToMsgId, inputMedia, randomId, ReplyMarkup());
+    return messagesSendMedia(false, false, true, peer, replyToMsgId, inputMedia, randomId, ReplyMarkup());
 }
 
 qint64 Telegram::messagesForwardVideo(const InputPeer &peer, qint64 randomId, qint64 videoId, qint64 accessHash, qint32 replyToMsgId) {
     CHECK_API;
-    InputVideo inputVideo(InputVideo::typeInputVideo);
+    InputDocument inputVideo(InputDocument::typeInputDocument);
     inputVideo.setId(videoId);
     inputVideo.setAccessHash(accessHash);
-    InputMedia inputMedia(InputMedia::typeInputMediaVideo);
-    inputMedia.setIdInputVideo(inputVideo);
-    return messagesSendMedia(false, peer, replyToMsgId, inputMedia, randomId, ReplyMarkup());
+    InputMedia inputMedia(InputMedia::typeInputMediaDocument);
+    inputMedia.setIdInputDocument(inputVideo);
+    return messagesSendMedia(false, false, true, peer, replyToMsgId, inputMedia, randomId, ReplyMarkup());
 }
 
 qint64 Telegram::messagesForwardAudio(const InputPeer &peer, qint64 randomId, qint64 audioId, qint64 accessHash, qint32 replyToMsgId) {
     CHECK_API;
-    InputAudio inputAudio(InputAudio::typeInputAudio);
+    InputDocument inputAudio(InputDocument::typeInputDocument);
     inputAudio.setId(audioId);
     inputAudio.setAccessHash(accessHash);
-    InputMedia inputMedia(InputMedia::typeInputMediaAudio);
-    inputMedia.setIdInputAudio(inputAudio);
-    return messagesSendMedia(false, peer, replyToMsgId, inputMedia, randomId, ReplyMarkup());
+    InputMedia inputMedia(InputMedia::typeInputMediaDocument);
+    inputMedia.setIdInputDocument(inputAudio);
+    return messagesSendMedia(false, false, true, peer, replyToMsgId, inputMedia, randomId, ReplyMarkup());
 }
 
 qint64 Telegram::messagesForwardDocument(const InputPeer &peer, qint64 randomId, qint64 documentId, qint64 accessHash, qint32 replyToMsgId) {
@@ -1864,7 +1833,7 @@ qint64 Telegram::messagesForwardDocument(const InputPeer &peer, qint64 randomId,
     inputDocument.setAccessHash(accessHash);
     InputMedia inputMedia(InputMedia::typeInputMediaDocument);
     inputMedia.setIdInputDocument(inputDocument);
-    return messagesSendMedia(false, peer, replyToMsgId, inputMedia, randomId, ReplyMarkup());
+    return messagesSendMedia(false, false, true, peer, replyToMsgId, inputMedia, randomId, ReplyMarkup());
 }
 
 qint64 Telegram::uploadSendFile(FileOperation &op, int mediaType, const QString &fileName, const QByteArray &bytes, const QByteArray &thumbnailBytes, const QString &thumbnailName)
@@ -1916,7 +1885,7 @@ qint64 Telegram::messagesReadMessageContents(const QList<qint32> &ids) {
 
 qint64 Telegram::messagesDeleteHistory(const InputPeer &peer, qint32 offset) {
     CHECK_API;
-    return mApi->messagesDeleteHistory(peer, offset);
+    return mApi->messagesDeleteHistory(false, peer, offset);
 }
 
 qint64 Telegram::messagesDeleteMessages(const QList<qint32> &msgIds) {

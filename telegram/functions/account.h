@@ -22,12 +22,14 @@
 #include "telegram/types/inputprivacykey.h"
 #include "telegram/types/inputprivacyrule.h"
 #include "telegram/types/accountdaysttl.h"
-#include "telegram/types/accountsentchangephonecode.h"
+#include "telegram/types/authsentcode.h"
 #include "telegram/types/accountpassword.h"
 #include "telegram/types/accountauthorizations.h"
 #include "telegram/types/accountpasswordsettings.h"
 #include <QByteArray>
 #include "telegram/types/accountpasswordinputsettings.h"
+#include "telegram/types/inputpeer.h"
+#include "telegram/types/reportreason.h"
 
 namespace Tg {
 namespace Functions {
@@ -36,12 +38,12 @@ class LIBQTELEGRAMSHARED_EXPORT Account : public TelegramFunctionObject
 {
 public:
     enum AccountFunction {
-        fncAccountRegisterDevice = 0x446c712c,
+        fncAccountRegisterDevice = 0x637ea878,
         fncAccountUnregisterDevice = 0x65c55b40,
         fncAccountUpdateNotifySettings = 0x84be5b93,
         fncAccountGetNotifySettings = 0x12b3ad31,
         fncAccountResetNotifySettings = 0xdb7e1747,
-        fncAccountUpdateProfile = 0xf0888d68,
+        fncAccountUpdateProfile = 0x78515775,
         fncAccountUpdateStatus = 0x6628562c,
         fncAccountGetWallPapers = 0xc04cfac2,
         fncAccountCheckUsername = 0x2714d86c,
@@ -51,20 +53,21 @@ public:
         fncAccountDeleteAccount = 0x418d4e0b,
         fncAccountGetAccountTTL = 0x8fc711d,
         fncAccountSetAccountTTL = 0x2442485e,
-        fncAccountSendChangePhoneCode = 0xa407a8f4,
+        fncAccountSendChangePhoneCode = 0x8e57deb,
         fncAccountChangePhone = 0x70c32edb,
         fncAccountUpdateDeviceLocked = 0x38df3532,
         fncAccountGetPassword = 0x548a30f5,
         fncAccountGetAuthorizations = 0xe320c158,
         fncAccountResetAuthorization = 0xdf77f3bc,
         fncAccountGetPasswordSettings = 0xbc8d11bb,
-        fncAccountUpdatePasswordSettings = 0xfa7c4b86
+        fncAccountUpdatePasswordSettings = 0xfa7c4b86,
+        fncAccountReportPeer = 0xae189d5f
     };
 
     Account();
     virtual ~Account();
 
-    static bool registerDevice(OutboundPkt *out, qint32 tokenType, const QString &token, const QString &deviceModel, const QString &systemVersion, const QString &appVersion, bool appSandbox, const QString &langCode);
+    static bool registerDevice(OutboundPkt *out, qint32 tokenType, const QString &token);
     static bool registerDeviceResult(InboundPkt *in);
 
     static bool unregisterDevice(OutboundPkt *out, qint32 tokenType, const QString &token);
@@ -79,7 +82,7 @@ public:
     static bool resetNotifySettings(OutboundPkt *out);
     static bool resetNotifySettingsResult(InboundPkt *in);
 
-    static bool updateProfile(OutboundPkt *out, const QString &firstName, const QString &lastName);
+    static bool updateProfile(OutboundPkt *out, const QString &firstName, const QString &lastName, const QString &about);
     static User updateProfileResult(InboundPkt *in);
 
     static bool updateStatus(OutboundPkt *out, bool offline);
@@ -109,8 +112,8 @@ public:
     static bool setAccountTTL(OutboundPkt *out, const AccountDaysTTL &ttl);
     static bool setAccountTTLResult(InboundPkt *in);
 
-    static bool sendChangePhoneCode(OutboundPkt *out, const QString &phoneNumber);
-    static AccountSentChangePhoneCode sendChangePhoneCodeResult(InboundPkt *in);
+    static bool sendChangePhoneCode(OutboundPkt *out, bool allowFlashcall, const QString &phoneNumber, bool currentNumber);
+    static AuthSentCode sendChangePhoneCodeResult(InboundPkt *in);
 
     static bool changePhone(OutboundPkt *out, const QString &phoneNumber, const QString &phoneCodeHash, const QString &phoneCode);
     static User changePhoneResult(InboundPkt *in);
@@ -133,6 +136,9 @@ public:
     static bool updatePasswordSettings(OutboundPkt *out, const QByteArray &currentPasswordHash, const AccountPasswordInputSettings &newSettings);
     static bool updatePasswordSettingsResult(InboundPkt *in);
 
+    static bool reportPeer(OutboundPkt *out, const InputPeer &peer, const ReportReason &reason);
+    static bool reportPeerResult(InboundPkt *in);
+
 };
 
 }
@@ -142,15 +148,10 @@ inline Functions::Account::Account() {
 inline Functions::Account::~Account() {
 }
 
-inline bool Functions::Account::registerDevice(OutboundPkt *out, qint32 tokenType, const QString &token, const QString &deviceModel, const QString &systemVersion, const QString &appVersion, bool appSandbox, const QString &langCode) {
+inline bool Functions::Account::registerDevice(OutboundPkt *out, qint32 tokenType, const QString &token) {
     out->appendInt(fncAccountRegisterDevice);
     out->appendInt(tokenType);
     out->appendQString(token);
-    out->appendQString(deviceModel);
-    out->appendQString(systemVersion);
-    out->appendQString(appVersion);
-    out->appendBool(appSandbox);
-    out->appendQString(langCode);
     return true;
 }
 
@@ -209,10 +210,18 @@ inline bool Functions::Account::resetNotifySettingsResult(InboundPkt *in) {
     return result;
 }
 
-inline bool Functions::Account::updateProfile(OutboundPkt *out, const QString &firstName, const QString &lastName) {
+inline bool Functions::Account::updateProfile(OutboundPkt *out, const QString &firstName, const QString &lastName, const QString &about) {
     out->appendInt(fncAccountUpdateProfile);
-    out->appendQString(firstName);
-    out->appendQString(lastName);
+    
+    qint32 flags = 0;
+    if(firstName != 0) flags = (1<<0 | flags);
+    if(lastName != 0) flags = (1<<1 | flags);
+    if(about != 0) flags = (1<<2 | flags);
+    
+    out->appendInt(flags);
+    if(flags & 1<<0) out->appendQString(firstName);
+    if(flags & 1<<1) out->appendQString(lastName);
+    if(flags & 1<<2) out->appendQString(about);
     return true;
 }
 
@@ -340,14 +349,21 @@ inline bool Functions::Account::setAccountTTLResult(InboundPkt *in) {
     return result;
 }
 
-inline bool Functions::Account::sendChangePhoneCode(OutboundPkt *out, const QString &phoneNumber) {
+inline bool Functions::Account::sendChangePhoneCode(OutboundPkt *out, bool allowFlashcall, const QString &phoneNumber, bool currentNumber) {
     out->appendInt(fncAccountSendChangePhoneCode);
+    
+    qint32 flags = 0;
+    if(allowFlashcall != 0) flags = (1<<0 | flags);
+    if(currentNumber != 0) flags = (1<<0 | flags);
+    
+    out->appendInt(flags);
     out->appendQString(phoneNumber);
+    if(flags & 1<<0) out->appendBool(currentNumber);
     return true;
 }
 
-inline AccountSentChangePhoneCode Functions::Account::sendChangePhoneCodeResult(InboundPkt *in) {
-    AccountSentChangePhoneCode result;
+inline AuthSentCode Functions::Account::sendChangePhoneCodeResult(InboundPkt *in) {
+    AuthSentCode result;
     if(!result.fetch(in)) return result;
     return result;
 }
@@ -432,6 +448,19 @@ inline bool Functions::Account::updatePasswordSettings(OutboundPkt *out, const Q
 }
 
 inline bool Functions::Account::updatePasswordSettingsResult(InboundPkt *in) {
+    bool result;
+    result = in->fetchBool();
+    return result;
+}
+
+inline bool Functions::Account::reportPeer(OutboundPkt *out, const InputPeer &peer, const ReportReason &reason) {
+    out->appendInt(fncAccountReportPeer);
+    if(!peer.push(out)) return false;
+    if(!reason.push(out)) return false;
+    return true;
+}
+
+inline bool Functions::Account::reportPeerResult(InboundPkt *in) {
     bool result;
     result = in->fetchBool();
     return result;

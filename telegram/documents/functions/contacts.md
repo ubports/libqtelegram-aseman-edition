@@ -26,5 +26,7 @@
 
 * **Resolve username** - [TelegramCore::contactsResolveUsername](methods/resolveusername.md)
 
-* **Get suggested** - [TelegramCore::contactsGetSuggested](methods/getsuggested.md)
+* **Get top peers** - [TelegramCore::contactsGetTopPeers](methods/gettoppeers.md)
+
+* **Reset top peer rating** - [TelegramCore::contactsResetTopPeerRating](methods/resettoppeerrating.md)
 

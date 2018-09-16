@@ -22,9 +22,7 @@ class LIBQTELEGRAMSHARED_EXPORT InputFileLocation : public TelegramTypeObject
 public:
     enum InputFileLocationClassType {
         typeInputFileLocation = 0x14637196,
-        typeInputVideoFileLocation = 0x3d0364ec,
         typeInputEncryptedFileLocation = 0xf5235d55,
-        typeInputAudioFileLocation = 0x74dc404d,
         typeInputDocumentFileLocation = 0x4e45abe9
     };
 
@@ -184,23 +182,7 @@ inline bool InputFileLocation::fetch(InboundPkt *in) {
     }
         break;
     
-    case typeInputVideoFileLocation: {
-        m_id = in->fetchLong();
-        m_accessHash = in->fetchLong();
-        m_classType = static_cast<InputFileLocationClassType>(x);
-        return true;
-    }
-        break;
-    
     case typeInputEncryptedFileLocation: {
-        m_id = in->fetchLong();
-        m_accessHash = in->fetchLong();
-        m_classType = static_cast<InputFileLocationClassType>(x);
-        return true;
-    }
-        break;
-    
-    case typeInputAudioFileLocation: {
         m_id = in->fetchLong();
         m_accessHash = in->fetchLong();
         m_classType = static_cast<InputFileLocationClassType>(x);
@@ -233,21 +215,7 @@ inline bool InputFileLocation::push(OutboundPkt *out) const {
     }
         break;
     
-    case typeInputVideoFileLocation: {
-        out->appendLong(m_id);
-        out->appendLong(m_accessHash);
-        return true;
-    }
-        break;
-    
     case typeInputEncryptedFileLocation: {
-        out->appendLong(m_id);
-        out->appendLong(m_accessHash);
-        return true;
-    }
-        break;
-    
-    case typeInputAudioFileLocation: {
         out->appendLong(m_id);
         out->appendLong(m_accessHash);
         return true;
@@ -278,24 +246,8 @@ inline QMap<QString, QVariant> InputFileLocation::toMap() const {
     }
         break;
     
-    case typeInputVideoFileLocation: {
-        result["classType"] = "InputFileLocation::typeInputVideoFileLocation";
-        result["id"] = QVariant::fromValue<qint64>(id());
-        result["accessHash"] = QVariant::fromValue<qint64>(accessHash());
-        return result;
-    }
-        break;
-    
     case typeInputEncryptedFileLocation: {
         result["classType"] = "InputFileLocation::typeInputEncryptedFileLocation";
-        result["id"] = QVariant::fromValue<qint64>(id());
-        result["accessHash"] = QVariant::fromValue<qint64>(accessHash());
-        return result;
-    }
-        break;
-    
-    case typeInputAudioFileLocation: {
-        result["classType"] = "InputFileLocation::typeInputAudioFileLocation";
         result["id"] = QVariant::fromValue<qint64>(id());
         result["accessHash"] = QVariant::fromValue<qint64>(accessHash());
         return result;
@@ -324,20 +276,8 @@ inline InputFileLocation InputFileLocation::fromMap(const QMap<QString, QVariant
         result.setSecret( map.value("secret").value<qint64>() );
         return result;
     }
-    if(map.value("classType").toString() == "InputFileLocation::typeInputVideoFileLocation") {
-        result.setClassType(typeInputVideoFileLocation);
-        result.setId( map.value("id").value<qint64>() );
-        result.setAccessHash( map.value("accessHash").value<qint64>() );
-        return result;
-    }
     if(map.value("classType").toString() == "InputFileLocation::typeInputEncryptedFileLocation") {
         result.setClassType(typeInputEncryptedFileLocation);
-        result.setId( map.value("id").value<qint64>() );
-        result.setAccessHash( map.value("accessHash").value<qint64>() );
-        return result;
-    }
-    if(map.value("classType").toString() == "InputFileLocation::typeInputAudioFileLocation") {
-        result.setClassType(typeInputAudioFileLocation);
         result.setId( map.value("id").value<qint64>() );
         result.setAccessHash( map.value("accessHash").value<qint64>() );
         return result;
@@ -366,15 +306,7 @@ inline QDataStream &operator<<(QDataStream &stream, const InputFileLocation &ite
         stream << item.localId();
         stream << item.secret();
         break;
-    case InputFileLocation::typeInputVideoFileLocation:
-        stream << item.id();
-        stream << item.accessHash();
-        break;
     case InputFileLocation::typeInputEncryptedFileLocation:
-        stream << item.id();
-        stream << item.accessHash();
-        break;
-    case InputFileLocation::typeInputAudioFileLocation:
         stream << item.id();
         stream << item.accessHash();
         break;
@@ -403,25 +335,7 @@ inline QDataStream &operator>>(QDataStream &stream, InputFileLocation &item) {
         item.setSecret(m_secret);
     }
         break;
-    case InputFileLocation::typeInputVideoFileLocation: {
-        qint64 m_id;
-        stream >> m_id;
-        item.setId(m_id);
-        qint64 m_access_hash;
-        stream >> m_access_hash;
-        item.setAccessHash(m_access_hash);
-    }
-        break;
     case InputFileLocation::typeInputEncryptedFileLocation: {
-        qint64 m_id;
-        stream >> m_id;
-        item.setId(m_id);
-        qint64 m_access_hash;
-        stream >> m_access_hash;
-        item.setAccessHash(m_access_hash);
-    }
-        break;
-    case InputFileLocation::typeInputAudioFileLocation: {
         qint64 m_id;
         stream >> m_id;
         item.setId(m_id);

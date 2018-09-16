@@ -18,6 +18,7 @@
 #include <QString>
 #include <QtGlobal>
 #include "inputstickerset.h"
+#include <QByteArray>
 
 class LIBQTELEGRAMSHARED_EXPORT DocumentAttribute : public TelegramTypeObject
 {
@@ -27,7 +28,7 @@ public:
         typeDocumentAttributeAnimated = 0x11b58939,
         typeDocumentAttributeSticker = 0x3a556302,
         typeDocumentAttributeVideo = 0x5910cccb,
-        typeDocumentAttributeAudio = 0xded218e0,
+        typeDocumentAttributeAudio = 0x9852f9c6,
         typeDocumentAttributeFilename = 0x15590068
     };
 
@@ -45,6 +46,9 @@ public:
     void setFileName(const QString &fileName);
     QString fileName() const;
 
+    void setFlags(qint32 flags);
+    qint32 flags() const;
+
     void setH(qint32 h);
     qint32 h() const;
 
@@ -57,8 +61,14 @@ public:
     void setTitle(const QString &title);
     QString title() const;
 
+    void setVoice(bool voice);
+    bool voice() const;
+
     void setW(qint32 w);
     qint32 w() const;
+
+    void setWaveform(const QByteArray &waveform);
+    QByteArray waveform() const;
 
     void setClassType(DocumentAttributeClassType classType);
     DocumentAttributeClassType classType() const;
@@ -80,11 +90,13 @@ private:
     QString m_alt;
     qint32 m_duration;
     QString m_fileName;
+    qint32 m_flags;
     qint32 m_h;
     QString m_performer;
     InputStickerSet m_stickerset;
     QString m_title;
     qint32 m_w;
+    QByteArray m_waveform;
     DocumentAttributeClassType m_classType;
 };
 
@@ -95,6 +107,7 @@ QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, DocumentA
 
 inline DocumentAttribute::DocumentAttribute(DocumentAttributeClassType classType, InboundPkt *in) :
     m_duration(0),
+    m_flags(0),
     m_h(0),
     m_w(0),
     m_classType(classType)
@@ -104,6 +117,7 @@ inline DocumentAttribute::DocumentAttribute(DocumentAttributeClassType classType
 
 inline DocumentAttribute::DocumentAttribute(InboundPkt *in) :
     m_duration(0),
+    m_flags(0),
     m_h(0),
     m_w(0),
     m_classType(typeDocumentAttributeImageSize)
@@ -114,6 +128,7 @@ inline DocumentAttribute::DocumentAttribute(InboundPkt *in) :
 inline DocumentAttribute::DocumentAttribute(const Null &null) :
     TelegramTypeObject(null),
     m_duration(0),
+    m_flags(0),
     m_h(0),
     m_w(0),
     m_classType(typeDocumentAttributeImageSize)
@@ -145,6 +160,14 @@ inline void DocumentAttribute::setFileName(const QString &fileName) {
 
 inline QString DocumentAttribute::fileName() const {
     return m_fileName;
+}
+
+inline void DocumentAttribute::setFlags(qint32 flags) {
+    m_flags = flags;
+}
+
+inline qint32 DocumentAttribute::flags() const {
+    return m_flags;
 }
 
 inline void DocumentAttribute::setH(qint32 h) {
@@ -179,6 +202,15 @@ inline QString DocumentAttribute::title() const {
     return m_title;
 }
 
+inline void DocumentAttribute::setVoice(bool voice) {
+    if(voice) m_flags = (m_flags | (1<<10));
+    else m_flags = (m_flags & ~(1<<10));
+}
+
+inline bool DocumentAttribute::voice() const {
+    return (m_flags & 1<<10);
+}
+
 inline void DocumentAttribute::setW(qint32 w) {
     m_w = w;
 }
@@ -187,16 +219,26 @@ inline qint32 DocumentAttribute::w() const {
     return m_w;
 }
 
+inline void DocumentAttribute::setWaveform(const QByteArray &waveform) {
+    m_waveform = waveform;
+}
+
+inline QByteArray DocumentAttribute::waveform() const {
+    return m_waveform;
+}
+
 inline bool DocumentAttribute::operator ==(const DocumentAttribute &b) const {
     return m_classType == b.m_classType &&
            m_alt == b.m_alt &&
            m_duration == b.m_duration &&
            m_fileName == b.m_fileName &&
+           m_flags == b.m_flags &&
            m_h == b.m_h &&
            m_performer == b.m_performer &&
            m_stickerset == b.m_stickerset &&
            m_title == b.m_title &&
-           m_w == b.m_w;
+           m_w == b.m_w &&
+           m_waveform == b.m_waveform;
 }
 
 inline void DocumentAttribute::setClassType(DocumentAttribute::DocumentAttributeClassType classType) {
@@ -243,9 +285,17 @@ inline bool DocumentAttribute::fetch(InboundPkt *in) {
         break;
     
     case typeDocumentAttributeAudio: {
+        m_flags = in->fetchInt();
         m_duration = in->fetchInt();
-        m_title = in->fetchQString();
-        m_performer = in->fetchQString();
+        if(m_flags & 1<<0) {
+            m_title = in->fetchQString();
+        }
+        if(m_flags & 1<<1) {
+            m_performer = in->fetchQString();
+        }
+        if(m_flags & 1<<2) {
+            m_waveform = in->fetchBytes();
+        }
         m_classType = static_cast<DocumentAttributeClassType>(x);
         return true;
     }
@@ -295,9 +345,11 @@ inline bool DocumentAttribute::push(OutboundPkt *out) const {
         break;
     
     case typeDocumentAttributeAudio: {
+        out->appendInt(m_flags);
         out->appendInt(m_duration);
         out->appendQString(m_title);
         out->appendQString(m_performer);
+        out->appendBytes(m_waveform);
         return true;
     }
         break;
@@ -349,9 +401,11 @@ inline QMap<QString, QVariant> DocumentAttribute::toMap() const {
     
     case typeDocumentAttributeAudio: {
         result["classType"] = "DocumentAttribute::typeDocumentAttributeAudio";
+        result["voice"] = QVariant::fromValue<bool>(voice());
         result["duration"] = QVariant::fromValue<qint32>(duration());
         result["title"] = QVariant::fromValue<QString>(title());
         result["performer"] = QVariant::fromValue<QString>(performer());
+        result["waveform"] = QVariant::fromValue<QByteArray>(waveform());
         return result;
     }
         break;
@@ -395,9 +449,11 @@ inline DocumentAttribute DocumentAttribute::fromMap(const QMap<QString, QVariant
     }
     if(map.value("classType").toString() == "DocumentAttribute::typeDocumentAttributeAudio") {
         result.setClassType(typeDocumentAttributeAudio);
+        result.setVoice( map.value("voice").value<bool>() );
         result.setDuration( map.value("duration").value<qint32>() );
         result.setTitle( map.value("title").value<QString>() );
         result.setPerformer( map.value("performer").value<QString>() );
+        result.setWaveform( map.value("waveform").value<QByteArray>() );
         return result;
     }
     if(map.value("classType").toString() == "DocumentAttribute::typeDocumentAttributeFilename") {
@@ -435,9 +491,11 @@ inline QDataStream &operator<<(QDataStream &stream, const DocumentAttribute &ite
         stream << item.h();
         break;
     case DocumentAttribute::typeDocumentAttributeAudio:
+        stream << item.flags();
         stream << item.duration();
         stream << item.title();
         stream << item.performer();
+        stream << item.waveform();
         break;
     case DocumentAttribute::typeDocumentAttributeFilename:
         stream << item.fileName();
@@ -486,6 +544,9 @@ inline QDataStream &operator>>(QDataStream &stream, DocumentAttribute &item) {
     }
         break;
     case DocumentAttribute::typeDocumentAttributeAudio: {
+        qint32 m_flags;
+        stream >> m_flags;
+        item.setFlags(m_flags);
         qint32 m_duration;
         stream >> m_duration;
         item.setDuration(m_duration);
@@ -495,6 +556,9 @@ inline QDataStream &operator>>(QDataStream &stream, DocumentAttribute &item) {
         QString m_performer;
         stream >> m_performer;
         item.setPerformer(m_performer);
+        QByteArray m_waveform;
+        stream >> m_waveform;
+        item.setWaveform(m_waveform);
     }
         break;
     case DocumentAttribute::typeDocumentAttributeFilename: {

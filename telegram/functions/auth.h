@@ -28,8 +28,7 @@ class LIBQTELEGRAMSHARED_EXPORT Auth : public TelegramFunctionObject
 public:
     enum AuthFunction {
         fncAuthCheckPhone = 0x6fe51dfb,
-        fncAuthSendCode = 0x768d5f4d,
-        fncAuthSendCall = 0x3c51564,
+        fncAuthSendCode = 0x86aef0ec,
         fncAuthSignUp = 0x1b067634,
         fncAuthSignIn = 0xbcd51581,
         fncAuthLogOut = 0x5717da40,
@@ -38,11 +37,12 @@ public:
         fncAuthExportAuthorization = 0xe5bfffcd,
         fncAuthImportAuthorization = 0xe3ef9613,
         fncAuthBindTempAuthKey = 0xcdd42a05,
-        fncAuthSendSms = 0xda9f3e8,
         fncAuthCheckPassword = 0xa63011e,
         fncAuthRequestPasswordRecovery = 0xd897bc66,
         fncAuthRecoverPassword = 0x4ea56e92,
-        fncAuthImportBotAuthorization = 0x67a3ff2c
+        fncAuthImportBotAuthorization = 0x67a3ff2c,
+        fncAuthResendCode = 0x3ef1a9bf,
+        fncAuthCancelCode = 0x1f040578
     };
 
     Auth();
@@ -51,11 +51,8 @@ public:
     static bool checkPhone(OutboundPkt *out, const QString &phoneNumber);
     static AuthCheckedPhone checkPhoneResult(InboundPkt *in);
 
-    static bool sendCode(OutboundPkt *out, const QString &phoneNumber, qint32 smsType, qint32 apiId, const QString &apiHash, const QString &langCode);
+    static bool sendCode(OutboundPkt *out, bool allowFlashcall, const QString &phoneNumber, bool currentNumber, qint32 apiId, const QString &apiHash);
     static AuthSentCode sendCodeResult(InboundPkt *in);
-
-    static bool sendCall(OutboundPkt *out, const QString &phoneNumber, const QString &phoneCodeHash);
-    static bool sendCallResult(InboundPkt *in);
 
     static bool signUp(OutboundPkt *out, const QString &phoneNumber, const QString &phoneCodeHash, const QString &phoneCode, const QString &firstName, const QString &lastName);
     static AuthAuthorization signUpResult(InboundPkt *in);
@@ -81,9 +78,6 @@ public:
     static bool bindTempAuthKey(OutboundPkt *out, qint64 permAuthKeyId, qint64 nonce, qint32 expiresAt, const QByteArray &encryptedMessage);
     static bool bindTempAuthKeyResult(InboundPkt *in);
 
-    static bool sendSms(OutboundPkt *out, const QString &phoneNumber, const QString &phoneCodeHash);
-    static bool sendSmsResult(InboundPkt *in);
-
     static bool checkPassword(OutboundPkt *out, const QByteArray &passwordHash);
     static AuthAuthorization checkPasswordResult(InboundPkt *in);
 
@@ -95,6 +89,12 @@ public:
 
     static bool importBotAuthorization(OutboundPkt *out, qint32 flags, qint32 apiId, const QString &apiHash, const QString &botAuthToken);
     static AuthAuthorization importBotAuthorizationResult(InboundPkt *in);
+
+    static bool resendCode(OutboundPkt *out, const QString &phoneNumber, const QString &phoneCodeHash);
+    static AuthSentCode resendCodeResult(InboundPkt *in);
+
+    static bool cancelCode(OutboundPkt *out, const QString &phoneNumber, const QString &phoneCodeHash);
+    static bool cancelCodeResult(InboundPkt *in);
 
 };
 
@@ -117,32 +117,24 @@ inline AuthCheckedPhone Functions::Auth::checkPhoneResult(InboundPkt *in) {
     return result;
 }
 
-inline bool Functions::Auth::sendCode(OutboundPkt *out, const QString &phoneNumber, qint32 smsType, qint32 apiId, const QString &apiHash, const QString &langCode) {
+inline bool Functions::Auth::sendCode(OutboundPkt *out, bool allowFlashcall, const QString &phoneNumber, bool currentNumber, qint32 apiId, const QString &apiHash) {
     out->appendInt(fncAuthSendCode);
+    
+    qint32 flags = 0;
+    if(allowFlashcall != 0) flags = (1<<0 | flags);
+    if(currentNumber != 0) flags = (1<<0 | flags);
+    
+    out->appendInt(flags);
     out->appendQString(phoneNumber);
-    out->appendInt(smsType);
+    if(flags & 1<<0) out->appendBool(currentNumber);
     out->appendInt(apiId);
     out->appendQString(apiHash);
-    out->appendQString(langCode);
     return true;
 }
 
 inline AuthSentCode Functions::Auth::sendCodeResult(InboundPkt *in) {
     AuthSentCode result;
     if(!result.fetch(in)) return result;
-    return result;
-}
-
-inline bool Functions::Auth::sendCall(OutboundPkt *out, const QString &phoneNumber, const QString &phoneCodeHash) {
-    out->appendInt(fncAuthSendCall);
-    out->appendQString(phoneNumber);
-    out->appendQString(phoneCodeHash);
-    return true;
-}
-
-inline bool Functions::Auth::sendCallResult(InboundPkt *in) {
-    bool result;
-    result = in->fetchBool();
     return result;
 }
 
@@ -255,19 +247,6 @@ inline bool Functions::Auth::bindTempAuthKeyResult(InboundPkt *in) {
     return result;
 }
 
-inline bool Functions::Auth::sendSms(OutboundPkt *out, const QString &phoneNumber, const QString &phoneCodeHash) {
-    out->appendInt(fncAuthSendSms);
-    out->appendQString(phoneNumber);
-    out->appendQString(phoneCodeHash);
-    return true;
-}
-
-inline bool Functions::Auth::sendSmsResult(InboundPkt *in) {
-    bool result;
-    result = in->fetchBool();
-    return result;
-}
-
 inline bool Functions::Auth::checkPassword(OutboundPkt *out, const QByteArray &passwordHash) {
     out->appendInt(fncAuthCheckPassword);
     out->appendBytes(passwordHash);
@@ -315,6 +294,32 @@ inline bool Functions::Auth::importBotAuthorization(OutboundPkt *out, qint32 fla
 inline AuthAuthorization Functions::Auth::importBotAuthorizationResult(InboundPkt *in) {
     AuthAuthorization result;
     if(!result.fetch(in)) return result;
+    return result;
+}
+
+inline bool Functions::Auth::resendCode(OutboundPkt *out, const QString &phoneNumber, const QString &phoneCodeHash) {
+    out->appendInt(fncAuthResendCode);
+    out->appendQString(phoneNumber);
+    out->appendQString(phoneCodeHash);
+    return true;
+}
+
+inline AuthSentCode Functions::Auth::resendCodeResult(InboundPkt *in) {
+    AuthSentCode result;
+    if(!result.fetch(in)) return result;
+    return result;
+}
+
+inline bool Functions::Auth::cancelCode(OutboundPkt *out, const QString &phoneNumber, const QString &phoneCodeHash) {
+    out->appendInt(fncAuthCancelCode);
+    out->appendQString(phoneNumber);
+    out->appendQString(phoneCodeHash);
+    return true;
+}
+
+inline bool Functions::Auth::cancelCodeResult(InboundPkt *in) {
+    bool result;
+    result = in->fetchBool();
     return result;
 }
 

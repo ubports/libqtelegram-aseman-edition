@@ -7,15 +7,11 @@
 * [typeInputMediaPhoto](#inputmediatypeinputmediaphoto)
 * [typeInputMediaGeoPoint](#inputmediatypeinputmediageopoint)
 * [typeInputMediaContact](#inputmediatypeinputmediacontact)
-* [typeInputMediaUploadedVideo](#inputmediatypeinputmediauploadedvideo)
-* [typeInputMediaUploadedThumbVideo](#inputmediatypeinputmediauploadedthumbvideo)
-* [typeInputMediaVideo](#inputmediatypeinputmediavideo)
-* [typeInputMediaUploadedAudio](#inputmediatypeinputmediauploadedaudio)
-* [typeInputMediaAudio](#inputmediatypeinputmediaaudio)
 * [typeInputMediaUploadedDocument](#inputmediatypeinputmediauploadeddocument)
 * [typeInputMediaUploadedThumbDocument](#inputmediatypeinputmediauploadedthumbdocument)
 * [typeInputMediaDocument](#inputmediatypeinputmediadocument)
 * [typeInputMediaVenue](#inputmediatypeinputmediavenue)
+* [typeInputMediaGifExternal](#inputmediatypeinputmediagifexternal)
 
 ## InputMedia::typeInputMediaEmpty
 
@@ -88,96 +84,12 @@ inputMediaContact#a6e45987 phone_number:string first_name:string last_name:strin
 |firstName|QString|
 |lastName|QString|
 
-## InputMedia::typeInputMediaUploadedVideo
-
-#### Schema:
-
-```c++
-inputMediaUploadedVideo#82713fdf file:InputFile duration:int w:int h:int mime_type:string caption:string = InputMedia;
-```
-
-#### Parameters:
-
-|Name|Type|
-|----|----|
-|file|[InputFile](inputfile.md)|
-|duration|qint32|
-|w|qint32|
-|h|qint32|
-|mimeType|QString|
-|caption|QString|
-
-## InputMedia::typeInputMediaUploadedThumbVideo
-
-#### Schema:
-
-```c++
-inputMediaUploadedThumbVideo#7780ddf9 file:InputFile thumb:InputFile duration:int w:int h:int mime_type:string caption:string = InputMedia;
-```
-
-#### Parameters:
-
-|Name|Type|
-|----|----|
-|file|[InputFile](inputfile.md)|
-|thumb|[InputFile](inputfile.md)|
-|duration|qint32|
-|w|qint32|
-|h|qint32|
-|mimeType|QString|
-|caption|QString|
-
-## InputMedia::typeInputMediaVideo
-
-#### Schema:
-
-```c++
-inputMediaVideo#936a4ebd id:InputVideo caption:string = InputMedia;
-```
-
-#### Parameters:
-
-|Name|Type|
-|----|----|
-|id|[InputVideo](inputvideo.md)|
-|caption|QString|
-
-## InputMedia::typeInputMediaUploadedAudio
-
-#### Schema:
-
-```c++
-inputMediaUploadedAudio#4e498cab file:InputFile duration:int mime_type:string = InputMedia;
-```
-
-#### Parameters:
-
-|Name|Type|
-|----|----|
-|file|[InputFile](inputfile.md)|
-|duration|qint32|
-|mimeType|QString|
-
-## InputMedia::typeInputMediaAudio
-
-#### Schema:
-
-```c++
-inputMediaAudio#89938781 id:InputAudio = InputMedia;
-```
-
-#### Parameters:
-
-|Name|Type|
-|----|----|
-|id|[InputAudio](inputaudio.md)|
-
 ## InputMedia::typeInputMediaUploadedDocument
 
 #### Schema:
 
 ```c++
-inputMediaUploadedDocument#ffe76b78 file:InputFile mime_type:string attributes:Vector<DocumentAttribute> = InputMedia;
+inputMediaUploadedDocument#1d89306d file:InputFile mime_type:string attributes:Vector<DocumentAttribute> caption:string = InputMedia;
 ```
 
 #### Parameters:
@@ -187,13 +99,14 @@ inputMediaUploadedDocument#ffe76b78 file:InputFile mime_type:string attributes:V
 |file|[InputFile](inputfile.md)|
 |mimeType|QString|
 |attributes|QList&lt;[DocumentAttribute](documentattribute.md)&gt;|
+|caption|QString|
 
 ## InputMedia::typeInputMediaUploadedThumbDocument
 
 #### Schema:
 
 ```c++
-inputMediaUploadedThumbDocument#41481486 file:InputFile thumb:InputFile mime_type:string attributes:Vector<DocumentAttribute> = InputMedia;
+inputMediaUploadedThumbDocument#ad613491 file:InputFile thumb:InputFile mime_type:string attributes:Vector<DocumentAttribute> caption:string = InputMedia;
 ```
 
 #### Parameters:
@@ -204,13 +117,14 @@ inputMediaUploadedThumbDocument#41481486 file:InputFile thumb:InputFile mime_typ
 |thumb|[InputFile](inputfile.md)|
 |mimeType|QString|
 |attributes|QList&lt;[DocumentAttribute](documentattribute.md)&gt;|
+|caption|QString|
 
 ## InputMedia::typeInputMediaDocument
 
 #### Schema:
 
 ```c++
-inputMediaDocument#d184e841 id:InputDocument = InputMedia;
+inputMediaDocument#1a77f29c id:InputDocument caption:string = InputMedia;
 ```
 
 #### Parameters:
@@ -218,6 +132,7 @@ inputMediaDocument#d184e841 id:InputDocument = InputMedia;
 |Name|Type|
 |----|----|
 |id|[InputDocument](inputdocument.md)|
+|caption|QString|
 
 ## InputMedia::typeInputMediaVenue
 
@@ -236,4 +151,19 @@ inputMediaVenue#2827a81a geo_point:InputGeoPoint title:string address:string pro
 |address|QString|
 |provider|QString|
 |venueId|QString|
+
+## InputMedia::typeInputMediaGifExternal
+
+#### Schema:
+
+```c++
+inputMediaGifExternal#4843b0fd url:string q:string = InputMedia;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|url|QString|
+|q|QString|
 

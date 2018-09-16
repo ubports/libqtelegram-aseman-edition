@@ -10,14 +10,13 @@
 #include "core/outboundpkt.h"
 #include "../coretypes.h"
 
-#include "telegram/types/messagesdialogs.h"
-#include <QtGlobal>
-#include "telegram/types/messagesmessages.h"
 #include "telegram/types/inputchannel.h"
+#include <QtGlobal>
 #include "telegram/types/messagesaffectedmessages.h"
 #include <QList>
 #include "telegram/types/messagesaffectedhistory.h"
 #include "telegram/types/inputuser.h"
+#include "telegram/types/messagesmessages.h"
 #include "telegram/types/channelschannelparticipants.h"
 #include "telegram/types/channelparticipantsfilter.h"
 #include "telegram/types/channelschannelparticipant.h"
@@ -28,6 +27,7 @@
 #include "telegram/types/channelparticipantrole.h"
 #include "telegram/types/inputchatphoto.h"
 #include "telegram/types/exportedchatinvite.h"
+#include "telegram/types/exportedmessagelink.h"
 
 namespace Tg {
 namespace Functions {
@@ -36,8 +36,6 @@ class LIBQTELEGRAMSHARED_EXPORT Channels : public TelegramFunctionObject
 {
 public:
     enum ChannelsFunction {
-        fncChannelsGetDialogs = 0xa9d3d249,
-        fncChannelsGetImportantHistory = 0xddb929cb,
         fncChannelsReadHistory = 0xcc104937,
         fncChannelsDeleteMessages = 0x84c1fd4e,
         fncChannelsDeleteUserHistory = 0xd10dd71b,
@@ -49,10 +47,9 @@ public:
         fncChannelsGetFullChannel = 0x8736a09,
         fncChannelsCreateChannel = 0xf4893d7f,
         fncChannelsEditAbout = 0x13e27f1e,
-        fncChannelsEditAdmin = 0x52b16962,
+        fncChannelsEditAdmin = 0xeb7611d0,
         fncChannelsEditTitle = 0x566decd0,
         fncChannelsEditPhoto = 0xf12e57c9,
-        fncChannelsToggleComments = 0xaaa29e88,
         fncChannelsCheckUsername = 0x10e6bd2c,
         fncChannelsUpdateUsername = 0x3514b3de,
         fncChannelsJoinChannel = 0x24b524c5,
@@ -60,17 +57,15 @@ public:
         fncChannelsInviteToChannel = 0x199f3a6c,
         fncChannelsKickFromChannel = 0xa672de14,
         fncChannelsExportInvite = 0xc7560885,
-        fncChannelsDeleteChannel = 0xc0111fe3
+        fncChannelsDeleteChannel = 0xc0111fe3,
+        fncChannelsToggleInvites = 0x49609307,
+        fncChannelsExportMessageLink = 0xc846d22d,
+        fncChannelsToggleSignatures = 0x1f69b606,
+        fncChannelsUpdatePinnedMessage = 0xa72ded52
     };
 
     Channels();
     virtual ~Channels();
-
-    static bool getDialogs(OutboundPkt *out, qint32 offset, qint32 limit);
-    static MessagesDialogs getDialogsResult(InboundPkt *in);
-
-    static bool getImportantHistory(OutboundPkt *out, const InputChannel &channel, qint32 offsetId, qint32 addOffset, qint32 limit, qint32 maxId, qint32 minId);
-    static MessagesMessages getImportantHistoryResult(InboundPkt *in);
 
     static bool readHistory(OutboundPkt *out, const InputChannel &channel, qint32 maxId);
     static bool readHistoryResult(InboundPkt *in);
@@ -106,16 +101,13 @@ public:
     static bool editAboutResult(InboundPkt *in);
 
     static bool editAdmin(OutboundPkt *out, const InputChannel &channel, const InputUser &userId, const ChannelParticipantRole &role);
-    static bool editAdminResult(InboundPkt *in);
+    static UpdatesType editAdminResult(InboundPkt *in);
 
     static bool editTitle(OutboundPkt *out, const InputChannel &channel, const QString &title);
     static UpdatesType editTitleResult(InboundPkt *in);
 
     static bool editPhoto(OutboundPkt *out, const InputChannel &channel, const InputChatPhoto &photo);
     static UpdatesType editPhotoResult(InboundPkt *in);
-
-    static bool toggleComments(OutboundPkt *out, const InputChannel &channel, bool enabled);
-    static UpdatesType toggleCommentsResult(InboundPkt *in);
 
     static bool checkUsername(OutboundPkt *out, const InputChannel &channel, const QString &username);
     static bool checkUsernameResult(InboundPkt *in);
@@ -141,6 +133,18 @@ public:
     static bool deleteChannel(OutboundPkt *out, const InputChannel &channel);
     static UpdatesType deleteChannelResult(InboundPkt *in);
 
+    static bool toggleInvites(OutboundPkt *out, const InputChannel &channel, bool enabled);
+    static UpdatesType toggleInvitesResult(InboundPkt *in);
+
+    static bool exportMessageLink(OutboundPkt *out, const InputChannel &channel, qint32 id);
+    static ExportedMessageLink exportMessageLinkResult(InboundPkt *in);
+
+    static bool toggleSignatures(OutboundPkt *out, const InputChannel &channel, bool enabled);
+    static UpdatesType toggleSignaturesResult(InboundPkt *in);
+
+    static bool updatePinnedMessage(OutboundPkt *out, bool silent, const InputChannel &channel, qint32 id);
+    static UpdatesType updatePinnedMessageResult(InboundPkt *in);
+
 };
 
 }
@@ -148,36 +152,6 @@ inline Functions::Channels::Channels() {
 }
 
 inline Functions::Channels::~Channels() {
-}
-
-inline bool Functions::Channels::getDialogs(OutboundPkt *out, qint32 offset, qint32 limit) {
-    out->appendInt(fncChannelsGetDialogs);
-    out->appendInt(offset);
-    out->appendInt(limit);
-    return true;
-}
-
-inline MessagesDialogs Functions::Channels::getDialogsResult(InboundPkt *in) {
-    MessagesDialogs result;
-    if(!result.fetch(in)) return result;
-    return result;
-}
-
-inline bool Functions::Channels::getImportantHistory(OutboundPkt *out, const InputChannel &channel, qint32 offsetId, qint32 addOffset, qint32 limit, qint32 maxId, qint32 minId) {
-    out->appendInt(fncChannelsGetImportantHistory);
-    if(!channel.push(out)) return false;
-    out->appendInt(offsetId);
-    out->appendInt(addOffset);
-    out->appendInt(limit);
-    out->appendInt(maxId);
-    out->appendInt(minId);
-    return true;
-}
-
-inline MessagesMessages Functions::Channels::getImportantHistoryResult(InboundPkt *in) {
-    MessagesMessages result;
-    if(!result.fetch(in)) return result;
-    return result;
 }
 
 inline bool Functions::Channels::readHistory(OutboundPkt *out, const InputChannel &channel, qint32 maxId) {
@@ -354,9 +328,9 @@ inline bool Functions::Channels::editAdmin(OutboundPkt *out, const InputChannel 
     return true;
 }
 
-inline bool Functions::Channels::editAdminResult(InboundPkt *in) {
-    bool result;
-    result = in->fetchBool();
+inline UpdatesType Functions::Channels::editAdminResult(InboundPkt *in) {
+    UpdatesType result;
+    if(!result.fetch(in)) return result;
     return result;
 }
 
@@ -381,19 +355,6 @@ inline bool Functions::Channels::editPhoto(OutboundPkt *out, const InputChannel 
 }
 
 inline UpdatesType Functions::Channels::editPhotoResult(InboundPkt *in) {
-    UpdatesType result;
-    if(!result.fetch(in)) return result;
-    return result;
-}
-
-inline bool Functions::Channels::toggleComments(OutboundPkt *out, const InputChannel &channel, bool enabled) {
-    out->appendInt(fncChannelsToggleComments);
-    if(!channel.push(out)) return false;
-    out->appendBool(enabled);
-    return true;
-}
-
-inline UpdatesType Functions::Channels::toggleCommentsResult(InboundPkt *in) {
     UpdatesType result;
     if(!result.fetch(in)) return result;
     return result;
@@ -499,6 +460,63 @@ inline bool Functions::Channels::deleteChannel(OutboundPkt *out, const InputChan
 }
 
 inline UpdatesType Functions::Channels::deleteChannelResult(InboundPkt *in) {
+    UpdatesType result;
+    if(!result.fetch(in)) return result;
+    return result;
+}
+
+inline bool Functions::Channels::toggleInvites(OutboundPkt *out, const InputChannel &channel, bool enabled) {
+    out->appendInt(fncChannelsToggleInvites);
+    if(!channel.push(out)) return false;
+    out->appendBool(enabled);
+    return true;
+}
+
+inline UpdatesType Functions::Channels::toggleInvitesResult(InboundPkt *in) {
+    UpdatesType result;
+    if(!result.fetch(in)) return result;
+    return result;
+}
+
+inline bool Functions::Channels::exportMessageLink(OutboundPkt *out, const InputChannel &channel, qint32 id) {
+    out->appendInt(fncChannelsExportMessageLink);
+    if(!channel.push(out)) return false;
+    out->appendInt(id);
+    return true;
+}
+
+inline ExportedMessageLink Functions::Channels::exportMessageLinkResult(InboundPkt *in) {
+    ExportedMessageLink result;
+    if(!result.fetch(in)) return result;
+    return result;
+}
+
+inline bool Functions::Channels::toggleSignatures(OutboundPkt *out, const InputChannel &channel, bool enabled) {
+    out->appendInt(fncChannelsToggleSignatures);
+    if(!channel.push(out)) return false;
+    out->appendBool(enabled);
+    return true;
+}
+
+inline UpdatesType Functions::Channels::toggleSignaturesResult(InboundPkt *in) {
+    UpdatesType result;
+    if(!result.fetch(in)) return result;
+    return result;
+}
+
+inline bool Functions::Channels::updatePinnedMessage(OutboundPkt *out, bool silent, const InputChannel &channel, qint32 id) {
+    out->appendInt(fncChannelsUpdatePinnedMessage);
+    
+    qint32 flags = 0;
+    if(silent != 0) flags = (1<<0 | flags);
+    
+    out->appendInt(flags);
+    if(!channel.push(out)) return false;
+    out->appendInt(id);
+    return true;
+}
+
+inline UpdatesType Functions::Channels::updatePinnedMessageResult(InboundPkt *in) {
     UpdatesType result;
     if(!result.fetch(in)) return result;
     return result;

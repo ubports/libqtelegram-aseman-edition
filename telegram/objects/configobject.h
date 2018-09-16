@@ -19,6 +19,7 @@ class LIBQTELEGRAMSHARED_EXPORT ConfigObject : public TelegramTypeQObject
     Q_PROPERTY(qint32 date READ date WRITE setDate NOTIFY dateChanged)
     Q_PROPERTY(QList<DcOption> dcOptions READ dcOptions WRITE setDcOptions NOTIFY dcOptionsChanged)
     Q_PROPERTY(QList<DisabledFeature> disabledFeatures READ disabledFeatures WRITE setDisabledFeatures NOTIFY disabledFeaturesChanged)
+    Q_PROPERTY(qint32 editTimeLimit READ editTimeLimit WRITE setEditTimeLimit NOTIFY editTimeLimitChanged)
     Q_PROPERTY(qint32 expires READ expires WRITE setExpires NOTIFY expiresChanged)
     Q_PROPERTY(qint32 forwardedCountMax READ forwardedCountMax WRITE setForwardedCountMax NOTIFY forwardedCountMaxChanged)
     Q_PROPERTY(qint32 megagroupSizeMax READ megagroupSizeMax WRITE setMegagroupSizeMax NOTIFY megagroupSizeMaxChanged)
@@ -30,6 +31,8 @@ class LIBQTELEGRAMSHARED_EXPORT ConfigObject : public TelegramTypeQObject
     Q_PROPERTY(qint32 onlineUpdatePeriodMs READ onlineUpdatePeriodMs WRITE setOnlineUpdatePeriodMs NOTIFY onlineUpdatePeriodMsChanged)
     Q_PROPERTY(qint32 pushChatLimit READ pushChatLimit WRITE setPushChatLimit NOTIFY pushChatLimitChanged)
     Q_PROPERTY(qint32 pushChatPeriodMs READ pushChatPeriodMs WRITE setPushChatPeriodMs NOTIFY pushChatPeriodMsChanged)
+    Q_PROPERTY(qint32 ratingEDecay READ ratingEDecay WRITE setRatingEDecay NOTIFY ratingEDecayChanged)
+    Q_PROPERTY(qint32 savedGifsLimit READ savedGifsLimit WRITE setSavedGifsLimit NOTIFY savedGifsLimitChanged)
     Q_PROPERTY(bool testMode READ testMode WRITE setTestMode NOTIFY testModeChanged)
     Q_PROPERTY(qint32 thisDc READ thisDc WRITE setThisDc NOTIFY thisDcChanged)
     Q_PROPERTY(Config core READ core WRITE setCore NOTIFY coreChanged)
@@ -58,6 +61,9 @@ public:
 
     void setDisabledFeatures(const QList<DisabledFeature> &disabledFeatures);
     QList<DisabledFeature> disabledFeatures() const;
+
+    void setEditTimeLimit(qint32 editTimeLimit);
+    qint32 editTimeLimit() const;
 
     void setExpires(qint32 expires);
     qint32 expires() const;
@@ -92,6 +98,12 @@ public:
     void setPushChatPeriodMs(qint32 pushChatPeriodMs);
     qint32 pushChatPeriodMs() const;
 
+    void setRatingEDecay(qint32 ratingEDecay);
+    qint32 ratingEDecay() const;
+
+    void setSavedGifsLimit(qint32 savedGifsLimit);
+    qint32 savedGifsLimit() const;
+
     void setTestMode(bool testMode);
     bool testMode() const;
 
@@ -115,6 +127,7 @@ Q_SIGNALS:
     void dateChanged();
     void dcOptionsChanged();
     void disabledFeaturesChanged();
+    void editTimeLimitChanged();
     void expiresChanged();
     void forwardedCountMaxChanged();
     void megagroupSizeMaxChanged();
@@ -126,6 +139,8 @@ Q_SIGNALS:
     void onlineUpdatePeriodMsChanged();
     void pushChatLimitChanged();
     void pushChatPeriodMsChanged();
+    void ratingEDecayChanged();
+    void savedGifsLimitChanged();
     void testModeChanged();
     void thisDcChanged();
 
@@ -203,6 +218,17 @@ inline void ConfigObject::setDisabledFeatures(const QList<DisabledFeature> &disa
 
 inline QList<DisabledFeature> ConfigObject::disabledFeatures() const {
     return m_core.disabledFeatures();
+}
+
+inline void ConfigObject::setEditTimeLimit(qint32 editTimeLimit) {
+    if(m_core.editTimeLimit() == editTimeLimit) return;
+    m_core.setEditTimeLimit(editTimeLimit);
+    Q_EMIT editTimeLimitChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 ConfigObject::editTimeLimit() const {
+    return m_core.editTimeLimit();
 }
 
 inline void ConfigObject::setExpires(qint32 expires) {
@@ -326,6 +352,28 @@ inline qint32 ConfigObject::pushChatPeriodMs() const {
     return m_core.pushChatPeriodMs();
 }
 
+inline void ConfigObject::setRatingEDecay(qint32 ratingEDecay) {
+    if(m_core.ratingEDecay() == ratingEDecay) return;
+    m_core.setRatingEDecay(ratingEDecay);
+    Q_EMIT ratingEDecayChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 ConfigObject::ratingEDecay() const {
+    return m_core.ratingEDecay();
+}
+
+inline void ConfigObject::setSavedGifsLimit(qint32 savedGifsLimit) {
+    if(m_core.savedGifsLimit() == savedGifsLimit) return;
+    m_core.setSavedGifsLimit(savedGifsLimit);
+    Q_EMIT savedGifsLimitChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 ConfigObject::savedGifsLimit() const {
+    return m_core.savedGifsLimit();
+}
+
 inline void ConfigObject::setTestMode(bool testMode) {
     if(m_core.testMode() == testMode) return;
     m_core.setTestMode(testMode);
@@ -357,6 +405,7 @@ inline ConfigObject &ConfigObject::operator =(const Config &b) {
     Q_EMIT dateChanged();
     Q_EMIT dcOptionsChanged();
     Q_EMIT disabledFeaturesChanged();
+    Q_EMIT editTimeLimitChanged();
     Q_EMIT expiresChanged();
     Q_EMIT forwardedCountMaxChanged();
     Q_EMIT megagroupSizeMaxChanged();
@@ -368,6 +417,8 @@ inline ConfigObject &ConfigObject::operator =(const Config &b) {
     Q_EMIT onlineUpdatePeriodMsChanged();
     Q_EMIT pushChatLimitChanged();
     Q_EMIT pushChatPeriodMsChanged();
+    Q_EMIT ratingEDecayChanged();
+    Q_EMIT savedGifsLimitChanged();
     Q_EMIT testModeChanged();
     Q_EMIT thisDcChanged();
     Q_EMIT coreChanged();

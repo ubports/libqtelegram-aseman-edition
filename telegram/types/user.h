@@ -25,7 +25,7 @@ class LIBQTELEGRAMSHARED_EXPORT User : public TelegramTypeObject
 public:
     enum UserClassType {
         typeUserEmpty = 0x200250ba,
-        typeUser = 0x22e49072
+        typeUser = 0xd10d979a
     };
 
     User(UserClassType classType = typeUserEmpty, InboundPkt *in = 0);
@@ -44,6 +44,12 @@ public:
 
     void setBotInfoVersion(qint32 botInfoVersion);
     qint32 botInfoVersion() const;
+
+    void setBotInlineGeo(bool botInlineGeo);
+    bool botInlineGeo() const;
+
+    void setBotInlinePlaceholder(const QString &botInlinePlaceholder);
+    QString botInlinePlaceholder() const;
 
     void setBotNochats(bool botNochats);
     bool botNochats() const;
@@ -66,6 +72,9 @@ public:
     void setLastName(const QString &lastName);
     QString lastName() const;
 
+    void setMin(bool min);
+    bool min() const;
+
     void setMutualContact(bool mutualContact);
     bool mutualContact() const;
 
@@ -74,6 +83,12 @@ public:
 
     void setPhoto(const UserProfilePhoto &photo);
     UserProfilePhoto photo() const;
+
+    void setRestricted(bool restricted);
+    bool restricted() const;
+
+    void setRestrictionReason(const QString &restrictionReason);
+    QString restrictionReason() const;
 
     void setSelf(bool self);
     bool self() const;
@@ -106,12 +121,14 @@ public:
 private:
     qint64 m_accessHash;
     qint32 m_botInfoVersion;
+    QString m_botInlinePlaceholder;
     QString m_firstName;
     qint32 m_flags;
     qint32 m_id;
     QString m_lastName;
     QString m_phone;
     UserProfilePhoto m_photo;
+    QString m_restrictionReason;
     UserStatus m_status;
     QString m_username;
     UserClassType m_classType;
@@ -189,6 +206,23 @@ inline qint32 User::botInfoVersion() const {
     return m_botInfoVersion;
 }
 
+inline void User::setBotInlineGeo(bool botInlineGeo) {
+    if(botInlineGeo) m_flags = (m_flags | (1<<21));
+    else m_flags = (m_flags & ~(1<<21));
+}
+
+inline bool User::botInlineGeo() const {
+    return (m_flags & 1<<21);
+}
+
+inline void User::setBotInlinePlaceholder(const QString &botInlinePlaceholder) {
+    m_botInlinePlaceholder = botInlinePlaceholder;
+}
+
+inline QString User::botInlinePlaceholder() const {
+    return m_botInlinePlaceholder;
+}
+
 inline void User::setBotNochats(bool botNochats) {
     if(botNochats) m_flags = (m_flags | (1<<16));
     else m_flags = (m_flags & ~(1<<16));
@@ -248,6 +282,15 @@ inline QString User::lastName() const {
     return m_lastName;
 }
 
+inline void User::setMin(bool min) {
+    if(min) m_flags = (m_flags | (1<<20));
+    else m_flags = (m_flags & ~(1<<20));
+}
+
+inline bool User::min() const {
+    return (m_flags & 1<<20);
+}
+
 inline void User::setMutualContact(bool mutualContact) {
     if(mutualContact) m_flags = (m_flags | (1<<12));
     else m_flags = (m_flags & ~(1<<12));
@@ -271,6 +314,23 @@ inline void User::setPhoto(const UserProfilePhoto &photo) {
 
 inline UserProfilePhoto User::photo() const {
     return m_photo;
+}
+
+inline void User::setRestricted(bool restricted) {
+    if(restricted) m_flags = (m_flags | (1<<18));
+    else m_flags = (m_flags & ~(1<<18));
+}
+
+inline bool User::restricted() const {
+    return (m_flags & 1<<18);
+}
+
+inline void User::setRestrictionReason(const QString &restrictionReason) {
+    m_restrictionReason = restrictionReason;
+}
+
+inline QString User::restrictionReason() const {
+    return m_restrictionReason;
 }
 
 inline void User::setSelf(bool self) {
@@ -311,12 +371,14 @@ inline bool User::operator ==(const User &b) const {
     return m_classType == b.m_classType &&
            m_accessHash == b.m_accessHash &&
            m_botInfoVersion == b.m_botInfoVersion &&
+           m_botInlinePlaceholder == b.m_botInlinePlaceholder &&
            m_firstName == b.m_firstName &&
            m_flags == b.m_flags &&
            m_id == b.m_id &&
            m_lastName == b.m_lastName &&
            m_phone == b.m_phone &&
            m_photo == b.m_photo &&
+           m_restrictionReason == b.m_restrictionReason &&
            m_status == b.m_status &&
            m_username == b.m_username;
 }
@@ -367,6 +429,12 @@ inline bool User::fetch(InboundPkt *in) {
         if(m_flags & 1<<14) {
             m_botInfoVersion = in->fetchInt();
         }
+        if(m_flags & 1<<18) {
+            m_restrictionReason = in->fetchQString();
+        }
+        if(m_flags & 1<<19) {
+            m_botInlinePlaceholder = in->fetchQString();
+        }
         m_classType = static_cast<UserClassType>(x);
         return true;
     }
@@ -398,6 +466,8 @@ inline bool User::push(OutboundPkt *out) const {
         m_photo.push(out);
         m_status.push(out);
         out->appendInt(m_botInfoVersion);
+        out->appendQString(m_restrictionReason);
+        out->appendQString(m_botInlinePlaceholder);
         return true;
     }
         break;
@@ -427,6 +497,9 @@ inline QMap<QString, QVariant> User::toMap() const {
         result["botChatHistory"] = QVariant::fromValue<bool>(botChatHistory());
         result["botNochats"] = QVariant::fromValue<bool>(botNochats());
         result["verified"] = QVariant::fromValue<bool>(verified());
+        result["restricted"] = QVariant::fromValue<bool>(restricted());
+        result["min"] = QVariant::fromValue<bool>(min());
+        result["botInlineGeo"] = QVariant::fromValue<bool>(botInlineGeo());
         result["id"] = QVariant::fromValue<qint32>(id());
         result["accessHash"] = QVariant::fromValue<qint64>(accessHash());
         result["firstName"] = QVariant::fromValue<QString>(firstName());
@@ -436,6 +509,8 @@ inline QMap<QString, QVariant> User::toMap() const {
         result["photo"] = m_photo.toMap();
         result["status"] = m_status.toMap();
         result["botInfoVersion"] = QVariant::fromValue<qint32>(botInfoVersion());
+        result["restrictionReason"] = QVariant::fromValue<QString>(restrictionReason());
+        result["botInlinePlaceholder"] = QVariant::fromValue<QString>(botInlinePlaceholder());
         return result;
     }
         break;
@@ -462,6 +537,9 @@ inline User User::fromMap(const QMap<QString, QVariant> &map) {
         result.setBotChatHistory( map.value("botChatHistory").value<bool>() );
         result.setBotNochats( map.value("botNochats").value<bool>() );
         result.setVerified( map.value("verified").value<bool>() );
+        result.setRestricted( map.value("restricted").value<bool>() );
+        result.setMin( map.value("min").value<bool>() );
+        result.setBotInlineGeo( map.value("botInlineGeo").value<bool>() );
         result.setId( map.value("id").value<qint32>() );
         result.setAccessHash( map.value("accessHash").value<qint64>() );
         result.setFirstName( map.value("firstName").value<QString>() );
@@ -471,6 +549,8 @@ inline User User::fromMap(const QMap<QString, QVariant> &map) {
         result.setPhoto( UserProfilePhoto::fromMap(map.value("photo").toMap()) );
         result.setStatus( UserStatus::fromMap(map.value("status").toMap()) );
         result.setBotInfoVersion( map.value("botInfoVersion").value<qint32>() );
+        result.setRestrictionReason( map.value("restrictionReason").value<QString>() );
+        result.setBotInlinePlaceholder( map.value("botInlinePlaceholder").value<QString>() );
         return result;
     }
     return result;
@@ -500,6 +580,8 @@ inline QDataStream &operator<<(QDataStream &stream, const User &item) {
         stream << item.photo();
         stream << item.status();
         stream << item.botInfoVersion();
+        stream << item.restrictionReason();
+        stream << item.botInlinePlaceholder();
         break;
     }
     return stream;
@@ -547,6 +629,12 @@ inline QDataStream &operator>>(QDataStream &stream, User &item) {
         qint32 m_bot_info_version;
         stream >> m_bot_info_version;
         item.setBotInfoVersion(m_bot_info_version);
+        QString m_restriction_reason;
+        stream >> m_restriction_reason;
+        item.setRestrictionReason(m_restriction_reason);
+        QString m_bot_inline_placeholder;
+        stream >> m_bot_inline_placeholder;
+        item.setBotInlinePlaceholder(m_bot_inline_placeholder);
     }
         break;
     }

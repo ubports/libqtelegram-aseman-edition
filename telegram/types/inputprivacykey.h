@@ -20,7 +20,8 @@ class LIBQTELEGRAMSHARED_EXPORT InputPrivacyKey : public TelegramTypeObject
 {
 public:
     enum InputPrivacyKeyClassType {
-        typeInputPrivacyKeyStatusTimestamp = 0x4f96cb18
+        typeInputPrivacyKeyStatusTimestamp = 0x4f96cb18,
+        typeInputPrivacyKeyChatInvite = 0xbdfb0426
     };
 
     InputPrivacyKey(InputPrivacyKeyClassType classType = typeInputPrivacyKeyStatusTimestamp, InboundPkt *in = 0);
@@ -96,6 +97,12 @@ inline bool InputPrivacyKey::fetch(InboundPkt *in) {
     }
         break;
     
+    case typeInputPrivacyKeyChatInvite: {
+        m_classType = static_cast<InputPrivacyKeyClassType>(x);
+        return true;
+    }
+        break;
+    
     default:
         LQTG_FETCH_ASSERT;
         return false;
@@ -106,6 +113,11 @@ inline bool InputPrivacyKey::push(OutboundPkt *out) const {
     out->appendInt(m_classType);
     switch(m_classType) {
     case typeInputPrivacyKeyStatusTimestamp: {
+        return true;
+    }
+        break;
+    
+    case typeInputPrivacyKeyChatInvite: {
         return true;
     }
         break;
@@ -124,6 +136,12 @@ inline QMap<QString, QVariant> InputPrivacyKey::toMap() const {
     }
         break;
     
+    case typeInputPrivacyKeyChatInvite: {
+        result["classType"] = "InputPrivacyKey::typeInputPrivacyKeyChatInvite";
+        return result;
+    }
+        break;
+    
     default:
         return result;
     }
@@ -133,6 +151,10 @@ inline InputPrivacyKey InputPrivacyKey::fromMap(const QMap<QString, QVariant> &m
     InputPrivacyKey result;
     if(map.value("classType").toString() == "InputPrivacyKey::typeInputPrivacyKeyStatusTimestamp") {
         result.setClassType(typeInputPrivacyKeyStatusTimestamp);
+        return result;
+    }
+    if(map.value("classType").toString() == "InputPrivacyKey::typeInputPrivacyKeyChatInvite") {
+        result.setClassType(typeInputPrivacyKeyChatInvite);
         return result;
     }
     return result;
@@ -151,6 +173,9 @@ inline QDataStream &operator<<(QDataStream &stream, const InputPrivacyKey &item)
     case InputPrivacyKey::typeInputPrivacyKeyStatusTimestamp:
         
         break;
+    case InputPrivacyKey::typeInputPrivacyKeyChatInvite:
+        
+        break;
     }
     return stream;
 }
@@ -161,6 +186,10 @@ inline QDataStream &operator>>(QDataStream &stream, InputPrivacyKey &item) {
     item.setClassType(static_cast<InputPrivacyKey::InputPrivacyKeyClassType>(type));
     switch(type) {
     case InputPrivacyKey::typeInputPrivacyKeyStatusTimestamp: {
+        
+    }
+        break;
+    case InputPrivacyKey::typeInputPrivacyKeyChatInvite: {
         
     }
         break;

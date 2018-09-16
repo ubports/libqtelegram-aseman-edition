@@ -25,7 +25,8 @@ public:
     enum ReplyMarkupClassType {
         typeReplyKeyboardHide = 0xa03e5b85,
         typeReplyKeyboardForceReply = 0xf4108aa0,
-        typeReplyKeyboardMarkup = 0x3502758c
+        typeReplyKeyboardMarkup = 0x3502758c,
+        typeReplyInlineMarkup = 0x48a30254
     };
 
     ReplyMarkup(ReplyMarkupClassType classType = typeReplyKeyboardHide, InboundPkt *in = 0);
@@ -189,6 +190,20 @@ inline bool ReplyMarkup::fetch(InboundPkt *in) {
     }
         break;
     
+    case typeReplyInlineMarkup: {
+        if(in->fetchInt() != (qint32)CoreTypes::typeVector) return false;
+        qint32 m_rows_length = in->fetchInt();
+        m_rows.clear();
+        for (qint32 i = 0; i < m_rows_length; i++) {
+            KeyboardButtonRow type;
+            type.fetch(in);
+            m_rows.append(type);
+        }
+        m_classType = static_cast<ReplyMarkupClassType>(x);
+        return true;
+    }
+        break;
+    
     default:
         LQTG_FETCH_ASSERT;
         return false;
@@ -212,6 +227,16 @@ inline bool ReplyMarkup::push(OutboundPkt *out) const {
     
     case typeReplyKeyboardMarkup: {
         out->appendInt(m_flags);
+        out->appendInt(CoreTypes::typeVector);
+        out->appendInt(m_rows.count());
+        for (qint32 i = 0; i < m_rows.count(); i++) {
+            m_rows[i].push(out);
+        }
+        return true;
+    }
+        break;
+    
+    case typeReplyInlineMarkup: {
         out->appendInt(CoreTypes::typeVector);
         out->appendInt(m_rows.count());
         for (qint32 i = 0; i < m_rows.count(); i++) {
@@ -257,6 +282,16 @@ inline QMap<QString, QVariant> ReplyMarkup::toMap() const {
     }
         break;
     
+    case typeReplyInlineMarkup: {
+        result["classType"] = "ReplyMarkup::typeReplyInlineMarkup";
+        QList<QVariant> _rows;
+        Q_FOREACH(const KeyboardButtonRow &m__type, m_rows)
+            _rows << m__type.toMap();
+        result["rows"] = _rows;
+        return result;
+    }
+        break;
+    
     default:
         return result;
     }
@@ -287,6 +322,15 @@ inline ReplyMarkup ReplyMarkup::fromMap(const QMap<QString, QVariant> &map) {
         result.setRows(_rows);
         return result;
     }
+    if(map.value("classType").toString() == "ReplyMarkup::typeReplyInlineMarkup") {
+        result.setClassType(typeReplyInlineMarkup);
+        QList<QVariant> map_rows = map["rows"].toList();
+        QList<KeyboardButtonRow> _rows;
+        Q_FOREACH(const QVariant &var, map_rows)
+            _rows << KeyboardButtonRow::fromMap(var.toMap());
+        result.setRows(_rows);
+        return result;
+    }
     return result;
 }
 
@@ -308,6 +352,9 @@ inline QDataStream &operator<<(QDataStream &stream, const ReplyMarkup &item) {
         break;
     case ReplyMarkup::typeReplyKeyboardMarkup:
         stream << item.flags();
+        stream << item.rows();
+        break;
+    case ReplyMarkup::typeReplyInlineMarkup:
         stream << item.rows();
         break;
     }
@@ -335,6 +382,12 @@ inline QDataStream &operator>>(QDataStream &stream, ReplyMarkup &item) {
         qint32 m_flags;
         stream >> m_flags;
         item.setFlags(m_flags);
+        QList<KeyboardButtonRow> m_rows;
+        stream >> m_rows;
+        item.setRows(m_rows);
+    }
+        break;
+    case ReplyMarkup::typeReplyInlineMarkup: {
         QList<KeyboardButtonRow> m_rows;
         stream >> m_rows;
         item.setRows(m_rows);

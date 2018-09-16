@@ -48,3 +48,5 @@
 
 * **Update password settings** - [TelegramCore::accountUpdatePasswordSettings](methods/updatepasswordsettings.md)
 
+* **Report peer** - [TelegramCore::accountReportPeer](methods/reportpeer.md)
+

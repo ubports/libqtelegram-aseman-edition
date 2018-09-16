@@ -18,11 +18,14 @@ class LIBQTELEGRAMSHARED_EXPORT DocumentAttributeObject : public TelegramTypeQOb
     Q_PROPERTY(QString alt READ alt WRITE setAlt NOTIFY altChanged)
     Q_PROPERTY(qint32 duration READ duration WRITE setDuration NOTIFY durationChanged)
     Q_PROPERTY(QString fileName READ fileName WRITE setFileName NOTIFY fileNameChanged)
+    Q_PROPERTY(qint32 flags READ flags WRITE setFlags NOTIFY flagsChanged)
     Q_PROPERTY(qint32 h READ h WRITE setH NOTIFY hChanged)
     Q_PROPERTY(QString performer READ performer WRITE setPerformer NOTIFY performerChanged)
     Q_PROPERTY(InputStickerSetObject* stickerset READ stickerset WRITE setStickerset NOTIFY stickersetChanged)
     Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY titleChanged)
+    Q_PROPERTY(bool voice READ voice WRITE setVoice NOTIFY voiceChanged)
     Q_PROPERTY(qint32 w READ w WRITE setW NOTIFY wChanged)
+    Q_PROPERTY(QByteArray waveform READ waveform WRITE setWaveform NOTIFY waveformChanged)
     Q_PROPERTY(DocumentAttribute core READ core WRITE setCore NOTIFY coreChanged)
     Q_PROPERTY(quint32 classType READ classType WRITE setClassType NOTIFY classTypeChanged)
 
@@ -49,6 +52,9 @@ public:
     void setFileName(const QString &fileName);
     QString fileName() const;
 
+    void setFlags(qint32 flags);
+    qint32 flags() const;
+
     void setH(qint32 h);
     qint32 h() const;
 
@@ -61,8 +67,14 @@ public:
     void setTitle(const QString &title);
     QString title() const;
 
+    void setVoice(bool voice);
+    bool voice() const;
+
     void setW(qint32 w);
     qint32 w() const;
+
+    void setWaveform(const QByteArray &waveform);
+    QByteArray waveform() const;
 
     void setClassType(quint32 classType);
     quint32 classType() const;
@@ -79,11 +91,14 @@ Q_SIGNALS:
     void altChanged();
     void durationChanged();
     void fileNameChanged();
+    void flagsChanged();
     void hChanged();
     void performerChanged();
     void stickersetChanged();
     void titleChanged();
+    void voiceChanged();
     void wChanged();
+    void waveformChanged();
 
 private Q_SLOTS:
     void coreStickersetChanged();
@@ -147,6 +162,17 @@ inline QString DocumentAttributeObject::fileName() const {
     return m_core.fileName();
 }
 
+inline void DocumentAttributeObject::setFlags(qint32 flags) {
+    if(m_core.flags() == flags) return;
+    m_core.setFlags(flags);
+    Q_EMIT flagsChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 DocumentAttributeObject::flags() const {
+    return m_core.flags();
+}
+
 inline void DocumentAttributeObject::setH(qint32 h) {
     if(m_core.h() == h) return;
     m_core.setH(h);
@@ -197,6 +223,17 @@ inline QString DocumentAttributeObject::title() const {
     return m_core.title();
 }
 
+inline void DocumentAttributeObject::setVoice(bool voice) {
+    if(m_core.voice() == voice) return;
+    m_core.setVoice(voice);
+    Q_EMIT voiceChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool DocumentAttributeObject::voice() const {
+    return m_core.voice();
+}
+
 inline void DocumentAttributeObject::setW(qint32 w) {
     if(m_core.w() == w) return;
     m_core.setW(w);
@@ -208,6 +245,17 @@ inline qint32 DocumentAttributeObject::w() const {
     return m_core.w();
 }
 
+inline void DocumentAttributeObject::setWaveform(const QByteArray &waveform) {
+    if(m_core.waveform() == waveform) return;
+    m_core.setWaveform(waveform);
+    Q_EMIT waveformChanged();
+    Q_EMIT coreChanged();
+}
+
+inline QByteArray DocumentAttributeObject::waveform() const {
+    return m_core.waveform();
+}
+
 inline DocumentAttributeObject &DocumentAttributeObject::operator =(const DocumentAttribute &b) {
     if(m_core == b) return *this;
     m_core = b;
@@ -216,11 +264,14 @@ inline DocumentAttributeObject &DocumentAttributeObject::operator =(const Docume
     Q_EMIT altChanged();
     Q_EMIT durationChanged();
     Q_EMIT fileNameChanged();
+    Q_EMIT flagsChanged();
     Q_EMIT hChanged();
     Q_EMIT performerChanged();
     Q_EMIT stickersetChanged();
     Q_EMIT titleChanged();
+    Q_EMIT voiceChanged();
     Q_EMIT wChanged();
+    Q_EMIT waveformChanged();
     Q_EMIT coreChanged();
     return *this;
 }
