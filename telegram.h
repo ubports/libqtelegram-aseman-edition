@@ -134,7 +134,6 @@ public:
     qint64 contactsGetBlocked(qint32 offset = 0, qint32 limit = 0);
 
     // Working with channels
-    qint64 channelsGetDialogs(qint32 offset, qint32 limit);
     qint64 channelsGetImportantHistory(const InputChannel &channel, qint32 offset_id, qint32 add_offset, qint32 limit, qint32 max_id, qint32 min_id);
     qint64 channelsReadHistory(const InputChannel &channel, qint32 max_id);
     qint64 channelsDeleteMessages(const InputChannel &channel, const QList<qint32> &id);
@@ -143,7 +142,6 @@ public:
     qint64 channelsGetMessages(const InputChannel &channel, const QList<qint32> &id);
     qint64 channelsGetParticipants(const InputChannel &channel, const ChannelParticipantsFilter &filter, qint32 offset, qint32 limit);
     qint64 channelsGetChannels(const QList<InputChannel> &id);
-    qint64 channelsGetFullChannel(const InputChannel &channel);
     qint64 channelsCreateChannel(bool broadcast, bool megagroup, const QString &title, const QString &about);
     qint64 channelsEditAbout(const InputChannel &channel, const QString &about);
     qint64 channelsEditAdmin(const InputChannel &channel, const InputUser &user_id, const ChannelParticipantRole &role);
@@ -176,7 +174,6 @@ public:
     qint64 messagesForwardDocument(const InputPeer &peer, qint64 randomId, qint64 documentId, qint64 accessHash, qint32 replyToMsgId = 0);
     qint64 messagesSetTyping(const InputPeer &peer, const SendMessageAction &action);
     qint64 messagesGetMessages(const QList<qint32> &msgIds);
-    qint64 messagesGetDialogs(qint32 offset = 0, qint32 limit = 0);
     qint64 messagesReadHistory(const InputPeer &peer, qint32 maxId = 0, qint32 offset = 0);
     qint64 messagesReadMessageContents(const QList<qint32> &ids);
     qint64 messagesDeleteHistory(const InputPeer &peer, qint32 offset = 0);

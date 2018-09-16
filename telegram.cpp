@@ -1543,11 +1543,6 @@ qint64 Telegram::contactsGetContacts() {
 }
 
 // Working with channels
-qint64 Telegram::channelsGetDialogs(qint32 offset, qint32 limit)
-{
-    CHECK_API;
-    return mApi->channelsGetDialogs(offset, limit);
-}
 
 qint64 Telegram::channelsGetImportantHistory(const InputChannel &channel, qint32 offset_id, qint32 add_offset, qint32 limit, qint32 max_id, qint32 min_id)
 {
@@ -1595,12 +1590,6 @@ qint64 Telegram::channelsGetChannels(const QList<InputChannel> &id)
 {
     CHECK_API;
     return mApi->channelsGetChannels(id);
-}
-
-qint64 Telegram::channelsGetFullChannel(const InputChannel &channel)
-{
-    CHECK_API;
-    return mApi->channelsGetFullChannel(channel);
 }
 
 qint64 Telegram::channelsCreateChannel(bool broadcast, bool megagroup, const QString &title, const QString &about)
@@ -1913,11 +1902,6 @@ qint64 Telegram::messagesSetTyping(const InputPeer &peer, const SendMessageActio
 qint64 Telegram::messagesGetMessages(const QList<qint32> &msgIds) {
     CHECK_API;
     return mApi->messagesGetMessages(msgIds);
-}
-
-qint64 Telegram::messagesGetDialogs(qint32 offset, qint32 limit) {
-    CHECK_API;
-    return mApi->messagesGetDialogs(offset, limit);
 }
 
 qint64 Telegram::messagesReadHistory(const InputPeer &peer, qint32 maxId, qint32 offset) {
