@@ -1114,7 +1114,7 @@ TelegramCore::onError(id, errorCode, errorText, functionName, attachedData, acce
 void Telegram::onErrorRetry(qint64 id, qint32 errorCode, const QString &errorText) {
     if (errorText.contains("_MIGRATE_")) {
         qint32 newDc = errorText.mid(errorText.lastIndexOf("_") + 1).toInt();
-        qDebug() << "migrated to dc" << newDc;
+        qWarning() << "migrated to dc" << newDc;
         prv->mSettings->setWorkingDcNum(newDc);
         DC *dc = prv->mDcProvider->getDc(newDc);
         mApi->changeMainSessionToDc(dc);

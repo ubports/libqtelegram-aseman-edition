@@ -152,6 +152,11 @@ private:
 
     qint64 recomposeAndSendQuery(Query *q);
 
+    bool advancedEndpoint;
+
+protected:
+    void beforeConnect() override;
+
 protected Q_SLOTS:
     void processRpcAnswer(QByteArray response);
 

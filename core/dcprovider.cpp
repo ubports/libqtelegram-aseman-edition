@@ -308,7 +308,10 @@ void DcProvider::onConfigReceived(qint64 msgId, const Config &config, const QVar
             //Make sure we remove old entries from the DC option list with mediaonly = true
             dc->deleteEndpoint(dcOption.ipAddress(), dcOption.port());
         }
-
+    }
+    //Need second loop to guarntee all possible IP addresses have been assigned to the DC structures
+    Q_FOREACH (DcOption dcOption, dcOptions) {
+        DC *dc = mDcs.value(dcOption.id());
         qint32 currentDc = dcIndex.indexOf(dcOption.id());
         if (currentDc>-1)
         {

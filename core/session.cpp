@@ -677,11 +677,21 @@ void Session::sendAcks(const QList<qint64> &msgIds) {
     qCDebug(TG_CORE_SESSION) << "Sent Acks with id:" << QString::number(sentAcksId, 16);
 }
 
-void Session::onError(QAbstractSocket::SocketError error) {
+void Session::beforeConnect()
+{
+    if(advancedEndpoint)
+    {
+        setHost(m_dc->currentEndpoint().host());
+        setPort(m_dc->currentEndpoint().port());
+        advancedEndpoint = false;
+    }
+}
+
+void Session::onError(QAbstractSocket::SocketError error)
+{
+        advancedEndpoint = true;
         m_dc->advanceEndpoint();
         QString newHost = m_dc->currentEndpoint().host();
         qint32 newPort = m_dc->currentEndpoint().port();
-        setHost(newHost);
-        setPort(newPort);
         qWarning() << "Error" << error << "in tcp socket, retrying another endpoint:" << newHost << ":" << newPort;
 }

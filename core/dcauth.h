@@ -67,6 +67,11 @@ private:
 
     void processConnected();
 
+    bool advancedEndpoint;
+
+protected:
+    void beforeConnect() override;
+
 protected Q_SLOTS:
     void processRpcAnswer(QByteArray response);
     void onError(QAbstractSocket::SocketError error);
