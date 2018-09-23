@@ -30,8 +30,9 @@ DcProvider::DcProvider(Settings *settings, CryptoUtils *crypto) :
     mPendingDcs(0),
     mPendingTransferSessions(0),
     mWorkingDcSession(0),
-    mConfigReceived(0) {
-}
+    nearestDc(0),
+    mConfigReceived(0)
+     { }
 
 DcProvider::~DcProvider() {
    clean();
@@ -167,24 +168,32 @@ void DcProvider::onDcAuthDisconnected() {
     dcAuth->deleteLater();
 }
 
+void DcProvider::finalDcEstablished() {
+
+    qCDebug(TG_CORE_DCPROVIDER) << "DcProvider ready";
+    Q_EMIT dcProviderReady();
+
+}
+
+void DcProvider::setupApi(DC *dc) {
+
+    Session *session = new Session(dc, mSettings, mCrypto, this);
+    mApi = new TelegramApi(session, mSettings, mCrypto, this);
+    setApi(mApi);
+    connect(mApi, &SessionManager::mainSessionReady, this, &DcProvider::onApiReady);
+    m_error = connect(session, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onApiError()));
+    session->connectToServer();
+}
+
 void DcProvider::processDcReady(DC *dc) {
     mDcsLock.lock();
     // create api object if dc is workingDc, and get configuration
     if ((!mApi) && (dc->id() == mSettings->workingDcNum())) {
-        Session *session = new Session(dc, mSettings, mCrypto, this);
-        mApi = new TelegramApi(session, mSettings, mCrypto, this);
-        setApi(mApi);
-        connect(session, &Session::sessionReady, this, &DcProvider::onApiReady);
-        m_error = connect(session, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onApiError()));
-        qWarning() << "processDcReady";
-        session->connectToServer();
+        setupApi(dc);
     } else if (--mPendingDcs == 0) { // if all dcs are authorized, emit provider ready signal
         // save the settings here, after all dcs are ready
         mSettings->setDcsList(mDcs.values());
         mSettings->writeAuthFile();
-
-        qCDebug(TG_CORE_DCPROVIDER) << "DcProvider ready";
-        Q_EMIT dcProviderReady();
 
         // if current dc is in "authKeyCreated" state, authNeeded signal must be emitted for user to sign in.
         // if current dc is in "userSignedIn" state, check that all dcs are in that state or export/import auth.
@@ -240,30 +249,49 @@ void DcProvider::onApiError() {
     }
 }
 
-void DcProvider::onApiReady(DC*) {
-    Session *session = qobject_cast<Session *>(sender());
+void DcProvider::onApiReady() {
+
     qCDebug(TG_CORE_DCPROVIDER) << "Api connected to server and ready";
 
     // after emitting the api startup signals, we don't want to do it again when session gets connected, so disconnect signal-slot
     disconnect(m_error);
 
-    // get the config
-    connect(mApi, &TelegramApi::helpGetConfigAnswer, this, &DcProvider::onConfigReceived, Qt::UniqueConnection );
-
-    qint64 rid = mApi->helpGetConfig();
-    mGetConfigRequests[rid] = session;
+    // get nearest DC
+    connect(mApi, &TelegramApi::helpGetNearestDcAnswer, this, &DcProvider::onNearestDcReceived, Qt::UniqueConnection );
+    mApi->helpGetNearestDc();
 }
 
-void DcProvider::onConfigReceived(qint64 msgId, const Config &config, const QVariant &attachedData) {
-    Q_UNUSED(attachedData)
+void DcProvider::onNearestDcReceived(qint64 msgId, const NearestDc &result) {
+
+    qWarning() << "Nearest DC is" << result.nearestDc() << "country" << result.country() << "this DC" << result.thisDc();
+    nearestDc = result.nearestDc();
+    DC *dc = mDcs.value(nearestDc);
+    if (result.thisDc() != nearestDc && dc)
+    {
+        qWarning() << "Preemptively migrating to other DC";
+        if(mApi)
+        {
+            mSettings->setWorkingDcNum(nearestDc);
+            mSettings->writeAuthFile();
+            mApi->changeMainSessionToDc(dc);
+        }
+        return;
+    }
+
+    // get the config
+    if(mApi)
+        disconnect(mApi, &SessionManager::mainSessionReady, this, &DcProvider::onApiReady);
+    connect(mApi, &TelegramApi::helpGetConfigAnswer, this, &DcProvider::onConfigReceived, Qt::UniqueConnection );
+    mApi->helpGetConfig();
+    finalDcEstablished();
+}
+
+void DcProvider::onConfigReceived(qint64 msgId, const Config &config) {
+
     qCDebug(TG_CORE_DCPROVIDER) << "onConfigReceived(), msgId =" << QString::number(msgId, 16);
     qCDebug(TG_CORE_DCPROVIDER) << "date =" << config.date();
     qCDebug(TG_CORE_DCPROVIDER) << "testMode =" << config.testMode();
     qCDebug(TG_CORE_DCPROVIDER) << "thisDc =" << config.thisDc();
-
-    Session *session = mGetConfigRequests.take(msgId);
-    if(session)
-        disconnect(session, &Session::sessionReady, this, &DcProvider::onApiReady);
 
     if(mConfigReceived)
         return;

@@ -69,10 +69,12 @@ Session *SessionManager::createFileSession(DC *dc) {
 }
 
 Session *SessionManager::createSession(DC *dc) {
+    qWarning() << "Create session to dc" << dc->id();
     Session *session = new Session(dc, mSettings, mCrypto, this);
     connect(session, SIGNAL(sessionReleased(qint64)), SLOT(onSessionReleased(qint64)));
     connect(session, SIGNAL(sessionClosed(qint64)), SLOT(onSessionClosed(qint64)));
     connectResponsesSignals(session);
+    qWarning() << "All signals connected";
     return session;
 }
 
@@ -114,9 +116,13 @@ void SessionManager::setMainSession(Session *session) {
 }
 
 void SessionManager::changeMainSessionToDc(DC *dc) {
+    qWarning() << "Changing main session to dc" << dc->id();
+
     // remove current main session that is connected to a wrong dc
     if (mMainSession) {
         mMainSession->close();
+        qWarning() << "Closed main session at dc" << mMainSession->dc()->id();
+        mMainSession->deleteLater();
     }
     // create session and connect to dc, adding the signal of dc changed
     mMainSession = createSession(dc);
@@ -124,6 +130,7 @@ void SessionManager::changeMainSessionToDc(DC *dc) {
     connect(mMainSession, SIGNAL(sessionReady(DC*)), this, SIGNAL(mainSessionReady()), Qt::UniqueConnection);
     connect(mMainSession, SIGNAL(sessionClosed(qint64)), this, SIGNAL(mainSessionClosed()), Qt::UniqueConnection);
     connectUpdatesSignals(mMainSession);
+    qWarning() << "Remaining signals connected, connecting to server";
     mMainSession->connectToServer();
 }
 

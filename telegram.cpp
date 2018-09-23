@@ -1116,6 +1116,7 @@ void Telegram::onErrorRetry(qint64 id, qint32 errorCode, const QString &errorTex
         qint32 newDc = errorText.mid(errorText.lastIndexOf("_") + 1).toInt();
         qWarning() << "migrated to dc" << newDc;
         prv->mSettings->setWorkingDcNum(newDc);
+        prv->mSettings->writeAuthFile();
         DC *dc = prv->mDcProvider->getDc(newDc);
         mApi->changeMainSessionToDc(dc);
     } else {
