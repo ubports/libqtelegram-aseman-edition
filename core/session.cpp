@@ -689,9 +689,13 @@ void Session::beforeConnect()
 
 void Session::onError(QAbstractSocket::SocketError error)
 {
+    if(m_dc->getEndpoints().count() > 1)
+    {
+
         advancedEndpoint = true;
         m_dc->advanceEndpoint();
         QString newHost = m_dc->currentEndpoint().host();
         qint32 newPort = m_dc->currentEndpoint().port();
         qWarning() << "Error" << error << "in tcp socket, retrying another endpoint:" << newHost << ":" << newPort;
+    }
 }

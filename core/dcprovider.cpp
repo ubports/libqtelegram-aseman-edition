@@ -268,7 +268,6 @@ void DcProvider::onNearestDcReceived(qint64 msgId, const NearestDc &result) {
     DC *dc = mDcs.value(nearestDc);
     if (result.thisDc() != nearestDc && dc)
     {
-        qWarning() << "Preemptively migrating to other DC";
         if(mApi)
         {
             mSettings->setWorkingDcNum(nearestDc);
@@ -277,6 +276,7 @@ void DcProvider::onNearestDcReceived(qint64 msgId, const NearestDc &result) {
         }
         return;
     }
+    qWarning() << "Connected to the right DC, we can continue";
 
     // get the config
     if(mApi)
@@ -329,7 +329,8 @@ void DcProvider::onConfigReceived(qint64 msgId, const Config &config) {
             mDcs.insert(dcOption.id(), dc);
         }
 
-        if(!dcOption.mediaOnly())
+        //Sad but true, this code cannot handle media-only DCs, and also not use IPv6, which is currently broken in UT anyways
+        if(!(dcOption.mediaOnly() || dcOption.ipv6()))
             dc->addEndpoint(dcOption.ipAddress(), dcOption.port());
         else
         {
@@ -401,12 +402,10 @@ void DcProvider::transferAuth() {
 }
 
 void DcProvider::onTransferSessionReady(DC *) {
-    qWarning() << "onTransferSessionReady():";
+    qCDebug(TG_CORE_DCPROVIDER) << "onTransferSessionReady():";
     Session *session = qobject_cast<Session *>(sender());
     mTransferSessions.append(session);
     if (--mPendingTransferSessions == 0) {
-        //connect(mApi, &TelegramApi::authExportAuthorizationAnswer, this, &DcProvider::onAuthExportedAuthorization);
-        //connect(mApi, &TelegramApi::authImportAuthorizationAnswer, this, &DcProvider::onAuthImportedAuthorization);
         Callback<AuthExportedAuthorization> callback = [this](TG_AUTH_EXPORT_AUTHORIZATION_CALLBACK) {
             if(!error.null) {
                 qWarning() << "onTransferSessionReady(): " << error.errorCode << error.errorText;
@@ -420,7 +419,7 @@ void DcProvider::onTransferSessionReady(DC *) {
 }
 
 void DcProvider::onAuthExportedAuthorization(const AuthExportedAuthorization &result) {
-    qWarning() << "onAuthExportedAuthorization()";
+    qCDebug(TG_CORE_DCPROVIDER) << "onAuthExportedAuthorization()";
     // Set ourId into settings (It doesn't matter if set before)
     mSettings->setOurId(result.id());
     // Change api dc to first in the transfer dcs list
@@ -439,7 +438,7 @@ void DcProvider::onAuthExportedAuthorization(const AuthExportedAuthorization &re
 }
 
 void DcProvider::onAuthImportedAuthorization(const AuthAuthorization &) {
-    qWarning() << "onAuthImportedAuthorization()";
+    qCDebug(TG_CORE_DCPROVIDER) << "onAuthImportedAuthorization()";
     Session *session = mTransferSessions.takeFirst();
     DC *authorizedDc = session->dc();
     authorizedDc->setExpires(0);
