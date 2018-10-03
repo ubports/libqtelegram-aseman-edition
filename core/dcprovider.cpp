@@ -338,7 +338,7 @@ void DcProvider::onConfigReceived(qint64 msgId, const Config &config) {
             dc->deleteEndpoint(dcOption.ipAddress(), dcOption.port());
         }
     }
-    //Need second loop to guarntee all possible IP addresses have been assigned to the DC structures
+    //Need second loop to guarantee all possible IP addresses have been assigned to the DC structures
     Q_FOREACH (DcOption dcOption, dcOptions) {
         DC *dc = mDcs.value(dcOption.id());
         qint32 currentDc = dcIndex.indexOf(dcOption.id());

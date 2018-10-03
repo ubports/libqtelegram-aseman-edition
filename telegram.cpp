@@ -330,7 +330,8 @@ void Telegram::onDcProviderReady() {
     connect(mApi, &TelegramApi::messagesSendEncryptedFileAnswer, this, &Telegram::messagesSendEncryptedFileAnswer);
     connect(mApi, &TelegramApi::messagesSendEncryptedServiceAnswer, this, &Telegram::messagesSendEncryptedServiceAnswer);
 
-    // updates
+    // updates    
+    connect(mApi, &TelegramApi::error, this, &Telegram::onError);
     connect(mApi, &TelegramApi::fatalError, this, &Telegram::fatalError);
     connect(mApi, &TelegramApi::updates, this, &Telegram::updates);
     connect(mApi, &TelegramApi::updatesCombined, this, &Telegram::updatesCombined);
@@ -1096,18 +1097,17 @@ void Telegram::onError(qint64 id, qint32 errorCode, const QString &errorText, co
     else
     if (errorCode == 401)
     {
-        if(errorText == "SESSION_PASSWORD_NEEDED" || errorText == "AUTH_KEY_UNREGISTERED")
+        if(errorText == "SESSION_PASSWORD_NEEDED")
             qDebug() << errorText; // Nothing to do
         else
-            onAuthLogOutAnswer(id, false, attachedData);
+            onAuthLogOutAnswer(id, true, attachedData);
     }
     else
     if(functionName == "onUploadGetFileError")
     {
         onUploadGetFileError(id, errorCode, errorText, attachedData);
     }
-
-TelegramCore::onError(id, errorCode, errorText, functionName, attachedData, accepted);
+    TelegramCore::onError(id, errorCode, errorText, functionName, attachedData, accepted);
 }
 
 void Telegram::onErrorRetry(qint64 id, qint32 errorCode, const QString &errorText) {
