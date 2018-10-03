@@ -384,21 +384,25 @@ void DcProvider::transferAuth() {
     mWorkingDcSession = mApi->mainSession();
     Q_ASSERT(mWorkingDcSession);
     QList<DC *> m_dcsList = mDcs.values();
-    for (qint32 i=0 ; i < m_dcsList.size(); i++) {
-        DC *dc = m_dcsList.value(i);
+    QList<DC *> pendingDCs;
+    Q_FOREACH(DC *dc, m_dcsList) {
         if (dc->state() == DC::authKeyCreated &&
                 dc->id() != mSettings->workingDcNum()) {
-            hasTransferSessions = true;
+            pendingDCs << dc;
+        }
+    }
+    mPendingTransferSessions = pendingDCs.count();
+    if(mPendingTransferSessions>0)
+    {
+        hasTransferSessions = true;
+        Q_FOREACH(DC *dc, pendingDCs) {
             // create a new session for this dc
             Session *session = mApi->fileSession(dc);
             connect(session, &Session::sessionReady, this, &DcProvider::onTransferSessionReady);
-            mPendingTransferSessions++;
             session->connectToServer();
         }
-    }
-    if (!hasTransferSessions) {
+    } else
         Q_EMIT authTransferCompleted();
-    }
 }
 
 void DcProvider::onTransferSessionReady(DC *) {

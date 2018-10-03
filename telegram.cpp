@@ -1084,7 +1084,6 @@ void Telegram::onError(qint64 id, qint32 errorCode, const QString &errorText, co
         prv->mSettings->writeAuthFile();
         DC *dc = prv->mDcProvider->getDc(newDc);
         mApi->changeMainSessionToDc(dc);
-        accepted = true;
     }
     else
     if(errorCode == 400)
