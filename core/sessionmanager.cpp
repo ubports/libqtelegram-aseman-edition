@@ -116,14 +116,16 @@ void SessionManager::setMainSession(Session *session) {
 }
 
 void SessionManager::changeMainSessionToDc(DC *dc) {
-    qWarning() << "Changing main session to dc" << dc->id();
 
     // remove current main session that is connected to a wrong dc
     if (mMainSession) {
+        if(mMainSession->dc()->id() == dc->id())
+            return;
         mMainSession->close();
         qWarning() << "Closed main session at dc" << mMainSession->dc()->id();
         mMainSession->deleteLater();
     }
+    qWarning() << "Changing main session to dc" << dc->id();
     // create session and connect to dc, adding the signal of dc changed
     mMainSession = createSession(dc);
     connect(mMainSession, SIGNAL(sessionReady(DC*)), this, SIGNAL(mainSessionDcChanged(DC*)), Qt::UniqueConnection);
