@@ -184,14 +184,14 @@ QAbstractSocket::UnknownSocketError                 -1	An unidentified error occ
 */
 void Connection::onError(QAbstractSocket::SocketError error) {
     qWarning() << "SocketError:" << QString::number(error) << errorString();
-    auto currentState = state();
-    if (currentState == QAbstractSocket::ConnectedState) {
-        disconnectFromHost();
-    } else if (currentState == QAbstractSocket::ConnectingState || currentState == QAbstractSocket::HostLookupState)
-    {
+//    auto currentState = state();
+//    if (currentState == QAbstractSocket::ConnectedState) {
+//        disconnectFromHost();
+//    } else if (currentState == QAbstractSocket::ConnectingState || currentState == QAbstractSocket::HostLookupState)
+//    {
         abort();
         close();
-    }
+    //}
 
     qint32 reconnectionDelay = 1000;
     if (errorString().contains("unreachable")) {

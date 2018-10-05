@@ -473,7 +473,6 @@ void FileHandler::onUpdateMessageId(qint64 oldMsgId, qint64 newMsgId) {
     DownloadFile::Ptr file = mDownloadsMap[oldMsgId];
     if (!file.isNull()) {
         mDownloadsMap.insert(newMsgId, file);
-        qWarning() << "onUpdateMessageId(): Fixed a file download id, old: " << oldMsgId << ", new: " << newMsgId;
     }
     downloadsMapUpdating.unlock();
 }
