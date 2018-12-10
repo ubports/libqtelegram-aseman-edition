@@ -14,7 +14,7 @@ class LIBQTELEGRAMSHARED_EXPORT MessagesAllStickersObject : public TelegramTypeQ
 {
     Q_OBJECT
     Q_ENUMS(MessagesAllStickersClassType)
-    Q_PROPERTY(QString hash READ hash WRITE setHash NOTIFY hashChanged)
+    Q_PROPERTY(qint32 hash READ hash WRITE setHash NOTIFY hashChanged)
     Q_PROPERTY(QList<StickerSet> sets READ sets WRITE setSets NOTIFY setsChanged)
     Q_PROPERTY(MessagesAllStickers core READ core WRITE setCore NOTIFY coreChanged)
     Q_PROPERTY(quint32 classType READ classType WRITE setClassType NOTIFY classTypeChanged)
@@ -29,8 +29,8 @@ public:
     MessagesAllStickersObject(QObject *parent = 0);
     virtual ~MessagesAllStickersObject();
 
-    void setHash(const QString &hash);
-    QString hash() const;
+    void setHash(qint32 hash);
+    qint32 hash() const;
 
     void setSets(const QList<StickerSet> &sets);
     QList<StickerSet> sets() const;
@@ -71,14 +71,14 @@ inline MessagesAllStickersObject::MessagesAllStickersObject(QObject *parent) :
 inline MessagesAllStickersObject::~MessagesAllStickersObject() {
 }
 
-inline void MessagesAllStickersObject::setHash(const QString &hash) {
+inline void MessagesAllStickersObject::setHash(qint32 hash) {
     if(m_core.hash() == hash) return;
     m_core.setHash(hash);
     Q_EMIT hashChanged();
     Q_EMIT coreChanged();
 }
 
-inline QString MessagesAllStickersObject::hash() const {
+inline qint32 MessagesAllStickersObject::hash() const {
     return m_core.hash();
 }
 

@@ -32,13 +32,25 @@
 * [typeUpdateReadMessagesContents](#updatetypeupdatereadmessagescontents)
 * [typeUpdateChannelTooLong](#updatetypeupdatechanneltoolong)
 * [typeUpdateChannel](#updatetypeupdatechannel)
-* [typeUpdateChannelGroup](#updatetypeupdatechannelgroup)
 * [typeUpdateNewChannelMessage](#updatetypeupdatenewchannelmessage)
 * [typeUpdateReadChannelInbox](#updatetypeupdatereadchannelinbox)
 * [typeUpdateDeleteChannelMessages](#updatetypeupdatedeletechannelmessages)
 * [typeUpdateChannelMessageViews](#updatetypeupdatechannelmessageviews)
 * [typeUpdateChatAdmins](#updatetypeupdatechatadmins)
 * [typeUpdateChatParticipantAdmin](#updatetypeupdatechatparticipantadmin)
+* [typeUpdateNewStickerSet](#updatetypeupdatenewstickerset)
+* [typeUpdateStickerSetsOrder](#updatetypeupdatestickersetsorder)
+* [typeUpdateStickerSets](#updatetypeupdatestickersets)
+* [typeUpdateSavedGifs](#updatetypeupdatesavedgifs)
+* [typeUpdateBotInlineQuery](#updatetypeupdatebotinlinequery)
+* [typeUpdateBotInlineSend](#updatetypeupdatebotinlinesend)
+* [typeUpdateEditChannelMessage](#updatetypeupdateeditchannelmessage)
+* [typeUpdateChannelPinnedMessage](#updatetypeupdatechannelpinnedmessage)
+* [typeUpdateBotCallbackQuery](#updatetypeupdatebotcallbackquery)
+* [typeUpdateEditMessage](#updatetypeupdateeditmessage)
+* [typeUpdateInlineBotCallbackQuery](#updatetypeupdateinlinebotcallbackquery)
+* [typeUpdateReadChannelOutbox](#updatetypeupdatereadchanneloutbox)
+* [typeUpdateDraftMessage](#updatetypeupdatedraftmessage)
 
 ## Update::typeUpdateNewMessage
 
@@ -485,7 +497,7 @@ updateReadMessagesContents#68c13933 messages:Vector<int> pts:int pts_count:int =
 #### Schema:
 
 ```c++
-updateChannelTooLong#60946422 channel_id:int = Update;
+updateChannelTooLong#eb0467fb flags:# channel_id:int pts:flags.0?int = Update;
 ```
 
 #### Parameters:
@@ -493,6 +505,7 @@ updateChannelTooLong#60946422 channel_id:int = Update;
 |Name|Type|
 |----|----|
 |channelId|qint32|
+|pts|qint32|
 
 ## Update::typeUpdateChannel
 
@@ -507,21 +520,6 @@ updateChannel#b6d45656 channel_id:int = Update;
 |Name|Type|
 |----|----|
 |channelId|qint32|
-
-## Update::typeUpdateChannelGroup
-
-#### Schema:
-
-```c++
-updateChannelGroup#c36c1e3c channel_id:int group:MessageGroup = Update;
-```
-
-#### Parameters:
-
-|Name|Type|
-|----|----|
-|channelId|qint32|
-|group|[MessageGroup](messagegroup.md)|
 
 ## Update::typeUpdateNewChannelMessage
 
@@ -619,4 +617,202 @@ updateChatParticipantAdmin#b6901959 chat_id:int user_id:int is_admin:Bool versio
 |userId|qint32|
 |isAdmin|bool|
 |version|qint32|
+
+## Update::typeUpdateNewStickerSet
+
+#### Schema:
+
+```c++
+updateNewStickerSet#688a30aa stickerset:messages.StickerSet = Update;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|stickerset|[MessagesStickerSet](messagesstickerset.md)|
+
+## Update::typeUpdateStickerSetsOrder
+
+#### Schema:
+
+```c++
+updateStickerSetsOrder#f0dfb451 order:Vector<long> = Update;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|order|QList&lt;qint64&gt;|
+
+## Update::typeUpdateStickerSets
+
+#### Schema:
+
+```c++
+updateStickerSets#43ae3dec = Update;
+```
+
+#### Parameters:
+
+
+## Update::typeUpdateSavedGifs
+
+#### Schema:
+
+```c++
+updateSavedGifs#9375341e = Update;
+```
+
+#### Parameters:
+
+
+## Update::typeUpdateBotInlineQuery
+
+#### Schema:
+
+```c++
+updateBotInlineQuery#54826690 flags:# query_id:long user_id:int query:string geo:flags.0?GeoPoint offset:string = Update;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|queryId|qint64|
+|userId|qint32|
+|query|QString|
+|geo|[GeoPoint](geopoint.md)|
+|offset|QString|
+
+## Update::typeUpdateBotInlineSend
+
+#### Schema:
+
+```c++
+updateBotInlineSend#e48f964 flags:# user_id:int query:string geo:flags.0?GeoPoint id:string msg_id:flags.1?InputBotInlineMessageID = Update;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|userId|qint32|
+|query|QString|
+|geo|[GeoPoint](geopoint.md)|
+|id|QString|
+|msgId|[InputBotInlineMessageID](inputbotinlinemessageid.md)|
+
+## Update::typeUpdateEditChannelMessage
+
+#### Schema:
+
+```c++
+updateEditChannelMessage#1b3f4df7 message:Message pts:int pts_count:int = Update;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|message|[Message](message.md)|
+|pts|qint32|
+|ptsCount|qint32|
+
+## Update::typeUpdateChannelPinnedMessage
+
+#### Schema:
+
+```c++
+updateChannelPinnedMessage#98592475 channel_id:int id:int = Update;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|channelId|qint32|
+|id|qint32|
+
+## Update::typeUpdateBotCallbackQuery
+
+#### Schema:
+
+```c++
+updateBotCallbackQuery#a68c688c query_id:long user_id:int peer:Peer msg_id:int data:bytes = Update;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|queryId|qint64|
+|userId|qint32|
+|peer|[Peer](peer.md)|
+|msgId|qint32|
+|data|QByteArray|
+
+## Update::typeUpdateEditMessage
+
+#### Schema:
+
+```c++
+updateEditMessage#e40370a3 message:Message pts:int pts_count:int = Update;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|message|[Message](message.md)|
+|pts|qint32|
+|ptsCount|qint32|
+
+## Update::typeUpdateInlineBotCallbackQuery
+
+#### Schema:
+
+```c++
+updateInlineBotCallbackQuery#2cbd95af query_id:long user_id:int msg_id:InputBotInlineMessageID data:bytes = Update;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|queryId|qint64|
+|userId|qint32|
+|msgId|[InputBotInlineMessageID](inputbotinlinemessageid.md)|
+|data|QByteArray|
+
+## Update::typeUpdateReadChannelOutbox
+
+#### Schema:
+
+```c++
+updateReadChannelOutbox#25d6c9c7 channel_id:int max_id:int = Update;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|channelId|qint32|
+|maxId|qint32|
+
+## Update::typeUpdateDraftMessage
+
+#### Schema:
+
+```c++
+updateDraftMessage#ee2bb969 peer:Peer draft:DraftMessage = Update;
+```
+
+#### Parameters:
+
+|Name|Type|
+|----|----|
+|peer|[Peer](peer.md)|
+|draft|[DraftMessage](draftmessage.md)|
 

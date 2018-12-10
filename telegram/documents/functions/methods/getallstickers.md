@@ -7,13 +7,13 @@ TelegramCore::messagesGetAllStickers
 ## Schema:
 
 ```c++
-messages.getAllStickers#aa3bc868 hash:string = messages.AllStickers;
+messages.getAllStickers#1c9618b1 hash:int = messages.AllStickers;
 ```
 ## Parameters:
 
 |Name|Type|Default|
 |----|----|-------|
-|hash|QString||
+|hash|qint32||
 |callBack|Callback&lt;[MessagesAllStickers](../../types/messagesallstickers.md)&gt;|0|
 |timeout|qint32|TelegramCore::timeOut()|
 

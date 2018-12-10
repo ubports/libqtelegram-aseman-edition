@@ -134,14 +134,22 @@ QByteArray Connection::readAll() {
 }
 
 void Connection::connectToServer(bool block) {
+    beforeConnect();
     Q_ASSERT(!m_host.isEmpty());
     Q_ASSERT(m_port);
     qWarning() << "Connect to host" << m_host << ":" << m_port;
     connectToHost(m_host, m_port);
-    if (!block && !waitForConnected(15000))
+    if (!block && !waitForConnected(10000))
     {
-        qWarning() << "Socket connection to:" << m_host << ":" << m_port << "failed:" << QString::number(error()) << errorString();
+        qWarning() << "Connection to:" << m_host << ":" << m_port << "failed:" << QString::number(error()) << errorString();
     }
+    else
+        qWarning() << "Connect to:" << m_host << ":" << m_port << "successful!";
+}
+
+void Connection::beforeConnect()
+{
+
 }
 
 void Connection::onStateChanged(QAbstractSocket::SocketState state) {
@@ -176,14 +184,14 @@ QAbstractSocket::UnknownSocketError                 -1	An unidentified error occ
 */
 void Connection::onError(QAbstractSocket::SocketError error) {
     qWarning() << "SocketError:" << QString::number(error) << errorString();
-    auto currentState = state();
-    if (currentState == QAbstractSocket::ConnectedState) {
-        disconnectFromHost();
-    } else if (currentState == QAbstractSocket::ConnectingState || currentState == QAbstractSocket::HostLookupState)
-    {
+//    auto currentState = state();
+//    if (currentState == QAbstractSocket::ConnectedState) {
+//        disconnectFromHost();
+//    } else if (currentState == QAbstractSocket::ConnectingState || currentState == QAbstractSocket::HostLookupState)
+//    {
         abort();
         close();
-    }
+    //}
 
     qint32 reconnectionDelay = 1000;
     if (errorString().contains("unreachable")) {

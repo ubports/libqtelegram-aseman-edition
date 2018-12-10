@@ -14,21 +14,38 @@ class LIBQTELEGRAMSHARED_EXPORT KeyboardButtonObject : public TelegramTypeQObjec
 {
     Q_OBJECT
     Q_ENUMS(KeyboardButtonClassType)
+    Q_PROPERTY(QByteArray data READ data WRITE setData NOTIFY dataChanged)
+    Q_PROPERTY(QString query READ query WRITE setQuery NOTIFY queryChanged)
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
+    Q_PROPERTY(QString url READ url WRITE setUrl NOTIFY urlChanged)
     Q_PROPERTY(KeyboardButton core READ core WRITE setCore NOTIFY coreChanged)
     Q_PROPERTY(quint32 classType READ classType WRITE setClassType NOTIFY classTypeChanged)
 
 public:
     enum KeyboardButtonClassType {
-        TypeKeyboardButton
+        TypeKeyboardButton,
+        TypeKeyboardButtonUrl,
+        TypeKeyboardButtonCallback,
+        TypeKeyboardButtonRequestPhone,
+        TypeKeyboardButtonRequestGeoLocation,
+        TypeKeyboardButtonSwitchInline
     };
 
     KeyboardButtonObject(const KeyboardButton &core, QObject *parent = 0);
     KeyboardButtonObject(QObject *parent = 0);
     virtual ~KeyboardButtonObject();
 
+    void setData(const QByteArray &data);
+    QByteArray data() const;
+
+    void setQuery(const QString &query);
+    QString query() const;
+
     void setText(const QString &text);
     QString text() const;
+
+    void setUrl(const QString &url);
+    QString url() const;
 
     void setClassType(quint32 classType);
     quint32 classType() const;
@@ -42,7 +59,10 @@ public:
 Q_SIGNALS:
     void coreChanged();
     void classTypeChanged();
+    void dataChanged();
+    void queryChanged();
     void textChanged();
+    void urlChanged();
 
 private Q_SLOTS:
 
@@ -65,6 +85,28 @@ inline KeyboardButtonObject::KeyboardButtonObject(QObject *parent) :
 inline KeyboardButtonObject::~KeyboardButtonObject() {
 }
 
+inline void KeyboardButtonObject::setData(const QByteArray &data) {
+    if(m_core.data() == data) return;
+    m_core.setData(data);
+    Q_EMIT dataChanged();
+    Q_EMIT coreChanged();
+}
+
+inline QByteArray KeyboardButtonObject::data() const {
+    return m_core.data();
+}
+
+inline void KeyboardButtonObject::setQuery(const QString &query) {
+    if(m_core.query() == query) return;
+    m_core.setQuery(query);
+    Q_EMIT queryChanged();
+    Q_EMIT coreChanged();
+}
+
+inline QString KeyboardButtonObject::query() const {
+    return m_core.query();
+}
+
 inline void KeyboardButtonObject::setText(const QString &text) {
     if(m_core.text() == text) return;
     m_core.setText(text);
@@ -76,11 +118,25 @@ inline QString KeyboardButtonObject::text() const {
     return m_core.text();
 }
 
+inline void KeyboardButtonObject::setUrl(const QString &url) {
+    if(m_core.url() == url) return;
+    m_core.setUrl(url);
+    Q_EMIT urlChanged();
+    Q_EMIT coreChanged();
+}
+
+inline QString KeyboardButtonObject::url() const {
+    return m_core.url();
+}
+
 inline KeyboardButtonObject &KeyboardButtonObject::operator =(const KeyboardButton &b) {
     if(m_core == b) return *this;
     m_core = b;
 
+    Q_EMIT dataChanged();
+    Q_EMIT queryChanged();
     Q_EMIT textChanged();
+    Q_EMIT urlChanged();
     Q_EMIT coreChanged();
     return *this;
 }
@@ -94,6 +150,21 @@ inline void KeyboardButtonObject::setClassType(quint32 classType) {
     switch(classType) {
     case TypeKeyboardButton:
         result = KeyboardButton::typeKeyboardButton;
+        break;
+    case TypeKeyboardButtonUrl:
+        result = KeyboardButton::typeKeyboardButtonUrl;
+        break;
+    case TypeKeyboardButtonCallback:
+        result = KeyboardButton::typeKeyboardButtonCallback;
+        break;
+    case TypeKeyboardButtonRequestPhone:
+        result = KeyboardButton::typeKeyboardButtonRequestPhone;
+        break;
+    case TypeKeyboardButtonRequestGeoLocation:
+        result = KeyboardButton::typeKeyboardButtonRequestGeoLocation;
+        break;
+    case TypeKeyboardButtonSwitchInline:
+        result = KeyboardButton::typeKeyboardButtonSwitchInline;
         break;
     default:
         result = KeyboardButton::typeKeyboardButton;
@@ -111,6 +182,21 @@ inline quint32 KeyboardButtonObject::classType() const {
     switch(static_cast<qint64>(m_core.classType())) {
     case KeyboardButton::typeKeyboardButton:
         result = TypeKeyboardButton;
+        break;
+    case KeyboardButton::typeKeyboardButtonUrl:
+        result = TypeKeyboardButtonUrl;
+        break;
+    case KeyboardButton::typeKeyboardButtonCallback:
+        result = TypeKeyboardButtonCallback;
+        break;
+    case KeyboardButton::typeKeyboardButtonRequestPhone:
+        result = TypeKeyboardButtonRequestPhone;
+        break;
+    case KeyboardButton::typeKeyboardButtonRequestGeoLocation:
+        result = TypeKeyboardButtonRequestGeoLocation;
+        break;
+    case KeyboardButton::typeKeyboardButtonSwitchInline:
+        result = TypeKeyboardButtonSwitchInline;
         break;
     default:
         result = TypeKeyboardButton;

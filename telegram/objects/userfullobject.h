@@ -19,8 +19,10 @@ class LIBQTELEGRAMSHARED_EXPORT UserFullObject : public TelegramTypeQObject
 {
     Q_OBJECT
     Q_ENUMS(UserFullClassType)
+    Q_PROPERTY(QString about READ about WRITE setAbout NOTIFY aboutChanged)
     Q_PROPERTY(bool blocked READ blocked WRITE setBlocked NOTIFY blockedChanged)
     Q_PROPERTY(BotInfoObject* botInfo READ botInfo WRITE setBotInfo NOTIFY botInfoChanged)
+    Q_PROPERTY(qint32 flags READ flags WRITE setFlags NOTIFY flagsChanged)
     Q_PROPERTY(ContactsLinkObject* link READ link WRITE setLink NOTIFY linkChanged)
     Q_PROPERTY(PeerNotifySettingsObject* notifySettings READ notifySettings WRITE setNotifySettings NOTIFY notifySettingsChanged)
     Q_PROPERTY(PhotoObject* profilePhoto READ profilePhoto WRITE setProfilePhoto NOTIFY profilePhotoChanged)
@@ -37,11 +39,17 @@ public:
     UserFullObject(QObject *parent = 0);
     virtual ~UserFullObject();
 
+    void setAbout(const QString &about);
+    QString about() const;
+
     void setBlocked(bool blocked);
     bool blocked() const;
 
     void setBotInfo(BotInfoObject* botInfo);
     BotInfoObject* botInfo() const;
+
+    void setFlags(qint32 flags);
+    qint32 flags() const;
 
     void setLink(ContactsLinkObject* link);
     ContactsLinkObject* link() const;
@@ -67,8 +75,10 @@ public:
 Q_SIGNALS:
     void coreChanged();
     void classTypeChanged();
+    void aboutChanged();
     void blockedChanged();
     void botInfoChanged();
+    void flagsChanged();
     void linkChanged();
     void notifySettingsChanged();
     void profilePhotoChanged();
@@ -135,6 +145,17 @@ inline UserFullObject::UserFullObject(QObject *parent) :
 inline UserFullObject::~UserFullObject() {
 }
 
+inline void UserFullObject::setAbout(const QString &about) {
+    if(m_core.about() == about) return;
+    m_core.setAbout(about);
+    Q_EMIT aboutChanged();
+    Q_EMIT coreChanged();
+}
+
+inline QString UserFullObject::about() const {
+    return m_core.about();
+}
+
 inline void UserFullObject::setBlocked(bool blocked) {
     if(m_core.blocked() == blocked) return;
     m_core.setBlocked(blocked);
@@ -161,6 +182,17 @@ inline void UserFullObject::setBotInfo(BotInfoObject* botInfo) {
 
 inline BotInfoObject*  UserFullObject::botInfo() const {
     return m_botInfo;
+}
+
+inline void UserFullObject::setFlags(qint32 flags) {
+    if(m_core.flags() == flags) return;
+    m_core.setFlags(flags);
+    Q_EMIT flagsChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 UserFullObject::flags() const {
+    return m_core.flags();
 }
 
 inline void UserFullObject::setLink(ContactsLinkObject* link) {
@@ -240,8 +272,10 @@ inline UserFullObject &UserFullObject::operator =(const UserFull &b) {
     m_profilePhoto->setCore(b.profilePhoto());
     m_user->setCore(b.user());
 
+    Q_EMIT aboutChanged();
     Q_EMIT blockedChanged();
     Q_EMIT botInfoChanged();
+    Q_EMIT flagsChanged();
     Q_EMIT linkChanged();
     Q_EMIT notifySettingsChanged();
     Q_EMIT profilePhotoChanged();

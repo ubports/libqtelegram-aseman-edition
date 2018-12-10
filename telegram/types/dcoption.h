@@ -48,6 +48,9 @@ public:
     void setPort(qint32 port);
     qint32 port() const;
 
+    void setTcpoOnly(bool tcpoOnly);
+    bool tcpoOnly() const;
+
     void setClassType(DcOptionClassType classType);
     DcOptionClassType classType() const;
 
@@ -157,6 +160,15 @@ inline qint32 DcOption::port() const {
     return m_port;
 }
 
+inline void DcOption::setTcpoOnly(bool tcpoOnly) {
+    if(tcpoOnly) m_flags = (m_flags | (1<<2));
+    else m_flags = (m_flags & ~(1<<2));
+}
+
+inline bool DcOption::tcpoOnly() const {
+    return (m_flags & 1<<2);
+}
+
 inline bool DcOption::operator ==(const DcOption &b) const {
     return m_classType == b.m_classType &&
            m_flags == b.m_flags &&
@@ -217,6 +229,7 @@ inline QMap<QString, QVariant> DcOption::toMap() const {
         result["classType"] = "DcOption::typeDcOption";
         result["ipv6"] = QVariant::fromValue<bool>(ipv6());
         result["mediaOnly"] = QVariant::fromValue<bool>(mediaOnly());
+        result["tcpoOnly"] = QVariant::fromValue<bool>(tcpoOnly());
         result["id"] = QVariant::fromValue<qint32>(id());
         result["ipAddress"] = QVariant::fromValue<QString>(ipAddress());
         result["port"] = QVariant::fromValue<qint32>(port());
@@ -235,6 +248,7 @@ inline DcOption DcOption::fromMap(const QMap<QString, QVariant> &map) {
         result.setClassType(typeDcOption);
         result.setIpv6( map.value("ipv6").value<bool>() );
         result.setMediaOnly( map.value("mediaOnly").value<bool>() );
+        result.setTcpoOnly( map.value("tcpoOnly").value<bool>() );
         result.setId( map.value("id").value<qint32>() );
         result.setIpAddress( map.value("ipAddress").value<QString>() );
         result.setPort( map.value("port").value<qint32>() );

@@ -64,9 +64,11 @@ public Q_SLOTS:
 private:
     void processDcReady(DC *dc);
     void clean();
-
+    void setupApi(DC *dc);
+    void finalDcEstablished();
     QMutex mDcsLock;
     QMap<qint32, DC *> mDcs;
+    qint32 nearestDc;
     QMutex mDcAuthsLock;
     QMap<qint32, DCAuth *> mDcAuths;
     Settings *mSettings;
@@ -102,9 +104,10 @@ private:
 private Q_SLOTS:
     void onDcReady(DC *dc);
     void onDcAuthDisconnected();
-    void onApiReady(DC*);
+    void onApiReady();
     void onApiError();
-    void onConfigReceived(qint64 msgId, const Config &config, const QVariant &attachedData);
+    void onConfigReceived(qint64 msgId, const Config &config);
+    void onNearestDcReceived(qint64 msgId, const NearestDc &result);
     void onTransferSessionReady(DC*);
     void onAuthExportedAuthorization(const AuthExportedAuthorization &result);
     void onAuthImportedAuthorization(const AuthAuthorization &);

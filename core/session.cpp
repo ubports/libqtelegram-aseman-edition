@@ -315,7 +315,7 @@ void Session::workUpdateShortMessage(InboundPkt &inboundPkt, qint64 msgId) {
     UpdatesType upd(&inboundPkt);
     bool unread = (upd.flags() & 0x1);
     bool out = (upd.flags() & 0x2);
-    Q_EMIT updateShortMessage(upd.id(), upd.userId(), upd.message(), upd.pts(), upd.ptsCount(), upd.date(), upd.fwdFromId(), upd.fwdDate(), upd.replyToMsgId(), unread, out);
+    Q_EMIT updateShortMessage(upd.id(), upd.userId(), upd.message(), upd.pts(), upd.ptsCount(), upd.date(), upd.fwdFrom(), upd.replyToMsgId(), unread, out);
 }
 
 void Session::workUpdateShortChatMessage(InboundPkt &inboundPkt, qint64 msgId) {
@@ -325,7 +325,7 @@ void Session::workUpdateShortChatMessage(InboundPkt &inboundPkt, qint64 msgId) {
     bool unread = (upd.flags() & 0x1);
     bool out = (upd.flags() & 0x2);
 
-    Q_EMIT updateShortChatMessage(upd.id(), upd.fromId(), upd.chatId(), upd.message(), upd.pts(), upd.ptsCount(), upd.date(), upd.fwdFromId(), upd.date(), upd.replyToMsgId(), unread, out);
+    Q_EMIT updateShortChatMessage(upd.id(), upd.fromId(), upd.chatId(), upd.message(), upd.pts(), upd.ptsCount(), upd.date(), upd.fwdFrom(), upd.replyToMsgId(), unread, out);
 }
 
 void Session::workPacked(InboundPkt &inboundPkt, qint64 msgId) {
@@ -677,11 +677,25 @@ void Session::sendAcks(const QList<qint64> &msgIds) {
     qCDebug(TG_CORE_SESSION) << "Sent Acks with id:" << QString::number(sentAcksId, 16);
 }
 
-void Session::onError(QAbstractSocket::SocketError error) {
+void Session::beforeConnect()
+{
+    if(advancedEndpoint)
+    {
+        setHost(m_dc->currentEndpoint().host());
+        setPort(m_dc->currentEndpoint().port());
+        advancedEndpoint = false;
+    }
+}
+
+void Session::onError(QAbstractSocket::SocketError error)
+{
+    if(m_dc->getEndpoints().count() > 1)
+    {
+
+        advancedEndpoint = true;
         m_dc->advanceEndpoint();
         QString newHost = m_dc->currentEndpoint().host();
         qint32 newPort = m_dc->currentEndpoint().port();
-        setHost(newHost);
-        setPort(newPort);
         qWarning() << "Error" << error << "in tcp socket, retrying another endpoint:" << newHost << ":" << newPort;
+    }
 }

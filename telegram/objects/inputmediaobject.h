@@ -11,10 +11,8 @@
 #include <QPointer>
 #include "inputfileobject.h"
 #include "inputgeopointobject.h"
-#include "inputaudioobject.h"
 #include "inputdocumentobject.h"
 #include "inputphotoobject.h"
-#include "inputvideoobject.h"
 
 class LIBQTELEGRAMSHARED_EXPORT InputMediaObject : public TelegramTypeQObject
 {
@@ -23,23 +21,20 @@ class LIBQTELEGRAMSHARED_EXPORT InputMediaObject : public TelegramTypeQObject
     Q_PROPERTY(QString address READ address WRITE setAddress NOTIFY addressChanged)
     Q_PROPERTY(QList<DocumentAttribute> attributes READ attributes WRITE setAttributes NOTIFY attributesChanged)
     Q_PROPERTY(QString caption READ caption WRITE setCaption NOTIFY captionChanged)
-    Q_PROPERTY(qint32 duration READ duration WRITE setDuration NOTIFY durationChanged)
     Q_PROPERTY(InputFileObject* file READ file WRITE setFile NOTIFY fileChanged)
     Q_PROPERTY(QString firstName READ firstName WRITE setFirstName NOTIFY firstNameChanged)
     Q_PROPERTY(InputGeoPointObject* geoPoint READ geoPoint WRITE setGeoPoint NOTIFY geoPointChanged)
-    Q_PROPERTY(qint32 h READ h WRITE setH NOTIFY hChanged)
-    Q_PROPERTY(InputAudioObject* idInputAudio READ idInputAudio WRITE setIdInputAudio NOTIFY idInputAudioChanged)
     Q_PROPERTY(InputDocumentObject* idInputDocument READ idInputDocument WRITE setIdInputDocument NOTIFY idInputDocumentChanged)
     Q_PROPERTY(InputPhotoObject* idInputPhoto READ idInputPhoto WRITE setIdInputPhoto NOTIFY idInputPhotoChanged)
-    Q_PROPERTY(InputVideoObject* idInputVideo READ idInputVideo WRITE setIdInputVideo NOTIFY idInputVideoChanged)
     Q_PROPERTY(QString lastName READ lastName WRITE setLastName NOTIFY lastNameChanged)
     Q_PROPERTY(QString mimeType READ mimeType WRITE setMimeType NOTIFY mimeTypeChanged)
     Q_PROPERTY(QString phoneNumber READ phoneNumber WRITE setPhoneNumber NOTIFY phoneNumberChanged)
     Q_PROPERTY(QString provider READ provider WRITE setProvider NOTIFY providerChanged)
+    Q_PROPERTY(QString q READ q WRITE setQ NOTIFY qChanged)
     Q_PROPERTY(InputFileObject* thumb READ thumb WRITE setThumb NOTIFY thumbChanged)
     Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY titleChanged)
+    Q_PROPERTY(QString url READ url WRITE setUrl NOTIFY urlChanged)
     Q_PROPERTY(QString venueId READ venueId WRITE setVenueId NOTIFY venueIdChanged)
-    Q_PROPERTY(qint32 w READ w WRITE setW NOTIFY wChanged)
     Q_PROPERTY(InputMedia core READ core WRITE setCore NOTIFY coreChanged)
     Q_PROPERTY(quint32 classType READ classType WRITE setClassType NOTIFY classTypeChanged)
 
@@ -50,15 +45,11 @@ public:
         TypeInputMediaPhoto,
         TypeInputMediaGeoPoint,
         TypeInputMediaContact,
-        TypeInputMediaUploadedVideo,
-        TypeInputMediaUploadedThumbVideo,
-        TypeInputMediaVideo,
-        TypeInputMediaUploadedAudio,
-        TypeInputMediaAudio,
         TypeInputMediaUploadedDocument,
         TypeInputMediaUploadedThumbDocument,
         TypeInputMediaDocument,
-        TypeInputMediaVenue
+        TypeInputMediaVenue,
+        TypeInputMediaGifExternal
     };
 
     InputMediaObject(const InputMedia &core, QObject *parent = 0);
@@ -74,9 +65,6 @@ public:
     void setCaption(const QString &caption);
     QString caption() const;
 
-    void setDuration(qint32 duration);
-    qint32 duration() const;
-
     void setFile(InputFileObject* file);
     InputFileObject* file() const;
 
@@ -86,20 +74,11 @@ public:
     void setGeoPoint(InputGeoPointObject* geoPoint);
     InputGeoPointObject* geoPoint() const;
 
-    void setH(qint32 h);
-    qint32 h() const;
-
-    void setIdInputAudio(InputAudioObject* idInputAudio);
-    InputAudioObject* idInputAudio() const;
-
     void setIdInputDocument(InputDocumentObject* idInputDocument);
     InputDocumentObject* idInputDocument() const;
 
     void setIdInputPhoto(InputPhotoObject* idInputPhoto);
     InputPhotoObject* idInputPhoto() const;
-
-    void setIdInputVideo(InputVideoObject* idInputVideo);
-    InputVideoObject* idInputVideo() const;
 
     void setLastName(const QString &lastName);
     QString lastName() const;
@@ -113,17 +92,20 @@ public:
     void setProvider(const QString &provider);
     QString provider() const;
 
+    void setQ(const QString &q);
+    QString q() const;
+
     void setThumb(InputFileObject* thumb);
     InputFileObject* thumb() const;
 
     void setTitle(const QString &title);
     QString title() const;
 
+    void setUrl(const QString &url);
+    QString url() const;
+
     void setVenueId(const QString &venueId);
     QString venueId() const;
-
-    void setW(qint32 w);
-    qint32 w() const;
 
     void setClassType(quint32 classType);
     quint32 classType() const;
@@ -140,40 +122,33 @@ Q_SIGNALS:
     void addressChanged();
     void attributesChanged();
     void captionChanged();
-    void durationChanged();
     void fileChanged();
     void firstNameChanged();
     void geoPointChanged();
-    void hChanged();
-    void idInputAudioChanged();
     void idInputDocumentChanged();
     void idInputPhotoChanged();
-    void idInputVideoChanged();
     void lastNameChanged();
     void mimeTypeChanged();
     void phoneNumberChanged();
     void providerChanged();
+    void qChanged();
     void thumbChanged();
     void titleChanged();
+    void urlChanged();
     void venueIdChanged();
-    void wChanged();
 
 private Q_SLOTS:
     void coreFileChanged();
     void coreGeoPointChanged();
-    void coreIdInputAudioChanged();
     void coreIdInputDocumentChanged();
     void coreIdInputPhotoChanged();
-    void coreIdInputVideoChanged();
     void coreThumbChanged();
 
 private:
     QPointer<InputFileObject> m_file;
     QPointer<InputGeoPointObject> m_geoPoint;
-    QPointer<InputAudioObject> m_idInputAudio;
     QPointer<InputDocumentObject> m_idInputDocument;
     QPointer<InputPhotoObject> m_idInputPhoto;
-    QPointer<InputVideoObject> m_idInputVideo;
     QPointer<InputFileObject> m_thumb;
     InputMedia m_core;
 };
@@ -182,10 +157,8 @@ inline InputMediaObject::InputMediaObject(const InputMedia &core, QObject *paren
     TelegramTypeQObject(parent),
     m_file(0),
     m_geoPoint(0),
-    m_idInputAudio(0),
     m_idInputDocument(0),
     m_idInputPhoto(0),
-    m_idInputVideo(0),
     m_thumb(0),
     m_core(core)
 {
@@ -193,14 +166,10 @@ inline InputMediaObject::InputMediaObject(const InputMedia &core, QObject *paren
     connect(m_file.data(), &InputFileObject::coreChanged, this, &InputMediaObject::coreFileChanged);
     m_geoPoint = new InputGeoPointObject(m_core.geoPoint(), this);
     connect(m_geoPoint.data(), &InputGeoPointObject::coreChanged, this, &InputMediaObject::coreGeoPointChanged);
-    m_idInputAudio = new InputAudioObject(m_core.idInputAudio(), this);
-    connect(m_idInputAudio.data(), &InputAudioObject::coreChanged, this, &InputMediaObject::coreIdInputAudioChanged);
     m_idInputDocument = new InputDocumentObject(m_core.idInputDocument(), this);
     connect(m_idInputDocument.data(), &InputDocumentObject::coreChanged, this, &InputMediaObject::coreIdInputDocumentChanged);
     m_idInputPhoto = new InputPhotoObject(m_core.idInputPhoto(), this);
     connect(m_idInputPhoto.data(), &InputPhotoObject::coreChanged, this, &InputMediaObject::coreIdInputPhotoChanged);
-    m_idInputVideo = new InputVideoObject(m_core.idInputVideo(), this);
-    connect(m_idInputVideo.data(), &InputVideoObject::coreChanged, this, &InputMediaObject::coreIdInputVideoChanged);
     m_thumb = new InputFileObject(m_core.thumb(), this);
     connect(m_thumb.data(), &InputFileObject::coreChanged, this, &InputMediaObject::coreThumbChanged);
 }
@@ -209,10 +178,8 @@ inline InputMediaObject::InputMediaObject(QObject *parent) :
     TelegramTypeQObject(parent),
     m_file(0),
     m_geoPoint(0),
-    m_idInputAudio(0),
     m_idInputDocument(0),
     m_idInputPhoto(0),
-    m_idInputVideo(0),
     m_thumb(0),
     m_core()
 {
@@ -220,14 +187,10 @@ inline InputMediaObject::InputMediaObject(QObject *parent) :
     connect(m_file.data(), &InputFileObject::coreChanged, this, &InputMediaObject::coreFileChanged);
     m_geoPoint = new InputGeoPointObject(m_core.geoPoint(), this);
     connect(m_geoPoint.data(), &InputGeoPointObject::coreChanged, this, &InputMediaObject::coreGeoPointChanged);
-    m_idInputAudio = new InputAudioObject(m_core.idInputAudio(), this);
-    connect(m_idInputAudio.data(), &InputAudioObject::coreChanged, this, &InputMediaObject::coreIdInputAudioChanged);
     m_idInputDocument = new InputDocumentObject(m_core.idInputDocument(), this);
     connect(m_idInputDocument.data(), &InputDocumentObject::coreChanged, this, &InputMediaObject::coreIdInputDocumentChanged);
     m_idInputPhoto = new InputPhotoObject(m_core.idInputPhoto(), this);
     connect(m_idInputPhoto.data(), &InputPhotoObject::coreChanged, this, &InputMediaObject::coreIdInputPhotoChanged);
-    m_idInputVideo = new InputVideoObject(m_core.idInputVideo(), this);
-    connect(m_idInputVideo.data(), &InputVideoObject::coreChanged, this, &InputMediaObject::coreIdInputVideoChanged);
     m_thumb = new InputFileObject(m_core.thumb(), this);
     connect(m_thumb.data(), &InputFileObject::coreChanged, this, &InputMediaObject::coreThumbChanged);
 }
@@ -266,17 +229,6 @@ inline void InputMediaObject::setCaption(const QString &caption) {
 
 inline QString InputMediaObject::caption() const {
     return m_core.caption();
-}
-
-inline void InputMediaObject::setDuration(qint32 duration) {
-    if(m_core.duration() == duration) return;
-    m_core.setDuration(duration);
-    Q_EMIT durationChanged();
-    Q_EMIT coreChanged();
-}
-
-inline qint32 InputMediaObject::duration() const {
-    return m_core.duration();
 }
 
 inline void InputMediaObject::setFile(InputFileObject* file) {
@@ -324,34 +276,6 @@ inline InputGeoPointObject*  InputMediaObject::geoPoint() const {
     return m_geoPoint;
 }
 
-inline void InputMediaObject::setH(qint32 h) {
-    if(m_core.h() == h) return;
-    m_core.setH(h);
-    Q_EMIT hChanged();
-    Q_EMIT coreChanged();
-}
-
-inline qint32 InputMediaObject::h() const {
-    return m_core.h();
-}
-
-inline void InputMediaObject::setIdInputAudio(InputAudioObject* idInputAudio) {
-    if(m_idInputAudio == idInputAudio) return;
-    if(m_idInputAudio) delete m_idInputAudio;
-    m_idInputAudio = idInputAudio;
-    if(m_idInputAudio) {
-        m_idInputAudio->setParent(this);
-        m_core.setIdInputAudio(m_idInputAudio->core());
-        connect(m_idInputAudio.data(), &InputAudioObject::coreChanged, this, &InputMediaObject::coreIdInputAudioChanged);
-    }
-    Q_EMIT idInputAudioChanged();
-    Q_EMIT coreChanged();
-}
-
-inline InputAudioObject*  InputMediaObject::idInputAudio() const {
-    return m_idInputAudio;
-}
-
 inline void InputMediaObject::setIdInputDocument(InputDocumentObject* idInputDocument) {
     if(m_idInputDocument == idInputDocument) return;
     if(m_idInputDocument) delete m_idInputDocument;
@@ -384,23 +308,6 @@ inline void InputMediaObject::setIdInputPhoto(InputPhotoObject* idInputPhoto) {
 
 inline InputPhotoObject*  InputMediaObject::idInputPhoto() const {
     return m_idInputPhoto;
-}
-
-inline void InputMediaObject::setIdInputVideo(InputVideoObject* idInputVideo) {
-    if(m_idInputVideo == idInputVideo) return;
-    if(m_idInputVideo) delete m_idInputVideo;
-    m_idInputVideo = idInputVideo;
-    if(m_idInputVideo) {
-        m_idInputVideo->setParent(this);
-        m_core.setIdInputVideo(m_idInputVideo->core());
-        connect(m_idInputVideo.data(), &InputVideoObject::coreChanged, this, &InputMediaObject::coreIdInputVideoChanged);
-    }
-    Q_EMIT idInputVideoChanged();
-    Q_EMIT coreChanged();
-}
-
-inline InputVideoObject*  InputMediaObject::idInputVideo() const {
-    return m_idInputVideo;
 }
 
 inline void InputMediaObject::setLastName(const QString &lastName) {
@@ -447,6 +354,17 @@ inline QString InputMediaObject::provider() const {
     return m_core.provider();
 }
 
+inline void InputMediaObject::setQ(const QString &q) {
+    if(m_core.q() == q) return;
+    m_core.setQ(q);
+    Q_EMIT qChanged();
+    Q_EMIT coreChanged();
+}
+
+inline QString InputMediaObject::q() const {
+    return m_core.q();
+}
+
 inline void InputMediaObject::setThumb(InputFileObject* thumb) {
     if(m_thumb == thumb) return;
     if(m_thumb) delete m_thumb;
@@ -475,6 +393,17 @@ inline QString InputMediaObject::title() const {
     return m_core.title();
 }
 
+inline void InputMediaObject::setUrl(const QString &url) {
+    if(m_core.url() == url) return;
+    m_core.setUrl(url);
+    Q_EMIT urlChanged();
+    Q_EMIT coreChanged();
+}
+
+inline QString InputMediaObject::url() const {
+    return m_core.url();
+}
+
 inline void InputMediaObject::setVenueId(const QString &venueId) {
     if(m_core.venueId() == venueId) return;
     m_core.setVenueId(venueId);
@@ -486,48 +415,32 @@ inline QString InputMediaObject::venueId() const {
     return m_core.venueId();
 }
 
-inline void InputMediaObject::setW(qint32 w) {
-    if(m_core.w() == w) return;
-    m_core.setW(w);
-    Q_EMIT wChanged();
-    Q_EMIT coreChanged();
-}
-
-inline qint32 InputMediaObject::w() const {
-    return m_core.w();
-}
-
 inline InputMediaObject &InputMediaObject::operator =(const InputMedia &b) {
     if(m_core == b) return *this;
     m_core = b;
     m_file->setCore(b.file());
     m_geoPoint->setCore(b.geoPoint());
-    m_idInputAudio->setCore(b.idInputAudio());
     m_idInputDocument->setCore(b.idInputDocument());
     m_idInputPhoto->setCore(b.idInputPhoto());
-    m_idInputVideo->setCore(b.idInputVideo());
     m_thumb->setCore(b.thumb());
 
     Q_EMIT addressChanged();
     Q_EMIT attributesChanged();
     Q_EMIT captionChanged();
-    Q_EMIT durationChanged();
     Q_EMIT fileChanged();
     Q_EMIT firstNameChanged();
     Q_EMIT geoPointChanged();
-    Q_EMIT hChanged();
-    Q_EMIT idInputAudioChanged();
     Q_EMIT idInputDocumentChanged();
     Q_EMIT idInputPhotoChanged();
-    Q_EMIT idInputVideoChanged();
     Q_EMIT lastNameChanged();
     Q_EMIT mimeTypeChanged();
     Q_EMIT phoneNumberChanged();
     Q_EMIT providerChanged();
+    Q_EMIT qChanged();
     Q_EMIT thumbChanged();
     Q_EMIT titleChanged();
+    Q_EMIT urlChanged();
     Q_EMIT venueIdChanged();
-    Q_EMIT wChanged();
     Q_EMIT coreChanged();
     return *this;
 }
@@ -554,21 +467,6 @@ inline void InputMediaObject::setClassType(quint32 classType) {
     case TypeInputMediaContact:
         result = InputMedia::typeInputMediaContact;
         break;
-    case TypeInputMediaUploadedVideo:
-        result = InputMedia::typeInputMediaUploadedVideo;
-        break;
-    case TypeInputMediaUploadedThumbVideo:
-        result = InputMedia::typeInputMediaUploadedThumbVideo;
-        break;
-    case TypeInputMediaVideo:
-        result = InputMedia::typeInputMediaVideo;
-        break;
-    case TypeInputMediaUploadedAudio:
-        result = InputMedia::typeInputMediaUploadedAudio;
-        break;
-    case TypeInputMediaAudio:
-        result = InputMedia::typeInputMediaAudio;
-        break;
     case TypeInputMediaUploadedDocument:
         result = InputMedia::typeInputMediaUploadedDocument;
         break;
@@ -580,6 +478,9 @@ inline void InputMediaObject::setClassType(quint32 classType) {
         break;
     case TypeInputMediaVenue:
         result = InputMedia::typeInputMediaVenue;
+        break;
+    case TypeInputMediaGifExternal:
+        result = InputMedia::typeInputMediaGifExternal;
         break;
     default:
         result = InputMedia::typeInputMediaEmpty;
@@ -610,21 +511,6 @@ inline quint32 InputMediaObject::classType() const {
     case InputMedia::typeInputMediaContact:
         result = TypeInputMediaContact;
         break;
-    case InputMedia::typeInputMediaUploadedVideo:
-        result = TypeInputMediaUploadedVideo;
-        break;
-    case InputMedia::typeInputMediaUploadedThumbVideo:
-        result = TypeInputMediaUploadedThumbVideo;
-        break;
-    case InputMedia::typeInputMediaVideo:
-        result = TypeInputMediaVideo;
-        break;
-    case InputMedia::typeInputMediaUploadedAudio:
-        result = TypeInputMediaUploadedAudio;
-        break;
-    case InputMedia::typeInputMediaAudio:
-        result = TypeInputMediaAudio;
-        break;
     case InputMedia::typeInputMediaUploadedDocument:
         result = TypeInputMediaUploadedDocument;
         break;
@@ -636,6 +522,9 @@ inline quint32 InputMediaObject::classType() const {
         break;
     case InputMedia::typeInputMediaVenue:
         result = TypeInputMediaVenue;
+        break;
+    case InputMedia::typeInputMediaGifExternal:
+        result = TypeInputMediaGifExternal;
         break;
     default:
         result = TypeInputMediaEmpty;
@@ -667,13 +556,6 @@ inline void InputMediaObject::coreGeoPointChanged() {
     Q_EMIT coreChanged();
 }
 
-inline void InputMediaObject::coreIdInputAudioChanged() {
-    if(m_core.idInputAudio() == m_idInputAudio->core()) return;
-    m_core.setIdInputAudio(m_idInputAudio->core());
-    Q_EMIT idInputAudioChanged();
-    Q_EMIT coreChanged();
-}
-
 inline void InputMediaObject::coreIdInputDocumentChanged() {
     if(m_core.idInputDocument() == m_idInputDocument->core()) return;
     m_core.setIdInputDocument(m_idInputDocument->core());
@@ -685,13 +567,6 @@ inline void InputMediaObject::coreIdInputPhotoChanged() {
     if(m_core.idInputPhoto() == m_idInputPhoto->core()) return;
     m_core.setIdInputPhoto(m_idInputPhoto->core());
     Q_EMIT idInputPhotoChanged();
-    Q_EMIT coreChanged();
-}
-
-inline void InputMediaObject::coreIdInputVideoChanged() {
-    if(m_core.idInputVideo() == m_idInputVideo->core()) return;
-    m_core.setIdInputVideo(m_idInputVideo->core());
-    Q_EMIT idInputVideoChanged();
     Q_EMIT coreChanged();
 }
 

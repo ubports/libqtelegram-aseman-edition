@@ -19,18 +19,19 @@
 #include <QtGlobal>
 #include <QList>
 #include "messageentity.h"
-#include "peer.h"
+#include "messagefwdheader.h"
 #include "messagemedia.h"
 #include <QString>
 #include "replymarkup.h"
+#include "peer.h"
 
 class LIBQTELEGRAMSHARED_EXPORT Message : public TelegramTypeObject
 {
 public:
     enum MessageClassType {
         typeMessageEmpty = 0x83e5de54,
-        typeMessage = 0x5ba66c13,
-        typeMessageService = 0xc06b9607
+        typeMessage = 0xc09be45f,
+        typeMessageService = 0x9e19a1f6
     };
 
     Message(MessageClassType classType = typeMessageEmpty, InboundPkt *in = 0);
@@ -44,6 +45,9 @@ public:
     void setDate(qint32 date);
     qint32 date() const;
 
+    void setEditDate(qint32 editDate);
+    qint32 editDate() const;
+
     void setEntities(const QList<MessageEntity> &entities);
     QList<MessageEntity> entities() const;
 
@@ -53,11 +57,8 @@ public:
     void setFromId(qint32 fromId);
     qint32 fromId() const;
 
-    void setFwdDate(qint32 fwdDate);
-    qint32 fwdDate() const;
-
-    void setFwdFromId(const Peer &fwdFromId);
-    Peer fwdFromId() const;
+    void setFwdFrom(const MessageFwdHeader &fwdFrom);
+    MessageFwdHeader fwdFrom() const;
 
     void setId(qint32 id);
     qint32 id() const;
@@ -77,17 +78,23 @@ public:
     void setOut(bool out);
     bool out() const;
 
+    void setPost(bool post);
+    bool post() const;
+
     void setReplyMarkup(const ReplyMarkup &replyMarkup);
     ReplyMarkup replyMarkup() const;
 
     void setReplyToMsgId(qint32 replyToMsgId);
     qint32 replyToMsgId() const;
 
+    void setSilent(bool silent);
+    bool silent() const;
+
     void setToId(const Peer &toId);
     Peer toId() const;
 
-    void setUnread(bool unread);
-    bool unread() const;
+    void setViaBotId(qint32 viaBotId);
+    qint32 viaBotId() const;
 
     void setViews(qint32 views);
     qint32 views() const;
@@ -111,17 +118,18 @@ public:
 private:
     MessageAction m_action;
     qint32 m_date;
+    qint32 m_editDate;
     QList<MessageEntity> m_entities;
     qint32 m_flags;
     qint32 m_fromId;
-    qint32 m_fwdDate;
-    Peer m_fwdFromId;
+    MessageFwdHeader m_fwdFrom;
     qint32 m_id;
     MessageMedia m_media;
     QString m_message;
     ReplyMarkup m_replyMarkup;
     qint32 m_replyToMsgId;
     Peer m_toId;
+    qint32 m_viaBotId;
     qint32 m_views;
     MessageClassType m_classType;
 };
@@ -133,11 +141,12 @@ QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, Message &
 
 inline Message::Message(MessageClassType classType, InboundPkt *in) :
     m_date(0),
+    m_editDate(0),
     m_flags(0),
     m_fromId(0),
-    m_fwdDate(0),
     m_id(0),
     m_replyToMsgId(0),
+    m_viaBotId(0),
     m_views(0),
     m_classType(classType)
 {
@@ -146,11 +155,12 @@ inline Message::Message(MessageClassType classType, InboundPkt *in) :
 
 inline Message::Message(InboundPkt *in) :
     m_date(0),
+    m_editDate(0),
     m_flags(0),
     m_fromId(0),
-    m_fwdDate(0),
     m_id(0),
     m_replyToMsgId(0),
+    m_viaBotId(0),
     m_views(0),
     m_classType(typeMessageEmpty)
 {
@@ -160,11 +170,12 @@ inline Message::Message(InboundPkt *in) :
 inline Message::Message(const Null &null) :
     TelegramTypeObject(null),
     m_date(0),
+    m_editDate(0),
     m_flags(0),
     m_fromId(0),
-    m_fwdDate(0),
     m_id(0),
     m_replyToMsgId(0),
+    m_viaBotId(0),
     m_views(0),
     m_classType(typeMessageEmpty)
 {
@@ -187,6 +198,14 @@ inline void Message::setDate(qint32 date) {
 
 inline qint32 Message::date() const {
     return m_date;
+}
+
+inline void Message::setEditDate(qint32 editDate) {
+    m_editDate = editDate;
+}
+
+inline qint32 Message::editDate() const {
+    return m_editDate;
 }
 
 inline void Message::setEntities(const QList<MessageEntity> &entities) {
@@ -213,20 +232,12 @@ inline qint32 Message::fromId() const {
     return m_fromId;
 }
 
-inline void Message::setFwdDate(qint32 fwdDate) {
-    m_fwdDate = fwdDate;
+inline void Message::setFwdFrom(const MessageFwdHeader &fwdFrom) {
+    m_fwdFrom = fwdFrom;
 }
 
-inline qint32 Message::fwdDate() const {
-    return m_fwdDate;
-}
-
-inline void Message::setFwdFromId(const Peer &fwdFromId) {
-    m_fwdFromId = fwdFromId;
-}
-
-inline Peer Message::fwdFromId() const {
-    return m_fwdFromId;
+inline MessageFwdHeader Message::fwdFrom() const {
+    return m_fwdFrom;
 }
 
 inline void Message::setId(qint32 id) {
@@ -280,6 +291,15 @@ inline bool Message::out() const {
     return (m_flags & 1<<1);
 }
 
+inline void Message::setPost(bool post) {
+    if(post) m_flags = (m_flags | (1<<14));
+    else m_flags = (m_flags & ~(1<<14));
+}
+
+inline bool Message::post() const {
+    return (m_flags & 1<<14);
+}
+
 inline void Message::setReplyMarkup(const ReplyMarkup &replyMarkup) {
     m_replyMarkup = replyMarkup;
 }
@@ -296,6 +316,15 @@ inline qint32 Message::replyToMsgId() const {
     return m_replyToMsgId;
 }
 
+inline void Message::setSilent(bool silent) {
+    if(silent) m_flags = (m_flags | (1<<13));
+    else m_flags = (m_flags & ~(1<<13));
+}
+
+inline bool Message::silent() const {
+    return (m_flags & 1<<13);
+}
+
 inline void Message::setToId(const Peer &toId) {
     m_toId = toId;
 }
@@ -304,13 +333,12 @@ inline Peer Message::toId() const {
     return m_toId;
 }
 
-inline void Message::setUnread(bool unread) {
-    if(unread) m_flags = (m_flags | (1<<0));
-    else m_flags = (m_flags & ~(1<<0));
+inline void Message::setViaBotId(qint32 viaBotId) {
+    m_viaBotId = viaBotId;
 }
 
-inline bool Message::unread() const {
-    return (m_flags & 1<<0);
+inline qint32 Message::viaBotId() const {
+    return m_viaBotId;
 }
 
 inline void Message::setViews(qint32 views) {
@@ -325,17 +353,18 @@ inline bool Message::operator ==(const Message &b) const {
     return m_classType == b.m_classType &&
            m_action == b.m_action &&
            m_date == b.m_date &&
+           m_editDate == b.m_editDate &&
            m_entities == b.m_entities &&
            m_flags == b.m_flags &&
            m_fromId == b.m_fromId &&
-           m_fwdDate == b.m_fwdDate &&
-           m_fwdFromId == b.m_fwdFromId &&
+           m_fwdFrom == b.m_fwdFrom &&
            m_id == b.m_id &&
            m_media == b.m_media &&
            m_message == b.m_message &&
            m_replyMarkup == b.m_replyMarkup &&
            m_replyToMsgId == b.m_replyToMsgId &&
            m_toId == b.m_toId &&
+           m_viaBotId == b.m_viaBotId &&
            m_views == b.m_views;
 }
 
@@ -366,10 +395,10 @@ inline bool Message::fetch(InboundPkt *in) {
         }
         m_toId.fetch(in);
         if(m_flags & 1<<2) {
-            m_fwdFromId.fetch(in);
+            m_fwdFrom.fetch(in);
         }
-        if(m_flags & 1<<2) {
-            m_fwdDate = in->fetchInt();
+        if(m_flags & 1<<11) {
+            m_viaBotId = in->fetchInt();
         }
         if(m_flags & 1<<3) {
             m_replyToMsgId = in->fetchInt();
@@ -397,6 +426,9 @@ inline bool Message::fetch(InboundPkt *in) {
         if(m_flags & 1<<10) {
             m_views = in->fetchInt();
         }
+        if(m_flags & 1<<15) {
+            m_editDate = in->fetchInt();
+        }
         m_classType = static_cast<MessageClassType>(x);
         return true;
     }
@@ -409,6 +441,9 @@ inline bool Message::fetch(InboundPkt *in) {
             m_fromId = in->fetchInt();
         }
         m_toId.fetch(in);
+        if(m_flags & 1<<3) {
+            m_replyToMsgId = in->fetchInt();
+        }
         m_date = in->fetchInt();
         m_action.fetch(in);
         m_classType = static_cast<MessageClassType>(x);
@@ -436,8 +471,8 @@ inline bool Message::push(OutboundPkt *out) const {
         out->appendInt(m_id);
         out->appendInt(m_fromId);
         m_toId.push(out);
-        m_fwdFromId.push(out);
-        out->appendInt(m_fwdDate);
+        m_fwdFrom.push(out);
+        out->appendInt(m_viaBotId);
         out->appendInt(m_replyToMsgId);
         out->appendInt(m_date);
         out->appendQString(m_message);
@@ -449,6 +484,7 @@ inline bool Message::push(OutboundPkt *out) const {
             m_entities[i].push(out);
         }
         out->appendInt(m_views);
+        out->appendInt(m_editDate);
         return true;
     }
         break;
@@ -458,6 +494,7 @@ inline bool Message::push(OutboundPkt *out) const {
         out->appendInt(m_id);
         out->appendInt(m_fromId);
         m_toId.push(out);
+        out->appendInt(m_replyToMsgId);
         out->appendInt(m_date);
         m_action.push(out);
         return true;
@@ -481,15 +518,16 @@ inline QMap<QString, QVariant> Message::toMap() const {
     
     case typeMessage: {
         result["classType"] = "Message::typeMessage";
-        result["unread"] = QVariant::fromValue<bool>(unread());
         result["out"] = QVariant::fromValue<bool>(out());
         result["mentioned"] = QVariant::fromValue<bool>(mentioned());
         result["mediaUnread"] = QVariant::fromValue<bool>(mediaUnread());
+        result["silent"] = QVariant::fromValue<bool>(silent());
+        result["post"] = QVariant::fromValue<bool>(post());
         result["id"] = QVariant::fromValue<qint32>(id());
         result["fromId"] = QVariant::fromValue<qint32>(fromId());
         result["toId"] = m_toId.toMap();
-        result["fwdFromId"] = m_fwdFromId.toMap();
-        result["fwdDate"] = QVariant::fromValue<qint32>(fwdDate());
+        result["fwdFrom"] = m_fwdFrom.toMap();
+        result["viaBotId"] = QVariant::fromValue<qint32>(viaBotId());
         result["replyToMsgId"] = QVariant::fromValue<qint32>(replyToMsgId());
         result["date"] = QVariant::fromValue<qint32>(date());
         result["message"] = QVariant::fromValue<QString>(message());
@@ -500,19 +538,22 @@ inline QMap<QString, QVariant> Message::toMap() const {
             _entities << m__type.toMap();
         result["entities"] = _entities;
         result["views"] = QVariant::fromValue<qint32>(views());
+        result["editDate"] = QVariant::fromValue<qint32>(editDate());
         return result;
     }
         break;
     
     case typeMessageService: {
         result["classType"] = "Message::typeMessageService";
-        result["unread"] = QVariant::fromValue<bool>(unread());
         result["out"] = QVariant::fromValue<bool>(out());
         result["mentioned"] = QVariant::fromValue<bool>(mentioned());
         result["mediaUnread"] = QVariant::fromValue<bool>(mediaUnread());
+        result["silent"] = QVariant::fromValue<bool>(silent());
+        result["post"] = QVariant::fromValue<bool>(post());
         result["id"] = QVariant::fromValue<qint32>(id());
         result["fromId"] = QVariant::fromValue<qint32>(fromId());
         result["toId"] = m_toId.toMap();
+        result["replyToMsgId"] = QVariant::fromValue<qint32>(replyToMsgId());
         result["date"] = QVariant::fromValue<qint32>(date());
         result["action"] = m_action.toMap();
         return result;
@@ -533,15 +574,16 @@ inline Message Message::fromMap(const QMap<QString, QVariant> &map) {
     }
     if(map.value("classType").toString() == "Message::typeMessage") {
         result.setClassType(typeMessage);
-        result.setUnread( map.value("unread").value<bool>() );
         result.setOut( map.value("out").value<bool>() );
         result.setMentioned( map.value("mentioned").value<bool>() );
         result.setMediaUnread( map.value("mediaUnread").value<bool>() );
+        result.setSilent( map.value("silent").value<bool>() );
+        result.setPost( map.value("post").value<bool>() );
         result.setId( map.value("id").value<qint32>() );
         result.setFromId( map.value("fromId").value<qint32>() );
         result.setToId( Peer::fromMap(map.value("toId").toMap()) );
-        result.setFwdFromId( Peer::fromMap(map.value("fwdFromId").toMap()) );
-        result.setFwdDate( map.value("fwdDate").value<qint32>() );
+        result.setFwdFrom( MessageFwdHeader::fromMap(map.value("fwdFrom").toMap()) );
+        result.setViaBotId( map.value("viaBotId").value<qint32>() );
         result.setReplyToMsgId( map.value("replyToMsgId").value<qint32>() );
         result.setDate( map.value("date").value<qint32>() );
         result.setMessage( map.value("message").value<QString>() );
@@ -553,17 +595,20 @@ inline Message Message::fromMap(const QMap<QString, QVariant> &map) {
             _entities << MessageEntity::fromMap(var.toMap());
         result.setEntities(_entities);
         result.setViews( map.value("views").value<qint32>() );
+        result.setEditDate( map.value("editDate").value<qint32>() );
         return result;
     }
     if(map.value("classType").toString() == "Message::typeMessageService") {
         result.setClassType(typeMessageService);
-        result.setUnread( map.value("unread").value<bool>() );
         result.setOut( map.value("out").value<bool>() );
         result.setMentioned( map.value("mentioned").value<bool>() );
         result.setMediaUnread( map.value("mediaUnread").value<bool>() );
+        result.setSilent( map.value("silent").value<bool>() );
+        result.setPost( map.value("post").value<bool>() );
         result.setId( map.value("id").value<qint32>() );
         result.setFromId( map.value("fromId").value<qint32>() );
         result.setToId( Peer::fromMap(map.value("toId").toMap()) );
+        result.setReplyToMsgId( map.value("replyToMsgId").value<qint32>() );
         result.setDate( map.value("date").value<qint32>() );
         result.setAction( MessageAction::fromMap(map.value("action").toMap()) );
         return result;
@@ -589,8 +634,8 @@ inline QDataStream &operator<<(QDataStream &stream, const Message &item) {
         stream << item.id();
         stream << item.fromId();
         stream << item.toId();
-        stream << item.fwdFromId();
-        stream << item.fwdDate();
+        stream << item.fwdFrom();
+        stream << item.viaBotId();
         stream << item.replyToMsgId();
         stream << item.date();
         stream << item.message();
@@ -598,12 +643,14 @@ inline QDataStream &operator<<(QDataStream &stream, const Message &item) {
         stream << item.replyMarkup();
         stream << item.entities();
         stream << item.views();
+        stream << item.editDate();
         break;
     case Message::typeMessageService:
         stream << item.flags();
         stream << item.id();
         stream << item.fromId();
         stream << item.toId();
+        stream << item.replyToMsgId();
         stream << item.date();
         stream << item.action();
         break;
@@ -635,12 +682,12 @@ inline QDataStream &operator>>(QDataStream &stream, Message &item) {
         Peer m_to_id;
         stream >> m_to_id;
         item.setToId(m_to_id);
-        Peer m_fwd_from_id;
-        stream >> m_fwd_from_id;
-        item.setFwdFromId(m_fwd_from_id);
-        qint32 m_fwd_date;
-        stream >> m_fwd_date;
-        item.setFwdDate(m_fwd_date);
+        MessageFwdHeader m_fwd_from;
+        stream >> m_fwd_from;
+        item.setFwdFrom(m_fwd_from);
+        qint32 m_via_bot_id;
+        stream >> m_via_bot_id;
+        item.setViaBotId(m_via_bot_id);
         qint32 m_reply_to_msg_id;
         stream >> m_reply_to_msg_id;
         item.setReplyToMsgId(m_reply_to_msg_id);
@@ -662,6 +709,9 @@ inline QDataStream &operator>>(QDataStream &stream, Message &item) {
         qint32 m_views;
         stream >> m_views;
         item.setViews(m_views);
+        qint32 m_edit_date;
+        stream >> m_edit_date;
+        item.setEditDate(m_edit_date);
     }
         break;
     case Message::typeMessageService: {
@@ -677,6 +727,9 @@ inline QDataStream &operator>>(QDataStream &stream, Message &item) {
         Peer m_to_id;
         stream >> m_to_id;
         item.setToId(m_to_id);
+        qint32 m_reply_to_msg_id;
+        stream >> m_reply_to_msg_id;
+        item.setReplyToMsgId(m_reply_to_msg_id);
         qint32 m_date;
         stream >> m_date;
         item.setDate(m_date);

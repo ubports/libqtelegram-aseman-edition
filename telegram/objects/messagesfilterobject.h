@@ -23,11 +23,13 @@ public:
         TypeInputMessagesFilterPhotos,
         TypeInputMessagesFilterVideo,
         TypeInputMessagesFilterPhotoVideo,
-        TypeInputMessagesFilterAudio,
         TypeInputMessagesFilterDocument,
         TypeInputMessagesFilterPhotoVideoDocuments,
-        TypeInputMessagesFilterAudioDocuments,
-        TypeInputMessagesFilterUrl
+        TypeInputMessagesFilterUrl,
+        TypeInputMessagesFilterGif,
+        TypeInputMessagesFilterVoice,
+        TypeInputMessagesFilterMusic,
+        TypeInputMessagesFilterChatPhotos
     };
 
     MessagesFilterObject(const MessagesFilter &core, QObject *parent = 0);
@@ -95,20 +97,26 @@ inline void MessagesFilterObject::setClassType(quint32 classType) {
     case TypeInputMessagesFilterPhotoVideo:
         result = MessagesFilter::typeInputMessagesFilterPhotoVideo;
         break;
-    case TypeInputMessagesFilterAudio:
-        result = MessagesFilter::typeInputMessagesFilterAudio;
-        break;
     case TypeInputMessagesFilterDocument:
         result = MessagesFilter::typeInputMessagesFilterDocument;
         break;
     case TypeInputMessagesFilterPhotoVideoDocuments:
         result = MessagesFilter::typeInputMessagesFilterPhotoVideoDocuments;
         break;
-    case TypeInputMessagesFilterAudioDocuments:
-        result = MessagesFilter::typeInputMessagesFilterAudioDocuments;
-        break;
     case TypeInputMessagesFilterUrl:
         result = MessagesFilter::typeInputMessagesFilterUrl;
+        break;
+    case TypeInputMessagesFilterGif:
+        result = MessagesFilter::typeInputMessagesFilterGif;
+        break;
+    case TypeInputMessagesFilterVoice:
+        result = MessagesFilter::typeInputMessagesFilterVoice;
+        break;
+    case TypeInputMessagesFilterMusic:
+        result = MessagesFilter::typeInputMessagesFilterMusic;
+        break;
+    case TypeInputMessagesFilterChatPhotos:
+        result = MessagesFilter::typeInputMessagesFilterChatPhotos;
         break;
     default:
         result = MessagesFilter::typeInputMessagesFilterEmpty;
@@ -136,20 +144,26 @@ inline quint32 MessagesFilterObject::classType() const {
     case MessagesFilter::typeInputMessagesFilterPhotoVideo:
         result = TypeInputMessagesFilterPhotoVideo;
         break;
-    case MessagesFilter::typeInputMessagesFilterAudio:
-        result = TypeInputMessagesFilterAudio;
-        break;
     case MessagesFilter::typeInputMessagesFilterDocument:
         result = TypeInputMessagesFilterDocument;
         break;
     case MessagesFilter::typeInputMessagesFilterPhotoVideoDocuments:
         result = TypeInputMessagesFilterPhotoVideoDocuments;
         break;
-    case MessagesFilter::typeInputMessagesFilterAudioDocuments:
-        result = TypeInputMessagesFilterAudioDocuments;
-        break;
     case MessagesFilter::typeInputMessagesFilterUrl:
         result = TypeInputMessagesFilterUrl;
+        break;
+    case MessagesFilter::typeInputMessagesFilterGif:
+        result = TypeInputMessagesFilterGif;
+        break;
+    case MessagesFilter::typeInputMessagesFilterVoice:
+        result = TypeInputMessagesFilterVoice;
+        break;
+    case MessagesFilter::typeInputMessagesFilterMusic:
+        result = TypeInputMessagesFilterMusic;
+        break;
+    case MessagesFilter::typeInputMessagesFilterChatPhotos:
+        result = TypeInputMessagesFilterChatPhotos;
         break;
     default:
         result = TypeInputMessagesFilterEmpty;

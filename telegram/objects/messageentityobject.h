@@ -9,6 +9,7 @@
 #include "telegram/types/messageentity.h"
 
 #include <QPointer>
+#include "inputuserobject.h"
 
 class LIBQTELEGRAMSHARED_EXPORT MessageEntityObject : public TelegramTypeQObject
 {
@@ -18,6 +19,8 @@ class LIBQTELEGRAMSHARED_EXPORT MessageEntityObject : public TelegramTypeQObject
     Q_PROPERTY(qint32 length READ length WRITE setLength NOTIFY lengthChanged)
     Q_PROPERTY(qint32 offset READ offset WRITE setOffset NOTIFY offsetChanged)
     Q_PROPERTY(QString url READ url WRITE setUrl NOTIFY urlChanged)
+    Q_PROPERTY(InputUserObject* userIdInputUser READ userIdInputUser WRITE setUserIdInputUser NOTIFY userIdInputUserChanged)
+    Q_PROPERTY(qint32 userIdInt READ userIdInt WRITE setUserIdInt NOTIFY userIdIntChanged)
     Q_PROPERTY(MessageEntity core READ core WRITE setCore NOTIFY coreChanged)
     Q_PROPERTY(quint32 classType READ classType WRITE setClassType NOTIFY classTypeChanged)
 
@@ -33,7 +36,9 @@ public:
         TypeMessageEntityItalic,
         TypeMessageEntityCode,
         TypeMessageEntityPre,
-        TypeMessageEntityTextUrl
+        TypeMessageEntityTextUrl,
+        TypeMessageEntityMentionName,
+        TypeInputMessageEntityMentionName
     };
 
     MessageEntityObject(const MessageEntity &core, QObject *parent = 0);
@@ -52,6 +57,12 @@ public:
     void setUrl(const QString &url);
     QString url() const;
 
+    void setUserIdInputUser(InputUserObject* userIdInputUser);
+    InputUserObject* userIdInputUser() const;
+
+    void setUserIdInt(qint32 userIdInt);
+    qint32 userIdInt() const;
+
     void setClassType(quint32 classType);
     quint32 classType() const;
 
@@ -68,23 +79,33 @@ Q_SIGNALS:
     void lengthChanged();
     void offsetChanged();
     void urlChanged();
+    void userIdInputUserChanged();
+    void userIdIntChanged();
 
 private Q_SLOTS:
+    void coreUserIdInputUserChanged();
 
 private:
+    QPointer<InputUserObject> m_userIdInputUser;
     MessageEntity m_core;
 };
 
 inline MessageEntityObject::MessageEntityObject(const MessageEntity &core, QObject *parent) :
     TelegramTypeQObject(parent),
+    m_userIdInputUser(0),
     m_core(core)
 {
+    m_userIdInputUser = new InputUserObject(m_core.userIdInputUser(), this);
+    connect(m_userIdInputUser.data(), &InputUserObject::coreChanged, this, &MessageEntityObject::coreUserIdInputUserChanged);
 }
 
 inline MessageEntityObject::MessageEntityObject(QObject *parent) :
     TelegramTypeQObject(parent),
+    m_userIdInputUser(0),
     m_core()
 {
+    m_userIdInputUser = new InputUserObject(m_core.userIdInputUser(), this);
+    connect(m_userIdInputUser.data(), &InputUserObject::coreChanged, this, &MessageEntityObject::coreUserIdInputUserChanged);
 }
 
 inline MessageEntityObject::~MessageEntityObject() {
@@ -134,14 +155,45 @@ inline QString MessageEntityObject::url() const {
     return m_core.url();
 }
 
+inline void MessageEntityObject::setUserIdInputUser(InputUserObject* userIdInputUser) {
+    if(m_userIdInputUser == userIdInputUser) return;
+    if(m_userIdInputUser) delete m_userIdInputUser;
+    m_userIdInputUser = userIdInputUser;
+    if(m_userIdInputUser) {
+        m_userIdInputUser->setParent(this);
+        m_core.setUserIdInputUser(m_userIdInputUser->core());
+        connect(m_userIdInputUser.data(), &InputUserObject::coreChanged, this, &MessageEntityObject::coreUserIdInputUserChanged);
+    }
+    Q_EMIT userIdInputUserChanged();
+    Q_EMIT coreChanged();
+}
+
+inline InputUserObject*  MessageEntityObject::userIdInputUser() const {
+    return m_userIdInputUser;
+}
+
+inline void MessageEntityObject::setUserIdInt(qint32 userIdInt) {
+    if(m_core.userIdInt() == userIdInt) return;
+    m_core.setUserIdInt(userIdInt);
+    Q_EMIT userIdIntChanged();
+    Q_EMIT coreChanged();
+}
+
+inline qint32 MessageEntityObject::userIdInt() const {
+    return m_core.userIdInt();
+}
+
 inline MessageEntityObject &MessageEntityObject::operator =(const MessageEntity &b) {
     if(m_core == b) return *this;
     m_core = b;
+    m_userIdInputUser->setCore(b.userIdInputUser());
 
     Q_EMIT languageChanged();
     Q_EMIT lengthChanged();
     Q_EMIT offsetChanged();
     Q_EMIT urlChanged();
+    Q_EMIT userIdInputUserChanged();
+    Q_EMIT userIdIntChanged();
     Q_EMIT coreChanged();
     return *this;
 }
@@ -185,6 +237,12 @@ inline void MessageEntityObject::setClassType(quint32 classType) {
         break;
     case TypeMessageEntityTextUrl:
         result = MessageEntity::typeMessageEntityTextUrl;
+        break;
+    case TypeMessageEntityMentionName:
+        result = MessageEntity::typeMessageEntityMentionName;
+        break;
+    case TypeInputMessageEntityMentionName:
+        result = MessageEntity::typeInputMessageEntityMentionName;
         break;
     default:
         result = MessageEntity::typeMessageEntityUnknown;
@@ -233,6 +291,12 @@ inline quint32 MessageEntityObject::classType() const {
     case MessageEntity::typeMessageEntityTextUrl:
         result = TypeMessageEntityTextUrl;
         break;
+    case MessageEntity::typeMessageEntityMentionName:
+        result = TypeMessageEntityMentionName;
+        break;
+    case MessageEntity::typeInputMessageEntityMentionName:
+        result = TypeInputMessageEntityMentionName;
+        break;
     default:
         result = TypeMessageEntityUnknown;
         break;
@@ -247,6 +311,13 @@ inline void MessageEntityObject::setCore(const MessageEntity &core) {
 
 inline MessageEntity MessageEntityObject::core() const {
     return m_core;
+}
+
+inline void MessageEntityObject::coreUserIdInputUserChanged() {
+    if(m_core.userIdInputUser() == m_userIdInputUser->core()) return;
+    m_core.setUserIdInputUser(m_userIdInputUser->core());
+    Q_EMIT userIdInputUserChanged();
+    Q_EMIT coreChanged();
 }
 
 #endif // LQTG_TYPE_MESSAGEENTITY_OBJECT

@@ -14,9 +14,10 @@ class LIBQTELEGRAMSHARED_EXPORT InputPeerNotifySettingsObject : public TelegramT
 {
     Q_OBJECT
     Q_ENUMS(InputPeerNotifySettingsClassType)
-    Q_PROPERTY(qint32 eventsMask READ eventsMask WRITE setEventsMask NOTIFY eventsMaskChanged)
+    Q_PROPERTY(qint32 flags READ flags WRITE setFlags NOTIFY flagsChanged)
     Q_PROPERTY(qint32 muteUntil READ muteUntil WRITE setMuteUntil NOTIFY muteUntilChanged)
     Q_PROPERTY(bool showPreviews READ showPreviews WRITE setShowPreviews NOTIFY showPreviewsChanged)
+    Q_PROPERTY(bool silent READ silent WRITE setSilent NOTIFY silentChanged)
     Q_PROPERTY(QString sound READ sound WRITE setSound NOTIFY soundChanged)
     Q_PROPERTY(InputPeerNotifySettings core READ core WRITE setCore NOTIFY coreChanged)
     Q_PROPERTY(quint32 classType READ classType WRITE setClassType NOTIFY classTypeChanged)
@@ -30,14 +31,17 @@ public:
     InputPeerNotifySettingsObject(QObject *parent = 0);
     virtual ~InputPeerNotifySettingsObject();
 
-    void setEventsMask(qint32 eventsMask);
-    qint32 eventsMask() const;
+    void setFlags(qint32 flags);
+    qint32 flags() const;
 
     void setMuteUntil(qint32 muteUntil);
     qint32 muteUntil() const;
 
     void setShowPreviews(bool showPreviews);
     bool showPreviews() const;
+
+    void setSilent(bool silent);
+    bool silent() const;
 
     void setSound(const QString &sound);
     QString sound() const;
@@ -54,9 +58,10 @@ public:
 Q_SIGNALS:
     void coreChanged();
     void classTypeChanged();
-    void eventsMaskChanged();
+    void flagsChanged();
     void muteUntilChanged();
     void showPreviewsChanged();
+    void silentChanged();
     void soundChanged();
 
 private Q_SLOTS:
@@ -80,15 +85,15 @@ inline InputPeerNotifySettingsObject::InputPeerNotifySettingsObject(QObject *par
 inline InputPeerNotifySettingsObject::~InputPeerNotifySettingsObject() {
 }
 
-inline void InputPeerNotifySettingsObject::setEventsMask(qint32 eventsMask) {
-    if(m_core.eventsMask() == eventsMask) return;
-    m_core.setEventsMask(eventsMask);
-    Q_EMIT eventsMaskChanged();
+inline void InputPeerNotifySettingsObject::setFlags(qint32 flags) {
+    if(m_core.flags() == flags) return;
+    m_core.setFlags(flags);
+    Q_EMIT flagsChanged();
     Q_EMIT coreChanged();
 }
 
-inline qint32 InputPeerNotifySettingsObject::eventsMask() const {
-    return m_core.eventsMask();
+inline qint32 InputPeerNotifySettingsObject::flags() const {
+    return m_core.flags();
 }
 
 inline void InputPeerNotifySettingsObject::setMuteUntil(qint32 muteUntil) {
@@ -113,6 +118,17 @@ inline bool InputPeerNotifySettingsObject::showPreviews() const {
     return m_core.showPreviews();
 }
 
+inline void InputPeerNotifySettingsObject::setSilent(bool silent) {
+    if(m_core.silent() == silent) return;
+    m_core.setSilent(silent);
+    Q_EMIT silentChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool InputPeerNotifySettingsObject::silent() const {
+    return m_core.silent();
+}
+
 inline void InputPeerNotifySettingsObject::setSound(const QString &sound) {
     if(m_core.sound() == sound) return;
     m_core.setSound(sound);
@@ -128,9 +144,10 @@ inline InputPeerNotifySettingsObject &InputPeerNotifySettingsObject::operator =(
     if(m_core == b) return *this;
     m_core = b;
 
-    Q_EMIT eventsMaskChanged();
+    Q_EMIT flagsChanged();
     Q_EMIT muteUntilChanged();
     Q_EMIT showPreviewsChanged();
+    Q_EMIT silentChanged();
     Q_EMIT soundChanged();
     Q_EMIT coreChanged();
     return *this;

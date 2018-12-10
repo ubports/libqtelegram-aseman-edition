@@ -8,10 +8,11 @@ HEADERS += \
     $$PWD/telegramtypeqobject.h \
     $$PWD/qmltools.h \
     $$PWD/accountdaysttlobject.h \
-    $$PWD/audioobject.h \
     $$PWD/authorizationobject.h \
     $$PWD/botcommandobject.h \
     $$PWD/botinfoobject.h \
+    $$PWD/botinlinemessageobject.h \
+    $$PWD/botinlineresultobject.h \
     $$PWD/channelmessagesfilterobject.h \
     $$PWD/channelparticipantobject.h \
     $$PWD/channelparticipantroleobject.h \
@@ -27,7 +28,6 @@ HEADERS += \
     $$PWD/contactblockedobject.h \
     $$PWD/contactlinkobject.h \
     $$PWD/contactstatusobject.h \
-    $$PWD/contactsuggestedobject.h \
     $$PWD/dcoptionobject.h \
     $$PWD/decryptedmessageobject.h \
     $$PWD/decryptedmessageactionobject.h \
@@ -37,15 +37,21 @@ HEADERS += \
     $$PWD/disabledfeatureobject.h \
     $$PWD/documentobject.h \
     $$PWD/documentattributeobject.h \
+    $$PWD/draftmessageobject.h \
     $$PWD/encryptedchatobject.h \
     $$PWD/encryptedfileobject.h \
     $$PWD/encryptedmessageobject.h \
     $$PWD/exportedchatinviteobject.h \
+    $$PWD/exportedmessagelinkobject.h \
     $$PWD/filelocationobject.h \
+    $$PWD/foundgifobject.h \
     $$PWD/geopointobject.h \
     $$PWD/importedcontactobject.h \
+    $$PWD/inlinebotswitchpmobject.h \
     $$PWD/inputappeventobject.h \
-    $$PWD/inputaudioobject.h \
+    $$PWD/inputbotinlinemessageobject.h \
+    $$PWD/inputbotinlinemessageidobject.h \
+    $$PWD/inputbotinlineresultobject.h \
     $$PWD/inputchannelobject.h \
     $$PWD/inputchatphotoobject.h \
     $$PWD/inputcontactobject.h \
@@ -66,13 +72,12 @@ HEADERS += \
     $$PWD/inputprivacyruleobject.h \
     $$PWD/inputstickersetobject.h \
     $$PWD/inputuserobject.h \
-    $$PWD/inputvideoobject.h \
     $$PWD/keyboardbuttonobject.h \
     $$PWD/keyboardbuttonrowobject.h \
     $$PWD/messageobject.h \
     $$PWD/messageactionobject.h \
     $$PWD/messageentityobject.h \
-    $$PWD/messagegroupobject.h \
+    $$PWD/messagefwdheaderobject.h \
     $$PWD/messagemediaobject.h \
     $$PWD/messagerangeobject.h \
     $$PWD/messagesfilterobject.h \
@@ -81,16 +86,21 @@ HEADERS += \
     $$PWD/peerobject.h \
     $$PWD/peernotifyeventsobject.h \
     $$PWD/peernotifysettingsobject.h \
+    $$PWD/peersettingsobject.h \
     $$PWD/photoobject.h \
     $$PWD/photosizeobject.h \
     $$PWD/privacykeyobject.h \
     $$PWD/privacyruleobject.h \
     $$PWD/receivednotifymessageobject.h \
     $$PWD/replymarkupobject.h \
+    $$PWD/reportreasonobject.h \
     $$PWD/secretchatmessageobject.h \
     $$PWD/sendmessageactionobject.h \
     $$PWD/stickerpackobject.h \
     $$PWD/stickersetobject.h \
+    $$PWD/toppeerobject.h \
+    $$PWD/toppeercategoryobject.h \
+    $$PWD/toppeercategorypeersobject.h \
     $$PWD/trueobject.h \
     $$PWD/updateobject.h \
     $$PWD/updatestypeobject.h \
@@ -98,7 +108,6 @@ HEADERS += \
     $$PWD/userfullobject.h \
     $$PWD/userprofilephotoobject.h \
     $$PWD/userstatusobject.h \
-    $$PWD/videoobject.h \
     $$PWD/wallpaperobject.h \
     $$PWD/webpageobject.h \
     $$PWD/accountauthorizationsobject.h \
@@ -106,12 +115,13 @@ HEADERS += \
     $$PWD/accountpasswordinputsettingsobject.h \
     $$PWD/accountpasswordsettingsobject.h \
     $$PWD/accountprivacyrulesobject.h \
-    $$PWD/accountsentchangephonecodeobject.h \
     $$PWD/authauthorizationobject.h \
     $$PWD/authcheckedphoneobject.h \
+    $$PWD/authcodetypeobject.h \
     $$PWD/authexportedauthorizationobject.h \
     $$PWD/authpasswordrecoveryobject.h \
     $$PWD/authsentcodeobject.h \
+    $$PWD/authsentcodetypeobject.h \
     $$PWD/channelschannelparticipantobject.h \
     $$PWD/channelschannelparticipantsobject.h \
     $$PWD/contactsblockedobject.h \
@@ -120,19 +130,26 @@ HEADERS += \
     $$PWD/contactsimportedcontactsobject.h \
     $$PWD/contactslinkobject.h \
     $$PWD/contactsresolvedpeerobject.h \
-    $$PWD/contactssuggestedobject.h \
+    $$PWD/contactstoppeersobject.h \
     $$PWD/helpappchangelogobject.h \
     $$PWD/helpappupdateobject.h \
     $$PWD/helpinvitetextobject.h \
     $$PWD/helpsupportobject.h \
+    $$PWD/helptermsofserviceobject.h \
     $$PWD/messagesaffectedhistoryobject.h \
     $$PWD/messagesaffectedmessagesobject.h \
     $$PWD/messagesallstickersobject.h \
+    $$PWD/messagesbotcallbackanswerobject.h \
+    $$PWD/messagesbotresultsobject.h \
     $$PWD/messageschatfullobject.h \
     $$PWD/messageschatsobject.h \
     $$PWD/messagesdhconfigobject.h \
     $$PWD/messagesdialogsobject.h \
+    $$PWD/messagesfoundgifsobject.h \
+    $$PWD/messagesmessageeditdataobject.h \
     $$PWD/messagesmessagesobject.h \
+    $$PWD/messagespeerdialogsobject.h \
+    $$PWD/messagessavedgifsobject.h \
     $$PWD/messagessentencryptedmessageobject.h \
     $$PWD/messagesstickersetobject.h \
     $$PWD/messagesstickersobject.h \
@@ -147,10 +164,11 @@ HEADERS += \
 SOURCES += \
     $$PWD/telegramtypeqobject.cpp \
     $$PWD/accountdaysttlobject.cpp \
-    $$PWD/audioobject.cpp \
     $$PWD/authorizationobject.cpp \
     $$PWD/botcommandobject.cpp \
     $$PWD/botinfoobject.cpp \
+    $$PWD/botinlinemessageobject.cpp \
+    $$PWD/botinlineresultobject.cpp \
     $$PWD/channelmessagesfilterobject.cpp \
     $$PWD/channelparticipantobject.cpp \
     $$PWD/channelparticipantroleobject.cpp \
@@ -166,7 +184,6 @@ SOURCES += \
     $$PWD/contactblockedobject.cpp \
     $$PWD/contactlinkobject.cpp \
     $$PWD/contactstatusobject.cpp \
-    $$PWD/contactsuggestedobject.cpp \
     $$PWD/dcoptionobject.cpp \
     $$PWD/decryptedmessageobject.cpp \
     $$PWD/decryptedmessageactionobject.cpp \
@@ -176,15 +193,21 @@ SOURCES += \
     $$PWD/disabledfeatureobject.cpp \
     $$PWD/documentobject.cpp \
     $$PWD/documentattributeobject.cpp \
+    $$PWD/draftmessageobject.cpp \
     $$PWD/encryptedchatobject.cpp \
     $$PWD/encryptedfileobject.cpp \
     $$PWD/encryptedmessageobject.cpp \
     $$PWD/exportedchatinviteobject.cpp \
+    $$PWD/exportedmessagelinkobject.cpp \
     $$PWD/filelocationobject.cpp \
+    $$PWD/foundgifobject.cpp \
     $$PWD/geopointobject.cpp \
     $$PWD/importedcontactobject.cpp \
+    $$PWD/inlinebotswitchpmobject.cpp \
     $$PWD/inputappeventobject.cpp \
-    $$PWD/inputaudioobject.cpp \
+    $$PWD/inputbotinlinemessageobject.cpp \
+    $$PWD/inputbotinlinemessageidobject.cpp \
+    $$PWD/inputbotinlineresultobject.cpp \
     $$PWD/inputchannelobject.cpp \
     $$PWD/inputchatphotoobject.cpp \
     $$PWD/inputcontactobject.cpp \
@@ -205,13 +228,12 @@ SOURCES += \
     $$PWD/inputprivacyruleobject.cpp \
     $$PWD/inputstickersetobject.cpp \
     $$PWD/inputuserobject.cpp \
-    $$PWD/inputvideoobject.cpp \
     $$PWD/keyboardbuttonobject.cpp \
     $$PWD/keyboardbuttonrowobject.cpp \
     $$PWD/messageobject.cpp \
     $$PWD/messageactionobject.cpp \
     $$PWD/messageentityobject.cpp \
-    $$PWD/messagegroupobject.cpp \
+    $$PWD/messagefwdheaderobject.cpp \
     $$PWD/messagemediaobject.cpp \
     $$PWD/messagerangeobject.cpp \
     $$PWD/messagesfilterobject.cpp \
@@ -220,16 +242,21 @@ SOURCES += \
     $$PWD/peerobject.cpp \
     $$PWD/peernotifyeventsobject.cpp \
     $$PWD/peernotifysettingsobject.cpp \
+    $$PWD/peersettingsobject.cpp \
     $$PWD/photoobject.cpp \
     $$PWD/photosizeobject.cpp \
     $$PWD/privacykeyobject.cpp \
     $$PWD/privacyruleobject.cpp \
     $$PWD/receivednotifymessageobject.cpp \
     $$PWD/replymarkupobject.cpp \
+    $$PWD/reportreasonobject.cpp \
     $$PWD/secretchatmessageobject.cpp \
     $$PWD/sendmessageactionobject.cpp \
     $$PWD/stickerpackobject.cpp \
     $$PWD/stickersetobject.cpp \
+    $$PWD/toppeerobject.cpp \
+    $$PWD/toppeercategoryobject.cpp \
+    $$PWD/toppeercategorypeersobject.cpp \
     $$PWD/trueobject.cpp \
     $$PWD/updateobject.cpp \
     $$PWD/updatestypeobject.cpp \
@@ -237,7 +264,6 @@ SOURCES += \
     $$PWD/userfullobject.cpp \
     $$PWD/userprofilephotoobject.cpp \
     $$PWD/userstatusobject.cpp \
-    $$PWD/videoobject.cpp \
     $$PWD/wallpaperobject.cpp \
     $$PWD/webpageobject.cpp \
     $$PWD/accountauthorizationsobject.cpp \
@@ -245,12 +271,13 @@ SOURCES += \
     $$PWD/accountpasswordinputsettingsobject.cpp \
     $$PWD/accountpasswordsettingsobject.cpp \
     $$PWD/accountprivacyrulesobject.cpp \
-    $$PWD/accountsentchangephonecodeobject.cpp \
     $$PWD/authauthorizationobject.cpp \
     $$PWD/authcheckedphoneobject.cpp \
+    $$PWD/authcodetypeobject.cpp \
     $$PWD/authexportedauthorizationobject.cpp \
     $$PWD/authpasswordrecoveryobject.cpp \
     $$PWD/authsentcodeobject.cpp \
+    $$PWD/authsentcodetypeobject.cpp \
     $$PWD/channelschannelparticipantobject.cpp \
     $$PWD/channelschannelparticipantsobject.cpp \
     $$PWD/contactsblockedobject.cpp \
@@ -259,19 +286,26 @@ SOURCES += \
     $$PWD/contactsimportedcontactsobject.cpp \
     $$PWD/contactslinkobject.cpp \
     $$PWD/contactsresolvedpeerobject.cpp \
-    $$PWD/contactssuggestedobject.cpp \
+    $$PWD/contactstoppeersobject.cpp \
     $$PWD/helpappchangelogobject.cpp \
     $$PWD/helpappupdateobject.cpp \
     $$PWD/helpinvitetextobject.cpp \
     $$PWD/helpsupportobject.cpp \
+    $$PWD/helptermsofserviceobject.cpp \
     $$PWD/messagesaffectedhistoryobject.cpp \
     $$PWD/messagesaffectedmessagesobject.cpp \
     $$PWD/messagesallstickersobject.cpp \
+    $$PWD/messagesbotcallbackanswerobject.cpp \
+    $$PWD/messagesbotresultsobject.cpp \
     $$PWD/messageschatfullobject.cpp \
     $$PWD/messageschatsobject.cpp \
     $$PWD/messagesdhconfigobject.cpp \
     $$PWD/messagesdialogsobject.cpp \
+    $$PWD/messagesfoundgifsobject.cpp \
+    $$PWD/messagesmessageeditdataobject.cpp \
     $$PWD/messagesmessagesobject.cpp \
+    $$PWD/messagespeerdialogsobject.cpp \
+    $$PWD/messagessavedgifsobject.cpp \
     $$PWD/messagessentencryptedmessageobject.cpp \
     $$PWD/messagesstickersetobject.cpp \
     $$PWD/messagesstickersobject.cpp \

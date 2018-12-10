@@ -19,7 +19,7 @@
 #include <QList>
 #include "chat.h"
 #include "messageentity.h"
-#include "peer.h"
+#include "messagefwdheader.h"
 #include "messagemedia.h"
 #include <QString>
 #include "update.h"
@@ -30,8 +30,8 @@ class LIBQTELEGRAMSHARED_EXPORT UpdatesType : public TelegramTypeObject
 public:
     enum UpdatesTypeClassType {
         typeUpdatesTooLong = 0xe317af7e,
-        typeUpdateShortMessage = 0xf7d91a46,
-        typeUpdateShortChatMessage = 0xcac7fdd2,
+        typeUpdateShortMessage = 0x914fbf11,
+        typeUpdateShortChatMessage = 0x16812688,
         typeUpdateShort = 0x78d4dec1,
         typeUpdatesCombined = 0x725b04c3,
         typeUpdates = 0x74ae4240,
@@ -61,11 +61,8 @@ public:
     void setFromId(qint32 fromId);
     qint32 fromId() const;
 
-    void setFwdDate(qint32 fwdDate);
-    qint32 fwdDate() const;
-
-    void setFwdFromId(const Peer &fwdFromId);
-    Peer fwdFromId() const;
+    void setFwdFrom(const MessageFwdHeader &fwdFrom);
+    MessageFwdHeader fwdFrom() const;
 
     void setId(qint32 id);
     qint32 id() const;
@@ -100,8 +97,8 @@ public:
     void setSeqStart(qint32 seqStart);
     qint32 seqStart() const;
 
-    void setUnread(bool unread);
-    bool unread() const;
+    void setSilent(bool silent);
+    bool silent() const;
 
     void setUpdate(const Update &update);
     Update update() const;
@@ -114,6 +111,9 @@ public:
 
     void setUsers(const QList<User> &users);
     QList<User> users() const;
+
+    void setViaBotId(qint32 viaBotId);
+    qint32 viaBotId() const;
 
     void setClassType(UpdatesTypeClassType classType);
     UpdatesTypeClassType classType() const;
@@ -138,8 +138,7 @@ private:
     QList<MessageEntity> m_entities;
     qint32 m_flags;
     qint32 m_fromId;
-    qint32 m_fwdDate;
-    Peer m_fwdFromId;
+    MessageFwdHeader m_fwdFrom;
     qint32 m_id;
     MessageMedia m_media;
     QString m_message;
@@ -152,6 +151,7 @@ private:
     QList<Update> m_updates;
     qint32 m_userId;
     QList<User> m_users;
+    qint32 m_viaBotId;
     UpdatesTypeClassType m_classType;
 };
 
@@ -165,7 +165,6 @@ inline UpdatesType::UpdatesType(UpdatesTypeClassType classType, InboundPkt *in) 
     m_date(0),
     m_flags(0),
     m_fromId(0),
-    m_fwdDate(0),
     m_id(0),
     m_pts(0),
     m_ptsCount(0),
@@ -173,6 +172,7 @@ inline UpdatesType::UpdatesType(UpdatesTypeClassType classType, InboundPkt *in) 
     m_seq(0),
     m_seqStart(0),
     m_userId(0),
+    m_viaBotId(0),
     m_classType(classType)
 {
     if(in) fetch(in);
@@ -183,7 +183,6 @@ inline UpdatesType::UpdatesType(InboundPkt *in) :
     m_date(0),
     m_flags(0),
     m_fromId(0),
-    m_fwdDate(0),
     m_id(0),
     m_pts(0),
     m_ptsCount(0),
@@ -191,6 +190,7 @@ inline UpdatesType::UpdatesType(InboundPkt *in) :
     m_seq(0),
     m_seqStart(0),
     m_userId(0),
+    m_viaBotId(0),
     m_classType(typeUpdatesTooLong)
 {
     fetch(in);
@@ -202,7 +202,6 @@ inline UpdatesType::UpdatesType(const Null &null) :
     m_date(0),
     m_flags(0),
     m_fromId(0),
-    m_fwdDate(0),
     m_id(0),
     m_pts(0),
     m_ptsCount(0),
@@ -210,6 +209,7 @@ inline UpdatesType::UpdatesType(const Null &null) :
     m_seq(0),
     m_seqStart(0),
     m_userId(0),
+    m_viaBotId(0),
     m_classType(typeUpdatesTooLong)
 {
 }
@@ -265,20 +265,12 @@ inline qint32 UpdatesType::fromId() const {
     return m_fromId;
 }
 
-inline void UpdatesType::setFwdDate(qint32 fwdDate) {
-    m_fwdDate = fwdDate;
+inline void UpdatesType::setFwdFrom(const MessageFwdHeader &fwdFrom) {
+    m_fwdFrom = fwdFrom;
 }
 
-inline qint32 UpdatesType::fwdDate() const {
-    return m_fwdDate;
-}
-
-inline void UpdatesType::setFwdFromId(const Peer &fwdFromId) {
-    m_fwdFromId = fwdFromId;
-}
-
-inline Peer UpdatesType::fwdFromId() const {
-    return m_fwdFromId;
+inline MessageFwdHeader UpdatesType::fwdFrom() const {
+    return m_fwdFrom;
 }
 
 inline void UpdatesType::setId(qint32 id) {
@@ -372,13 +364,13 @@ inline qint32 UpdatesType::seqStart() const {
     return m_seqStart;
 }
 
-inline void UpdatesType::setUnread(bool unread) {
-    if(unread) m_flags = (m_flags | (1<<0));
-    else m_flags = (m_flags & ~(1<<0));
+inline void UpdatesType::setSilent(bool silent) {
+    if(silent) m_flags = (m_flags | (1<<13));
+    else m_flags = (m_flags & ~(1<<13));
 }
 
-inline bool UpdatesType::unread() const {
-    return (m_flags & 1<<0);
+inline bool UpdatesType::silent() const {
+    return (m_flags & 1<<13);
 }
 
 inline void UpdatesType::setUpdate(const Update &update) {
@@ -413,6 +405,14 @@ inline QList<User> UpdatesType::users() const {
     return m_users;
 }
 
+inline void UpdatesType::setViaBotId(qint32 viaBotId) {
+    m_viaBotId = viaBotId;
+}
+
+inline qint32 UpdatesType::viaBotId() const {
+    return m_viaBotId;
+}
+
 inline bool UpdatesType::operator ==(const UpdatesType &b) const {
     return m_classType == b.m_classType &&
            m_chatId == b.m_chatId &&
@@ -421,8 +421,7 @@ inline bool UpdatesType::operator ==(const UpdatesType &b) const {
            m_entities == b.m_entities &&
            m_flags == b.m_flags &&
            m_fromId == b.m_fromId &&
-           m_fwdDate == b.m_fwdDate &&
-           m_fwdFromId == b.m_fwdFromId &&
+           m_fwdFrom == b.m_fwdFrom &&
            m_id == b.m_id &&
            m_media == b.m_media &&
            m_message == b.m_message &&
@@ -434,7 +433,8 @@ inline bool UpdatesType::operator ==(const UpdatesType &b) const {
            m_update == b.m_update &&
            m_updates == b.m_updates &&
            m_userId == b.m_userId &&
-           m_users == b.m_users;
+           m_users == b.m_users &&
+           m_viaBotId == b.m_viaBotId;
 }
 
 inline void UpdatesType::setClassType(UpdatesType::UpdatesTypeClassType classType) {
@@ -464,10 +464,10 @@ inline bool UpdatesType::fetch(InboundPkt *in) {
         m_ptsCount = in->fetchInt();
         m_date = in->fetchInt();
         if(m_flags & 1<<2) {
-            m_fwdFromId.fetch(in);
+            m_fwdFrom.fetch(in);
         }
-        if(m_flags & 1<<2) {
-            m_fwdDate = in->fetchInt();
+        if(m_flags & 1<<11) {
+            m_viaBotId = in->fetchInt();
         }
         if(m_flags & 1<<3) {
             m_replyToMsgId = in->fetchInt();
@@ -499,10 +499,10 @@ inline bool UpdatesType::fetch(InboundPkt *in) {
         m_ptsCount = in->fetchInt();
         m_date = in->fetchInt();
         if(m_flags & 1<<2) {
-            m_fwdFromId.fetch(in);
+            m_fwdFrom.fetch(in);
         }
-        if(m_flags & 1<<2) {
-            m_fwdDate = in->fetchInt();
+        if(m_flags & 1<<11) {
+            m_viaBotId = in->fetchInt();
         }
         if(m_flags & 1<<3) {
             m_replyToMsgId = in->fetchInt();
@@ -645,8 +645,8 @@ inline bool UpdatesType::push(OutboundPkt *out) const {
         out->appendInt(m_pts);
         out->appendInt(m_ptsCount);
         out->appendInt(m_date);
-        m_fwdFromId.push(out);
-        out->appendInt(m_fwdDate);
+        m_fwdFrom.push(out);
+        out->appendInt(m_viaBotId);
         out->appendInt(m_replyToMsgId);
         out->appendInt(CoreTypes::typeVector);
         out->appendInt(m_entities.count());
@@ -666,8 +666,8 @@ inline bool UpdatesType::push(OutboundPkt *out) const {
         out->appendInt(m_pts);
         out->appendInt(m_ptsCount);
         out->appendInt(m_date);
-        m_fwdFromId.push(out);
-        out->appendInt(m_fwdDate);
+        m_fwdFrom.push(out);
+        out->appendInt(m_viaBotId);
         out->appendInt(m_replyToMsgId);
         out->appendInt(CoreTypes::typeVector);
         out->appendInt(m_entities.count());
@@ -762,18 +762,18 @@ inline QMap<QString, QVariant> UpdatesType::toMap() const {
     
     case typeUpdateShortMessage: {
         result["classType"] = "UpdatesType::typeUpdateShortMessage";
-        result["unread"] = QVariant::fromValue<bool>(unread());
         result["out"] = QVariant::fromValue<bool>(out());
         result["mentioned"] = QVariant::fromValue<bool>(mentioned());
         result["mediaUnread"] = QVariant::fromValue<bool>(mediaUnread());
+        result["silent"] = QVariant::fromValue<bool>(silent());
         result["id"] = QVariant::fromValue<qint32>(id());
         result["userId"] = QVariant::fromValue<qint32>(userId());
         result["message"] = QVariant::fromValue<QString>(message());
         result["pts"] = QVariant::fromValue<qint32>(pts());
         result["ptsCount"] = QVariant::fromValue<qint32>(ptsCount());
         result["date"] = QVariant::fromValue<qint32>(date());
-        result["fwdFromId"] = m_fwdFromId.toMap();
-        result["fwdDate"] = QVariant::fromValue<qint32>(fwdDate());
+        result["fwdFrom"] = m_fwdFrom.toMap();
+        result["viaBotId"] = QVariant::fromValue<qint32>(viaBotId());
         result["replyToMsgId"] = QVariant::fromValue<qint32>(replyToMsgId());
         QList<QVariant> _entities;
         Q_FOREACH(const MessageEntity &m__type, m_entities)
@@ -785,10 +785,10 @@ inline QMap<QString, QVariant> UpdatesType::toMap() const {
     
     case typeUpdateShortChatMessage: {
         result["classType"] = "UpdatesType::typeUpdateShortChatMessage";
-        result["unread"] = QVariant::fromValue<bool>(unread());
         result["out"] = QVariant::fromValue<bool>(out());
         result["mentioned"] = QVariant::fromValue<bool>(mentioned());
         result["mediaUnread"] = QVariant::fromValue<bool>(mediaUnread());
+        result["silent"] = QVariant::fromValue<bool>(silent());
         result["id"] = QVariant::fromValue<qint32>(id());
         result["fromId"] = QVariant::fromValue<qint32>(fromId());
         result["chatId"] = QVariant::fromValue<qint32>(chatId());
@@ -796,8 +796,8 @@ inline QMap<QString, QVariant> UpdatesType::toMap() const {
         result["pts"] = QVariant::fromValue<qint32>(pts());
         result["ptsCount"] = QVariant::fromValue<qint32>(ptsCount());
         result["date"] = QVariant::fromValue<qint32>(date());
-        result["fwdFromId"] = m_fwdFromId.toMap();
-        result["fwdDate"] = QVariant::fromValue<qint32>(fwdDate());
+        result["fwdFrom"] = m_fwdFrom.toMap();
+        result["viaBotId"] = QVariant::fromValue<qint32>(viaBotId());
         result["replyToMsgId"] = QVariant::fromValue<qint32>(replyToMsgId());
         QList<QVariant> _entities;
         Q_FOREACH(const MessageEntity &m__type, m_entities)
@@ -858,7 +858,6 @@ inline QMap<QString, QVariant> UpdatesType::toMap() const {
     
     case typeUpdateShortSentMessage: {
         result["classType"] = "UpdatesType::typeUpdateShortSentMessage";
-        result["unread"] = QVariant::fromValue<bool>(unread());
         result["out"] = QVariant::fromValue<bool>(out());
         result["id"] = QVariant::fromValue<qint32>(id());
         result["pts"] = QVariant::fromValue<qint32>(pts());
@@ -886,18 +885,18 @@ inline UpdatesType UpdatesType::fromMap(const QMap<QString, QVariant> &map) {
     }
     if(map.value("classType").toString() == "UpdatesType::typeUpdateShortMessage") {
         result.setClassType(typeUpdateShortMessage);
-        result.setUnread( map.value("unread").value<bool>() );
         result.setOut( map.value("out").value<bool>() );
         result.setMentioned( map.value("mentioned").value<bool>() );
         result.setMediaUnread( map.value("mediaUnread").value<bool>() );
+        result.setSilent( map.value("silent").value<bool>() );
         result.setId( map.value("id").value<qint32>() );
         result.setUserId( map.value("userId").value<qint32>() );
         result.setMessage( map.value("message").value<QString>() );
         result.setPts( map.value("pts").value<qint32>() );
         result.setPtsCount( map.value("ptsCount").value<qint32>() );
         result.setDate( map.value("date").value<qint32>() );
-        result.setFwdFromId( Peer::fromMap(map.value("fwdFromId").toMap()) );
-        result.setFwdDate( map.value("fwdDate").value<qint32>() );
+        result.setFwdFrom( MessageFwdHeader::fromMap(map.value("fwdFrom").toMap()) );
+        result.setViaBotId( map.value("viaBotId").value<qint32>() );
         result.setReplyToMsgId( map.value("replyToMsgId").value<qint32>() );
         QList<QVariant> map_entities = map["entities"].toList();
         QList<MessageEntity> _entities;
@@ -908,10 +907,10 @@ inline UpdatesType UpdatesType::fromMap(const QMap<QString, QVariant> &map) {
     }
     if(map.value("classType").toString() == "UpdatesType::typeUpdateShortChatMessage") {
         result.setClassType(typeUpdateShortChatMessage);
-        result.setUnread( map.value("unread").value<bool>() );
         result.setOut( map.value("out").value<bool>() );
         result.setMentioned( map.value("mentioned").value<bool>() );
         result.setMediaUnread( map.value("mediaUnread").value<bool>() );
+        result.setSilent( map.value("silent").value<bool>() );
         result.setId( map.value("id").value<qint32>() );
         result.setFromId( map.value("fromId").value<qint32>() );
         result.setChatId( map.value("chatId").value<qint32>() );
@@ -919,8 +918,8 @@ inline UpdatesType UpdatesType::fromMap(const QMap<QString, QVariant> &map) {
         result.setPts( map.value("pts").value<qint32>() );
         result.setPtsCount( map.value("ptsCount").value<qint32>() );
         result.setDate( map.value("date").value<qint32>() );
-        result.setFwdFromId( Peer::fromMap(map.value("fwdFromId").toMap()) );
-        result.setFwdDate( map.value("fwdDate").value<qint32>() );
+        result.setFwdFrom( MessageFwdHeader::fromMap(map.value("fwdFrom").toMap()) );
+        result.setViaBotId( map.value("viaBotId").value<qint32>() );
         result.setReplyToMsgId( map.value("replyToMsgId").value<qint32>() );
         QList<QVariant> map_entities = map["entities"].toList();
         QList<MessageEntity> _entities;
@@ -980,7 +979,6 @@ inline UpdatesType UpdatesType::fromMap(const QMap<QString, QVariant> &map) {
     }
     if(map.value("classType").toString() == "UpdatesType::typeUpdateShortSentMessage") {
         result.setClassType(typeUpdateShortSentMessage);
-        result.setUnread( map.value("unread").value<bool>() );
         result.setOut( map.value("out").value<bool>() );
         result.setId( map.value("id").value<qint32>() );
         result.setPts( map.value("pts").value<qint32>() );
@@ -1018,8 +1016,8 @@ inline QDataStream &operator<<(QDataStream &stream, const UpdatesType &item) {
         stream << item.pts();
         stream << item.ptsCount();
         stream << item.date();
-        stream << item.fwdFromId();
-        stream << item.fwdDate();
+        stream << item.fwdFrom();
+        stream << item.viaBotId();
         stream << item.replyToMsgId();
         stream << item.entities();
         break;
@@ -1032,8 +1030,8 @@ inline QDataStream &operator<<(QDataStream &stream, const UpdatesType &item) {
         stream << item.pts();
         stream << item.ptsCount();
         stream << item.date();
-        stream << item.fwdFromId();
-        stream << item.fwdDate();
+        stream << item.fwdFrom();
+        stream << item.viaBotId();
         stream << item.replyToMsgId();
         stream << item.entities();
         break;
@@ -1100,12 +1098,12 @@ inline QDataStream &operator>>(QDataStream &stream, UpdatesType &item) {
         qint32 m_date;
         stream >> m_date;
         item.setDate(m_date);
-        Peer m_fwd_from_id;
-        stream >> m_fwd_from_id;
-        item.setFwdFromId(m_fwd_from_id);
-        qint32 m_fwd_date;
-        stream >> m_fwd_date;
-        item.setFwdDate(m_fwd_date);
+        MessageFwdHeader m_fwd_from;
+        stream >> m_fwd_from;
+        item.setFwdFrom(m_fwd_from);
+        qint32 m_via_bot_id;
+        stream >> m_via_bot_id;
+        item.setViaBotId(m_via_bot_id);
         qint32 m_reply_to_msg_id;
         stream >> m_reply_to_msg_id;
         item.setReplyToMsgId(m_reply_to_msg_id);
@@ -1139,12 +1137,12 @@ inline QDataStream &operator>>(QDataStream &stream, UpdatesType &item) {
         qint32 m_date;
         stream >> m_date;
         item.setDate(m_date);
-        Peer m_fwd_from_id;
-        stream >> m_fwd_from_id;
-        item.setFwdFromId(m_fwd_from_id);
-        qint32 m_fwd_date;
-        stream >> m_fwd_date;
-        item.setFwdDate(m_fwd_date);
+        MessageFwdHeader m_fwd_from;
+        stream >> m_fwd_from;
+        item.setFwdFrom(m_fwd_from);
+        qint32 m_via_bot_id;
+        stream >> m_via_bot_id;
+        item.setViaBotId(m_via_bot_id);
         qint32 m_reply_to_msg_id;
         stream >> m_reply_to_msg_id;
         item.setReplyToMsgId(m_reply_to_msg_id);

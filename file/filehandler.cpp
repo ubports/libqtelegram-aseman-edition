@@ -204,7 +204,7 @@ void FileHandler::onUploadSaveFilePartResult(qint64 msgId, bool ok, const QVaria
                     InputPeer peer = op->peer();
                     qint64 randomId = op->randomId();
                     qint32 replyToMsgId = op->replyToMsgId();
-                    requestId = mCore->messagesSendMedia(false, peer, replyToMsgId, metadata, randomId, ReplyMarkup());
+                    requestId = mCore->messagesSendMedia(false, false, true, peer, replyToMsgId, metadata, randomId, ReplyMarkup());
                     break;
                 }
                 case FileOperation::editChatPhoto: {
@@ -473,7 +473,6 @@ void FileHandler::onUpdateMessageId(qint64 oldMsgId, qint64 newMsgId) {
     DownloadFile::Ptr file = mDownloadsMap[oldMsgId];
     if (!file.isNull()) {
         mDownloadsMap.insert(newMsgId, file);
-        qWarning() << "onUpdateMessageId(): Fixed a file download id, old: " << oldMsgId << ", new: " << newMsgId;
     }
     downloadsMapUpdating.unlock();
 }

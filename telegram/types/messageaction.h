@@ -34,7 +34,9 @@ public:
         typeMessageActionChatJoinedByLink = 0xf89cf5e8,
         typeMessageActionChannelCreate = 0x95d2ac92,
         typeMessageActionChatMigrateTo = 0x51bdb021,
-        typeMessageActionChannelMigrateFrom = 0xb055eaee
+        typeMessageActionChannelMigrateFrom = 0xb055eaee,
+        typeMessageActionPinMessage = 0x94bd38ed,
+        typeMessageActionHistoryClear = 0x9fbab604
     };
 
     MessageAction(MessageActionClassType classType = typeMessageActionEmpty, InboundPkt *in = 0);
@@ -298,6 +300,18 @@ inline bool MessageAction::fetch(InboundPkt *in) {
     }
         break;
     
+    case typeMessageActionPinMessage: {
+        m_classType = static_cast<MessageActionClassType>(x);
+        return true;
+    }
+        break;
+    
+    case typeMessageActionHistoryClear: {
+        m_classType = static_cast<MessageActionClassType>(x);
+        return true;
+    }
+        break;
+    
     default:
         LQTG_FETCH_ASSERT;
         return false;
@@ -377,6 +391,16 @@ inline bool MessageAction::push(OutboundPkt *out) const {
     case typeMessageActionChannelMigrateFrom: {
         out->appendQString(m_title);
         out->appendInt(m_chatId);
+        return true;
+    }
+        break;
+    
+    case typeMessageActionPinMessage: {
+        return true;
+    }
+        break;
+    
+    case typeMessageActionHistoryClear: {
         return true;
     }
         break;
@@ -472,6 +496,18 @@ inline QMap<QString, QVariant> MessageAction::toMap() const {
     }
         break;
     
+    case typeMessageActionPinMessage: {
+        result["classType"] = "MessageAction::typeMessageActionPinMessage";
+        return result;
+    }
+        break;
+    
+    case typeMessageActionHistoryClear: {
+        result["classType"] = "MessageAction::typeMessageActionHistoryClear";
+        return result;
+    }
+        break;
+    
     default:
         return result;
     }
@@ -542,6 +578,14 @@ inline MessageAction MessageAction::fromMap(const QMap<QString, QVariant> &map) 
         result.setChatId( map.value("chatId").value<qint32>() );
         return result;
     }
+    if(map.value("classType").toString() == "MessageAction::typeMessageActionPinMessage") {
+        result.setClassType(typeMessageActionPinMessage);
+        return result;
+    }
+    if(map.value("classType").toString() == "MessageAction::typeMessageActionHistoryClear") {
+        result.setClassType(typeMessageActionHistoryClear);
+        return result;
+    }
     return result;
 }
 
@@ -589,6 +633,12 @@ inline QDataStream &operator<<(QDataStream &stream, const MessageAction &item) {
     case MessageAction::typeMessageActionChannelMigrateFrom:
         stream << item.title();
         stream << item.chatId();
+        break;
+    case MessageAction::typeMessageActionPinMessage:
+        
+        break;
+    case MessageAction::typeMessageActionHistoryClear:
+        
         break;
     }
     return stream;
@@ -665,6 +715,14 @@ inline QDataStream &operator>>(QDataStream &stream, MessageAction &item) {
         qint32 m_chat_id;
         stream >> m_chat_id;
         item.setChatId(m_chat_id);
+    }
+        break;
+    case MessageAction::typeMessageActionPinMessage: {
+        
+    }
+        break;
+    case MessageAction::typeMessageActionHistoryClear: {
+        
     }
         break;
     }

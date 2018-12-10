@@ -16,3 +16,5 @@
 
 * **Get app changelog** - [TelegramCore::helpGetAppChangelog](methods/getappchangelog.md)
 
+* **Get terms of service** - [TelegramCore::helpGetTermsOfService](methods/gettermsofservice.md)
+

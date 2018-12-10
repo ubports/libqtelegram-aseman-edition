@@ -30,8 +30,9 @@ DcProvider::DcProvider(Settings *settings, CryptoUtils *crypto) :
     mPendingDcs(0),
     mPendingTransferSessions(0),
     mWorkingDcSession(0),
-    mConfigReceived(0) {
-}
+    nearestDc(0),
+    mConfigReceived(0)
+     { }
 
 DcProvider::~DcProvider() {
    clean();
@@ -167,24 +168,32 @@ void DcProvider::onDcAuthDisconnected() {
     dcAuth->deleteLater();
 }
 
+void DcProvider::finalDcEstablished() {
+
+    qCDebug(TG_CORE_DCPROVIDER) << "DcProvider ready";
+    Q_EMIT dcProviderReady();
+
+}
+
+void DcProvider::setupApi(DC *dc) {
+
+    Session *session = new Session(dc, mSettings, mCrypto, this);
+    mApi = new TelegramApi(session, mSettings, mCrypto, this);
+    setApi(mApi);
+    connect(mApi, &SessionManager::mainSessionReady, this, &DcProvider::onApiReady);
+    m_error = connect(session, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onApiError()));
+    session->connectToServer();
+}
+
 void DcProvider::processDcReady(DC *dc) {
     mDcsLock.lock();
     // create api object if dc is workingDc, and get configuration
     if ((!mApi) && (dc->id() == mSettings->workingDcNum())) {
-        Session *session = new Session(dc, mSettings, mCrypto, this);
-        mApi = new TelegramApi(session, mSettings, mCrypto, this);
-        setApi(mApi);
-        connect(session, &Session::sessionReady, this, &DcProvider::onApiReady);
-        m_error = connect(session, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onApiError()));
-        qWarning() << "processDcReady";
-        session->connectToServer();
+        setupApi(dc);
     } else if (--mPendingDcs == 0) { // if all dcs are authorized, emit provider ready signal
         // save the settings here, after all dcs are ready
         mSettings->setDcsList(mDcs.values());
         mSettings->writeAuthFile();
-
-        qCDebug(TG_CORE_DCPROVIDER) << "DcProvider ready";
-        Q_EMIT dcProviderReady();
 
         // if current dc is in "authKeyCreated" state, authNeeded signal must be emitted for user to sign in.
         // if current dc is in "userSignedIn" state, check that all dcs are in that state or export/import auth.
@@ -240,30 +249,49 @@ void DcProvider::onApiError() {
     }
 }
 
-void DcProvider::onApiReady(DC*) {
-    Session *session = qobject_cast<Session *>(sender());
+void DcProvider::onApiReady() {
+
     qCDebug(TG_CORE_DCPROVIDER) << "Api connected to server and ready";
 
     // after emitting the api startup signals, we don't want to do it again when session gets connected, so disconnect signal-slot
     disconnect(m_error);
 
-    // get the config
-    connect(mApi, &TelegramApi::helpGetConfigAnswer, this, &DcProvider::onConfigReceived, Qt::UniqueConnection );
-
-    qint64 rid = mApi->helpGetConfig();
-    mGetConfigRequests[rid] = session;
+    // get nearest DC
+    connect(mApi, &TelegramApi::helpGetNearestDcAnswer, this, &DcProvider::onNearestDcReceived, Qt::UniqueConnection );
+    mApi->helpGetNearestDc();
 }
 
-void DcProvider::onConfigReceived(qint64 msgId, const Config &config, const QVariant &attachedData) {
-    Q_UNUSED(attachedData)
+void DcProvider::onNearestDcReceived(qint64 msgId, const NearestDc &result) {
+
+    qWarning() << "Nearest DC is" << result.nearestDc() << "country" << result.country() << "this DC" << result.thisDc();
+    nearestDc = result.nearestDc();
+    DC *dc = mDcs.value(nearestDc);
+    if (result.thisDc() != nearestDc && dc)
+    {
+        if(mApi)
+        {
+            mSettings->setWorkingDcNum(nearestDc);
+            mSettings->writeAuthFile();
+            mApi->changeMainSessionToDc(dc);
+        }
+        return;
+    }
+    qWarning() << "Connected to the right DC, we can continue";
+
+    // get the config
+    if(mApi)
+        disconnect(mApi, &SessionManager::mainSessionReady, this, &DcProvider::onApiReady);
+    connect(mApi, &TelegramApi::helpGetConfigAnswer, this, &DcProvider::onConfigReceived, Qt::UniqueConnection );
+    mApi->helpGetConfig();
+    finalDcEstablished();
+}
+
+void DcProvider::onConfigReceived(qint64 msgId, const Config &config) {
+
     qCDebug(TG_CORE_DCPROVIDER) << "onConfigReceived(), msgId =" << QString::number(msgId, 16);
     qCDebug(TG_CORE_DCPROVIDER) << "date =" << config.date();
     qCDebug(TG_CORE_DCPROVIDER) << "testMode =" << config.testMode();
     qCDebug(TG_CORE_DCPROVIDER) << "thisDc =" << config.thisDc();
-
-    Session *session = mGetConfigRequests.take(msgId);
-    if(session)
-        disconnect(session, &Session::sessionReady, this, &DcProvider::onApiReady);
 
     if(mConfigReceived)
         return;
@@ -301,14 +329,18 @@ void DcProvider::onConfigReceived(qint64 msgId, const Config &config, const QVar
             mDcs.insert(dcOption.id(), dc);
         }
 
-        if(!dcOption.mediaOnly())
+        //Sad but true, this code cannot handle media-only DCs, and also not use IPv6, which is currently broken in UT anyways
+        if(!(dcOption.mediaOnly() || dcOption.ipv6()))
             dc->addEndpoint(dcOption.ipAddress(), dcOption.port());
         else
         {
             //Make sure we remove old entries from the DC option list with mediaonly = true
             dc->deleteEndpoint(dcOption.ipAddress(), dcOption.port());
         }
-
+    }
+    //Need second loop to guarantee all possible IP addresses have been assigned to the DC structures
+    Q_FOREACH (DcOption dcOption, dcOptions) {
+        DC *dc = mDcs.value(dcOption.id());
         qint32 currentDc = dcIndex.indexOf(dcOption.id());
         if (currentDc>-1)
         {
@@ -352,30 +384,32 @@ void DcProvider::transferAuth() {
     mWorkingDcSession = mApi->mainSession();
     Q_ASSERT(mWorkingDcSession);
     QList<DC *> m_dcsList = mDcs.values();
-    for (qint32 i=0 ; i < m_dcsList.size(); i++) {
-        DC *dc = m_dcsList.value(i);
+    QList<DC *> pendingDCs;
+    Q_FOREACH(DC *dc, m_dcsList) {
         if (dc->state() == DC::authKeyCreated &&
                 dc->id() != mSettings->workingDcNum()) {
-            hasTransferSessions = true;
+            pendingDCs << dc;
+        }
+    }
+    mPendingTransferSessions = pendingDCs.count();
+    if(mPendingTransferSessions>0)
+    {
+        hasTransferSessions = true;
+        Q_FOREACH(DC *dc, pendingDCs) {
             // create a new session for this dc
             Session *session = mApi->fileSession(dc);
             connect(session, &Session::sessionReady, this, &DcProvider::onTransferSessionReady);
-            mPendingTransferSessions++;
             session->connectToServer();
         }
-    }
-    if (!hasTransferSessions) {
+    } else
         Q_EMIT authTransferCompleted();
-    }
 }
 
 void DcProvider::onTransferSessionReady(DC *) {
-    qWarning() << "onTransferSessionReady():";
+    qCDebug(TG_CORE_DCPROVIDER) << "onTransferSessionReady():";
     Session *session = qobject_cast<Session *>(sender());
     mTransferSessions.append(session);
     if (--mPendingTransferSessions == 0) {
-        //connect(mApi, &TelegramApi::authExportAuthorizationAnswer, this, &DcProvider::onAuthExportedAuthorization);
-        //connect(mApi, &TelegramApi::authImportAuthorizationAnswer, this, &DcProvider::onAuthImportedAuthorization);
         Callback<AuthExportedAuthorization> callback = [this](TG_AUTH_EXPORT_AUTHORIZATION_CALLBACK) {
             if(!error.null) {
                 qWarning() << "onTransferSessionReady(): " << error.errorCode << error.errorText;
@@ -389,7 +423,7 @@ void DcProvider::onTransferSessionReady(DC *) {
 }
 
 void DcProvider::onAuthExportedAuthorization(const AuthExportedAuthorization &result) {
-    qWarning() << "onAuthExportedAuthorization()";
+    qCDebug(TG_CORE_DCPROVIDER) << "onAuthExportedAuthorization()";
     // Set ourId into settings (It doesn't matter if set before)
     mSettings->setOurId(result.id());
     // Change api dc to first in the transfer dcs list
@@ -408,7 +442,7 @@ void DcProvider::onAuthExportedAuthorization(const AuthExportedAuthorization &re
 }
 
 void DcProvider::onAuthImportedAuthorization(const AuthAuthorization &) {
-    qWarning() << "onAuthImportedAuthorization()";
+    qCDebug(TG_CORE_DCPROVIDER) << "onAuthImportedAuthorization()";
     Session *session = mTransferSessions.takeFirst();
     DC *authorizedDc = session->dc();
     authorizedDc->setExpires(0);

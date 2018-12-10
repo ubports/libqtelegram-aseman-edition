@@ -377,11 +377,20 @@ void DCAuth::rpcSendPacket(OutboundPkt &packet) {
     qCDebug(TG_CORE_DCAUTH) << "packet sent";
 }
 
+void DCAuth::beforeConnect()
+{
+    if(advancedEndpoint)
+    {
+        setHost(m_dc->currentEndpoint().host());
+        setPort(m_dc->currentEndpoint().port());
+        advancedEndpoint = false;
+    }
+}
+
 void DCAuth::onError(QAbstractSocket::SocketError error) {
+        advancedEndpoint = true;
         m_dc->advanceEndpoint();
         QString newHost = m_dc->currentEndpoint().host();
         qint32 newPort = m_dc->currentEndpoint().port();
-        setHost(newHost);
-        setPort(newPort);
         qWarning() << "Error" << error << "in tcp socket, retrying another endpoint:" << newHost << ":" << newPort;
 }

@@ -24,8 +24,7 @@ class LIBQTELEGRAMSHARED_EXPORT ChannelMessagesFilter : public TelegramTypeObjec
 public:
     enum ChannelMessagesFilterClassType {
         typeChannelMessagesFilterEmpty = 0x94d42ee7,
-        typeChannelMessagesFilter = 0xcd77d957,
-        typeChannelMessagesFilterCollapsed = 0xfa01232e
+        typeChannelMessagesFilter = 0xcd77d957
     };
 
     ChannelMessagesFilter(ChannelMessagesFilterClassType classType = typeChannelMessagesFilterEmpty, InboundPkt *in = 0);
@@ -33,11 +32,11 @@ public:
     ChannelMessagesFilter(const Null&);
     virtual ~ChannelMessagesFilter();
 
+    void setExcludeNewMessages(bool excludeNewMessages);
+    bool excludeNewMessages() const;
+
     void setFlags(qint32 flags);
     qint32 flags() const;
-
-    void setImportantOnly(bool importantOnly);
-    bool importantOnly() const;
 
     void setRanges(const QList<MessageRange> &ranges);
     QList<MessageRange> ranges() const;
@@ -93,21 +92,21 @@ inline ChannelMessagesFilter::ChannelMessagesFilter(const Null &null) :
 inline ChannelMessagesFilter::~ChannelMessagesFilter() {
 }
 
+inline void ChannelMessagesFilter::setExcludeNewMessages(bool excludeNewMessages) {
+    if(excludeNewMessages) m_flags = (m_flags | (1<<1));
+    else m_flags = (m_flags & ~(1<<1));
+}
+
+inline bool ChannelMessagesFilter::excludeNewMessages() const {
+    return (m_flags & 1<<1);
+}
+
 inline void ChannelMessagesFilter::setFlags(qint32 flags) {
     m_flags = flags;
 }
 
 inline qint32 ChannelMessagesFilter::flags() const {
     return m_flags;
-}
-
-inline void ChannelMessagesFilter::setImportantOnly(bool importantOnly) {
-    if(importantOnly) m_flags = (m_flags | (1<<0));
-    else m_flags = (m_flags & ~(1<<0));
-}
-
-inline bool ChannelMessagesFilter::importantOnly() const {
-    return (m_flags & 1<<0);
 }
 
 inline void ChannelMessagesFilter::setRanges(const QList<MessageRange> &ranges) {
@@ -157,12 +156,6 @@ inline bool ChannelMessagesFilter::fetch(InboundPkt *in) {
     }
         break;
     
-    case typeChannelMessagesFilterCollapsed: {
-        m_classType = static_cast<ChannelMessagesFilterClassType>(x);
-        return true;
-    }
-        break;
-    
     default:
         LQTG_FETCH_ASSERT;
         return false;
@@ -188,11 +181,6 @@ inline bool ChannelMessagesFilter::push(OutboundPkt *out) const {
     }
         break;
     
-    case typeChannelMessagesFilterCollapsed: {
-        return true;
-    }
-        break;
-    
     default:
         return false;
     }
@@ -209,17 +197,11 @@ inline QMap<QString, QVariant> ChannelMessagesFilter::toMap() const {
     
     case typeChannelMessagesFilter: {
         result["classType"] = "ChannelMessagesFilter::typeChannelMessagesFilter";
-        result["importantOnly"] = QVariant::fromValue<bool>(importantOnly());
+        result["excludeNewMessages"] = QVariant::fromValue<bool>(excludeNewMessages());
         QList<QVariant> _ranges;
         Q_FOREACH(const MessageRange &m__type, m_ranges)
             _ranges << m__type.toMap();
         result["ranges"] = _ranges;
-        return result;
-    }
-        break;
-    
-    case typeChannelMessagesFilterCollapsed: {
-        result["classType"] = "ChannelMessagesFilter::typeChannelMessagesFilterCollapsed";
         return result;
     }
         break;
@@ -237,16 +219,12 @@ inline ChannelMessagesFilter ChannelMessagesFilter::fromMap(const QMap<QString, 
     }
     if(map.value("classType").toString() == "ChannelMessagesFilter::typeChannelMessagesFilter") {
         result.setClassType(typeChannelMessagesFilter);
-        result.setImportantOnly( map.value("importantOnly").value<bool>() );
+        result.setExcludeNewMessages( map.value("excludeNewMessages").value<bool>() );
         QList<QVariant> map_ranges = map["ranges"].toList();
         QList<MessageRange> _ranges;
         Q_FOREACH(const QVariant &var, map_ranges)
             _ranges << MessageRange::fromMap(var.toMap());
         result.setRanges(_ranges);
-        return result;
-    }
-    if(map.value("classType").toString() == "ChannelMessagesFilter::typeChannelMessagesFilterCollapsed") {
-        result.setClassType(typeChannelMessagesFilterCollapsed);
         return result;
     }
     return result;
@@ -269,9 +247,6 @@ inline QDataStream &operator<<(QDataStream &stream, const ChannelMessagesFilter 
         stream << item.flags();
         stream << item.ranges();
         break;
-    case ChannelMessagesFilter::typeChannelMessagesFilterCollapsed:
-        
-        break;
     }
     return stream;
 }
@@ -292,10 +267,6 @@ inline QDataStream &operator>>(QDataStream &stream, ChannelMessagesFilter &item)
         QList<MessageRange> m_ranges;
         stream >> m_ranges;
         item.setRanges(m_ranges);
-    }
-        break;
-    case ChannelMessagesFilter::typeChannelMessagesFilterCollapsed: {
-        
     }
         break;
     }

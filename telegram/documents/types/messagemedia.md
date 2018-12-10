@@ -4,12 +4,10 @@
 
 * [typeMessageMediaEmpty](#messagemediatypemessagemediaempty)
 * [typeMessageMediaPhoto](#messagemediatypemessagemediaphoto)
-* [typeMessageMediaVideo](#messagemediatypemessagemediavideo)
 * [typeMessageMediaGeo](#messagemediatypemessagemediageo)
 * [typeMessageMediaContact](#messagemediatypemessagemediacontact)
 * [typeMessageMediaUnsupported](#messagemediatypemessagemediaunsupported)
 * [typeMessageMediaDocument](#messagemediatypemessagemediadocument)
-* [typeMessageMediaAudio](#messagemediatypemessagemediaaudio)
 * [typeMessageMediaWebPage](#messagemediatypemessagemediawebpage)
 * [typeMessageMediaVenue](#messagemediatypemessagemediavenue)
 
@@ -37,21 +35,6 @@ messageMediaPhoto#3d8ce53d photo:Photo caption:string = MessageMedia;
 |Name|Type|
 |----|----|
 |photo|[Photo](photo.md)|
-|caption|QString|
-
-## MessageMedia::typeMessageMediaVideo
-
-#### Schema:
-
-```c++
-messageMediaVideo#5bcf1675 video:Video caption:string = MessageMedia;
-```
-
-#### Parameters:
-
-|Name|Type|
-|----|----|
-|video|[Video](video.md)|
 |caption|QString|
 
 ## MessageMedia::typeMessageMediaGeo
@@ -101,7 +84,7 @@ messageMediaUnsupported#9f84f49e = MessageMedia;
 #### Schema:
 
 ```c++
-messageMediaDocument#2fda2204 document:Document = MessageMedia;
+messageMediaDocument#f3e02ea8 document:Document caption:string = MessageMedia;
 ```
 
 #### Parameters:
@@ -109,20 +92,7 @@ messageMediaDocument#2fda2204 document:Document = MessageMedia;
 |Name|Type|
 |----|----|
 |document|[Document](document.md)|
-
-## MessageMedia::typeMessageMediaAudio
-
-#### Schema:
-
-```c++
-messageMediaAudio#c6b68300 audio:Audio = MessageMedia;
-```
-
-#### Parameters:
-
-|Name|Type|
-|----|----|
-|audio|[Audio](audio.md)|
+|caption|QString|
 
 ## MessageMedia::typeMessageMediaWebPage
 

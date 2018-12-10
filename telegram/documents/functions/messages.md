@@ -98,3 +98,39 @@
 
 * **Search global** - [TelegramCore::messagesSearchGlobal](methods/searchglobal.md)
 
+* **Reorder sticker sets** - [TelegramCore::messagesReorderStickerSets](methods/reorderstickersets.md)
+
+* **Get document by hash** - [TelegramCore::messagesGetDocumentByHash](methods/getdocumentbyhash.md)
+
+* **Search gifs** - [TelegramCore::messagesSearchGifs](methods/searchgifs.md)
+
+* **Get saved gifs** - [TelegramCore::messagesGetSavedGifs](methods/getsavedgifs.md)
+
+* **Save gif** - [TelegramCore::messagesSaveGif](methods/savegif.md)
+
+* **Get inline bot results** - [TelegramCore::messagesGetInlineBotResults](methods/getinlinebotresults.md)
+
+* **Set inline bot results** - [TelegramCore::messagesSetInlineBotResults](methods/setinlinebotresults.md)
+
+* **Send inline bot result** - [TelegramCore::messagesSendInlineBotResult](methods/sendinlinebotresult.md)
+
+* **Hide report spam** - [TelegramCore::messagesHideReportSpam](methods/hidereportspam.md)
+
+* **Get peer settings** - [TelegramCore::messagesGetPeerSettings](methods/getpeersettings.md)
+
+* **Get message edit data** - [TelegramCore::messagesGetMessageEditData](methods/getmessageeditdata.md)
+
+* **Edit message** - [TelegramCore::messagesEditMessage](methods/editmessage.md)
+
+* **Edit inline bot message** - [TelegramCore::messagesEditInlineBotMessage](methods/editinlinebotmessage.md)
+
+* **Get bot callback answer** - [TelegramCore::messagesGetBotCallbackAnswer](methods/getbotcallbackanswer.md)
+
+* **Set bot callback answer** - [TelegramCore::messagesSetBotCallbackAnswer](methods/setbotcallbackanswer.md)
+
+* **Get peer dialogs** - [TelegramCore::messagesGetPeerDialogs](methods/getpeerdialogs.md)
+
+* **Save draft** - [TelegramCore::messagesSaveDraft](methods/savedraft.md)
+
+* **Get all drafts** - [TelegramCore::messagesGetAllDrafts](methods/getalldrafts.md)
+

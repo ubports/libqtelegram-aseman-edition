@@ -56,7 +56,7 @@ protected:
     qint32 peekIn(void *data, qint32 len);
     virtual void processRpcAnswer(QByteArray response) = 0;
     virtual void processConnected() = 0;
-
+    virtual void beforeConnect();
     Asserter mAsserter;
 
 private:

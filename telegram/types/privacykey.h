@@ -20,7 +20,8 @@ class LIBQTELEGRAMSHARED_EXPORT PrivacyKey : public TelegramTypeObject
 {
 public:
     enum PrivacyKeyClassType {
-        typePrivacyKeyStatusTimestamp = 0xbc2eab30
+        typePrivacyKeyStatusTimestamp = 0xbc2eab30,
+        typePrivacyKeyChatInvite = 0x500e6dfa
     };
 
     PrivacyKey(PrivacyKeyClassType classType = typePrivacyKeyStatusTimestamp, InboundPkt *in = 0);
@@ -96,6 +97,12 @@ inline bool PrivacyKey::fetch(InboundPkt *in) {
     }
         break;
     
+    case typePrivacyKeyChatInvite: {
+        m_classType = static_cast<PrivacyKeyClassType>(x);
+        return true;
+    }
+        break;
+    
     default:
         LQTG_FETCH_ASSERT;
         return false;
@@ -106,6 +113,11 @@ inline bool PrivacyKey::push(OutboundPkt *out) const {
     out->appendInt(m_classType);
     switch(m_classType) {
     case typePrivacyKeyStatusTimestamp: {
+        return true;
+    }
+        break;
+    
+    case typePrivacyKeyChatInvite: {
         return true;
     }
         break;
@@ -124,6 +136,12 @@ inline QMap<QString, QVariant> PrivacyKey::toMap() const {
     }
         break;
     
+    case typePrivacyKeyChatInvite: {
+        result["classType"] = "PrivacyKey::typePrivacyKeyChatInvite";
+        return result;
+    }
+        break;
+    
     default:
         return result;
     }
@@ -133,6 +151,10 @@ inline PrivacyKey PrivacyKey::fromMap(const QMap<QString, QVariant> &map) {
     PrivacyKey result;
     if(map.value("classType").toString() == "PrivacyKey::typePrivacyKeyStatusTimestamp") {
         result.setClassType(typePrivacyKeyStatusTimestamp);
+        return result;
+    }
+    if(map.value("classType").toString() == "PrivacyKey::typePrivacyKeyChatInvite") {
+        result.setClassType(typePrivacyKeyChatInvite);
         return result;
     }
     return result;
@@ -151,6 +173,9 @@ inline QDataStream &operator<<(QDataStream &stream, const PrivacyKey &item) {
     case PrivacyKey::typePrivacyKeyStatusTimestamp:
         
         break;
+    case PrivacyKey::typePrivacyKeyChatInvite:
+        
+        break;
     }
     return stream;
 }
@@ -161,6 +186,10 @@ inline QDataStream &operator>>(QDataStream &stream, PrivacyKey &item) {
     item.setClassType(static_cast<PrivacyKey::PrivacyKeyClassType>(type));
     switch(type) {
     case PrivacyKey::typePrivacyKeyStatusTimestamp: {
+        
+    }
+        break;
+    case PrivacyKey::typePrivacyKeyChatInvite: {
         
     }
         break;

@@ -134,20 +134,17 @@ public:
     qint64 contactsGetBlocked(qint32 offset = 0, qint32 limit = 0);
 
     // Working with channels
-    qint64 channelsGetImportantHistory(const InputChannel &channel, qint32 offset_id, qint32 add_offset, qint32 limit, qint32 max_id, qint32 min_id);
     qint64 channelsReadHistory(const InputChannel &channel, qint32 max_id);
     qint64 channelsDeleteMessages(const InputChannel &channel, const QList<qint32> &id);
     qint64 channelsDeleteUserHistory(const InputChannel &channel, const InputUser &user_id);
     qint64 channelsReportSpam(const InputChannel &channel, const InputUser &user_id, const QList<qint32> &id);
     qint64 channelsGetMessages(const InputChannel &channel, const QList<qint32> &id);
-    qint64 channelsGetParticipants(const InputChannel &channel, const ChannelParticipantsFilter &filter, qint32 offset, qint32 limit);
     qint64 channelsGetChannels(const QList<InputChannel> &id);
     qint64 channelsCreateChannel(bool broadcast, bool megagroup, const QString &title, const QString &about);
     qint64 channelsEditAbout(const InputChannel &channel, const QString &about);
     qint64 channelsEditAdmin(const InputChannel &channel, const InputUser &user_id, const ChannelParticipantRole &role);
     qint64 channelsEditTitle(const InputChannel &channel, const QString &title);
     qint64 channelsEditPhoto(const InputChannel &channel, const InputChatPhoto &photo);
-    qint64 channelsToggleComments(const InputChannel &channel, bool enabled);
     qint64 channelsCheckUsername(const InputChannel &channel, const QString &username);
     qint64 channelsUpdateUsername(const InputChannel &channel, const QString &username);
     qint64 channelsJoinChannel(const InputChannel &channel);
@@ -209,7 +206,7 @@ public:
 
     // Stickers
     qint64 messagesGetStickers(const QString &emoticon, const QString &hash);
-    qint64 messagesGetAllStickers(const QString &hash);
+    qint64 messagesGetAllStickers(const qint32 &hash);
     qint64 messagesUninstallStickerSet(const InputStickerSet &stickerset);
 
     // Invites
@@ -274,8 +271,8 @@ Q_SIGNALS:
 
     void fatalError();
     void updatesTooLong();
-    void updateShortMessage(qint32 id, qint32 userId, const QString &message, qint32 pts, qint32 pts_count, qint32 date, Peer fwd_from_id, qint32 fwd_date, qint32 reply_to_msg_id, bool unread, bool out);
-    void updateShortChatMessage(qint32 id, qint32 fromId, qint32 chatId, const QString &message, qint32 pts, qint32 pts_count, qint32 date, Peer fwd_from_id, qint32 fwd_date, qint32 reply_to_msg_id, bool unread, bool out);
+    void updateShortMessage(qint32 id, qint32 userId, const QString &message, qint32 pts, qint32 pts_count, qint32 date, MessageFwdHeader fwdFrom, qint32 reply_to_msg_id, bool unread, bool out);
+    void updateShortChatMessage(qint32 id, qint32 fromId, qint32 chatId, const QString &message, qint32 pts, qint32 pts_count, qint32 date, MessageFwdHeader fwdFrom, qint32 reply_to_msg_id, bool unread, bool out);
     void updateShort(const Update &update, qint32 date);
     void updatesCombined(const QList<Update> &updates, const QList<User> &users, const QList<Chat> &chats, qint32 date, qint32 seqStart, qint32 seq);
     void updates(const QList<Update> &udts, const QList<User> &users, const QList<Chat> &chats, qint32 date, qint32 seq);

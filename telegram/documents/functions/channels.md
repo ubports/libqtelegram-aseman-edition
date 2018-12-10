@@ -2,10 +2,6 @@
 
 ## Methods:
 
-* **Get dialogs** - [TelegramCore::channelsGetDialogs](methods/getdialogs.md)
-
-* **Get important history** - [TelegramCore::channelsGetImportantHistory](methods/getimportanthistory.md)
-
 * **Read history** - [TelegramCore::channelsReadHistory](methods/readhistory.md)
 
 * **Delete messages** - [TelegramCore::channelsDeleteMessages](methods/deletemessages.md)
@@ -34,8 +30,6 @@
 
 * **Edit photo** - [TelegramCore::channelsEditPhoto](methods/editphoto.md)
 
-* **Toggle comments** - [TelegramCore::channelsToggleComments](methods/togglecomments.md)
-
 * **Check username** - [TelegramCore::channelsCheckUsername](methods/checkusername.md)
 
 * **Update username** - [TelegramCore::channelsUpdateUsername](methods/updateusername.md)
@@ -51,4 +45,12 @@
 * **Export invite** - [TelegramCore::channelsExportInvite](methods/exportinvite.md)
 
 * **Delete channel** - [TelegramCore::channelsDeleteChannel](methods/deletechannel.md)
+
+* **Toggle invites** - [TelegramCore::channelsToggleInvites](methods/toggleinvites.md)
+
+* **Export message link** - [TelegramCore::channelsExportMessageLink](methods/exportmessagelink.md)
+
+* **Toggle signatures** - [TelegramCore::channelsToggleSignatures](methods/togglesignatures.md)
+
+* **Update pinned message** - [TelegramCore::channelsUpdatePinnedMessage](methods/updatepinnedmessage.md)
 

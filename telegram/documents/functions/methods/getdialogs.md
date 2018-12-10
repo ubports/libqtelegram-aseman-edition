@@ -7,13 +7,15 @@ TelegramCore::messagesGetDialogs
 ## Schema:
 
 ```c++
-messages.getDialogs#859b3d3c offset:int limit:int = messages.Dialogs;
+messages.getDialogs#6b47f94d offset_date:int offset_id:int offset_peer:InputPeer limit:int = messages.Dialogs;
 ```
 ## Parameters:
 
 |Name|Type|Default|
 |----|----|-------|
-|offset|qint32||
+|offsetDate|qint32||
+|offsetId|qint32||
+|offsetPeer|[InputPeer](../../types/inputpeer.md)||
 |limit|qint32||
 |callBack|Callback&lt;[MessagesDialogs](../../types/messagesdialogs.md)&gt;|0|
 |timeout|qint32|TelegramCore::timeOut()|
@@ -51,7 +53,7 @@ onGetDialogsError(qint64 msgId, qint32 errorCode, const QString &errorText)
 ## Examples:
 
 ```c++
-tg->getDialogs(offset, limit, [=](TG_GET_DIALOGS_CALLBACK){
+tg->getDialogs(offset_date, offset_id, offset_peer, limit, [=](TG_GET_DIALOGS_CALLBACK){
     ...
 }, 30000);
 ```

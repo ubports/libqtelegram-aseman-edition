@@ -23,7 +23,7 @@ class LIBQTELEGRAMSHARED_EXPORT PeerNotifySettings : public TelegramTypeObject
 public:
     enum PeerNotifySettingsClassType {
         typePeerNotifySettingsEmpty = 0x70a68512,
-        typePeerNotifySettings = 0x8d5e11ee
+        typePeerNotifySettings = 0x9acda4c0
     };
 
     PeerNotifySettings(PeerNotifySettingsClassType classType = typePeerNotifySettingsEmpty, InboundPkt *in = 0);
@@ -31,14 +31,17 @@ public:
     PeerNotifySettings(const Null&);
     virtual ~PeerNotifySettings();
 
-    void setEventsMask(qint32 eventsMask);
-    qint32 eventsMask() const;
+    void setFlags(qint32 flags);
+    qint32 flags() const;
 
     void setMuteUntil(qint32 muteUntil);
     qint32 muteUntil() const;
 
     void setShowPreviews(bool showPreviews);
     bool showPreviews() const;
+
+    void setSilent(bool silent);
+    bool silent() const;
 
     void setSound(const QString &sound);
     QString sound() const;
@@ -60,9 +63,8 @@ public:
     QByteArray getHash(QCryptographicHash::Algorithm alg = QCryptographicHash::Md5) const;
 
 private:
-    qint32 m_eventsMask;
+    qint32 m_flags;
     qint32 m_muteUntil;
-    bool m_showPreviews;
     QString m_sound;
     PeerNotifySettingsClassType m_classType;
 };
@@ -73,18 +75,16 @@ QDataStream LIBQTELEGRAMSHARED_EXPORT &operator<<(QDataStream &stream, const Pee
 QDataStream LIBQTELEGRAMSHARED_EXPORT &operator>>(QDataStream &stream, PeerNotifySettings &item);
 
 inline PeerNotifySettings::PeerNotifySettings(PeerNotifySettingsClassType classType, InboundPkt *in) :
-    m_eventsMask(0),
+    m_flags(0),
     m_muteUntil(0),
-    m_showPreviews(false),
     m_classType(classType)
 {
     if(in) fetch(in);
 }
 
 inline PeerNotifySettings::PeerNotifySettings(InboundPkt *in) :
-    m_eventsMask(0),
+    m_flags(0),
     m_muteUntil(0),
-    m_showPreviews(false),
     m_classType(typePeerNotifySettingsEmpty)
 {
     fetch(in);
@@ -92,9 +92,8 @@ inline PeerNotifySettings::PeerNotifySettings(InboundPkt *in) :
 
 inline PeerNotifySettings::PeerNotifySettings(const Null &null) :
     TelegramTypeObject(null),
-    m_eventsMask(0),
+    m_flags(0),
     m_muteUntil(0),
-    m_showPreviews(false),
     m_classType(typePeerNotifySettingsEmpty)
 {
 }
@@ -102,12 +101,12 @@ inline PeerNotifySettings::PeerNotifySettings(const Null &null) :
 inline PeerNotifySettings::~PeerNotifySettings() {
 }
 
-inline void PeerNotifySettings::setEventsMask(qint32 eventsMask) {
-    m_eventsMask = eventsMask;
+inline void PeerNotifySettings::setFlags(qint32 flags) {
+    m_flags = flags;
 }
 
-inline qint32 PeerNotifySettings::eventsMask() const {
-    return m_eventsMask;
+inline qint32 PeerNotifySettings::flags() const {
+    return m_flags;
 }
 
 inline void PeerNotifySettings::setMuteUntil(qint32 muteUntil) {
@@ -119,11 +118,21 @@ inline qint32 PeerNotifySettings::muteUntil() const {
 }
 
 inline void PeerNotifySettings::setShowPreviews(bool showPreviews) {
-    m_showPreviews = showPreviews;
+    if(showPreviews) m_flags = (m_flags | (1<<0));
+    else m_flags = (m_flags & ~(1<<0));
 }
 
 inline bool PeerNotifySettings::showPreviews() const {
-    return m_showPreviews;
+    return (m_flags & 1<<0);
+}
+
+inline void PeerNotifySettings::setSilent(bool silent) {
+    if(silent) m_flags = (m_flags | (1<<1));
+    else m_flags = (m_flags & ~(1<<1));
+}
+
+inline bool PeerNotifySettings::silent() const {
+    return (m_flags & 1<<1);
 }
 
 inline void PeerNotifySettings::setSound(const QString &sound) {
@@ -136,9 +145,8 @@ inline QString PeerNotifySettings::sound() const {
 
 inline bool PeerNotifySettings::operator ==(const PeerNotifySettings &b) const {
     return m_classType == b.m_classType &&
-           m_eventsMask == b.m_eventsMask &&
+           m_flags == b.m_flags &&
            m_muteUntil == b.m_muteUntil &&
-           m_showPreviews == b.m_showPreviews &&
            m_sound == b.m_sound;
 }
 
@@ -161,10 +169,9 @@ inline bool PeerNotifySettings::fetch(InboundPkt *in) {
         break;
     
     case typePeerNotifySettings: {
+        m_flags = in->fetchInt();
         m_muteUntil = in->fetchInt();
         m_sound = in->fetchQString();
-        m_showPreviews = in->fetchBool();
-        m_eventsMask = in->fetchInt();
         m_classType = static_cast<PeerNotifySettingsClassType>(x);
         return true;
     }
@@ -185,10 +192,9 @@ inline bool PeerNotifySettings::push(OutboundPkt *out) const {
         break;
     
     case typePeerNotifySettings: {
+        out->appendInt(m_flags);
         out->appendInt(m_muteUntil);
         out->appendQString(m_sound);
-        out->appendBool(m_showPreviews);
-        out->appendInt(m_eventsMask);
         return true;
     }
         break;
@@ -209,10 +215,10 @@ inline QMap<QString, QVariant> PeerNotifySettings::toMap() const {
     
     case typePeerNotifySettings: {
         result["classType"] = "PeerNotifySettings::typePeerNotifySettings";
+        result["showPreviews"] = QVariant::fromValue<bool>(showPreviews());
+        result["silent"] = QVariant::fromValue<bool>(silent());
         result["muteUntil"] = QVariant::fromValue<qint32>(muteUntil());
         result["sound"] = QVariant::fromValue<QString>(sound());
-        result["showPreviews"] = QVariant::fromValue<bool>(showPreviews());
-        result["eventsMask"] = QVariant::fromValue<qint32>(eventsMask());
         return result;
     }
         break;
@@ -230,10 +236,10 @@ inline PeerNotifySettings PeerNotifySettings::fromMap(const QMap<QString, QVaria
     }
     if(map.value("classType").toString() == "PeerNotifySettings::typePeerNotifySettings") {
         result.setClassType(typePeerNotifySettings);
+        result.setShowPreviews( map.value("showPreviews").value<bool>() );
+        result.setSilent( map.value("silent").value<bool>() );
         result.setMuteUntil( map.value("muteUntil").value<qint32>() );
         result.setSound( map.value("sound").value<QString>() );
-        result.setShowPreviews( map.value("showPreviews").value<bool>() );
-        result.setEventsMask( map.value("eventsMask").value<qint32>() );
         return result;
     }
     return result;
@@ -253,10 +259,9 @@ inline QDataStream &operator<<(QDataStream &stream, const PeerNotifySettings &it
         
         break;
     case PeerNotifySettings::typePeerNotifySettings:
+        stream << item.flags();
         stream << item.muteUntil();
         stream << item.sound();
-        stream << item.showPreviews();
-        stream << item.eventsMask();
         break;
     }
     return stream;
@@ -272,18 +277,15 @@ inline QDataStream &operator>>(QDataStream &stream, PeerNotifySettings &item) {
     }
         break;
     case PeerNotifySettings::typePeerNotifySettings: {
+        qint32 m_flags;
+        stream >> m_flags;
+        item.setFlags(m_flags);
         qint32 m_mute_until;
         stream >> m_mute_until;
         item.setMuteUntil(m_mute_until);
         QString m_sound;
         stream >> m_sound;
         item.setSound(m_sound);
-        bool m_show_previews;
-        stream >> m_show_previews;
-        item.setShowPreviews(m_show_previews);
-        qint32 m_events_mask;
-        stream >> m_events_mask;
-        item.setEventsMask(m_events_mask);
     }
         break;
     }

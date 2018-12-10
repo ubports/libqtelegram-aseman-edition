@@ -2,13 +2,15 @@
 
 * [AccountDaysTTL](accountdaysttl.md)
 
-* [Audio](audio.md)
-
 * [Authorization](authorization.md)
 
 * [BotCommand](botcommand.md)
 
 * [BotInfo](botinfo.md)
+
+* [BotInlineMessage](botinlinemessage.md)
+
+* [BotInlineResult](botinlineresult.md)
 
 * [ChannelMessagesFilter](channelmessagesfilter.md)
 
@@ -40,8 +42,6 @@
 
 * [ContactStatus](contactstatus.md)
 
-* [ContactSuggested](contactsuggested.md)
-
 * [DcOption](dcoption.md)
 
 * [DecryptedMessage](decryptedmessage.md)
@@ -60,6 +60,8 @@
 
 * [DocumentAttribute](documentattribute.md)
 
+* [DraftMessage](draftmessage.md)
+
 * [EncryptedChat](encryptedchat.md)
 
 * [EncryptedFile](encryptedfile.md)
@@ -68,15 +70,25 @@
 
 * [ExportedChatInvite](exportedchatinvite.md)
 
+* [ExportedMessageLink](exportedmessagelink.md)
+
 * [FileLocation](filelocation.md)
+
+* [FoundGif](foundgif.md)
 
 * [GeoPoint](geopoint.md)
 
 * [ImportedContact](importedcontact.md)
 
+* [InlineBotSwitchPM](inlinebotswitchpm.md)
+
 * [InputAppEvent](inputappevent.md)
 
-* [InputAudio](inputaudio.md)
+* [InputBotInlineMessage](inputbotinlinemessage.md)
+
+* [InputBotInlineMessageID](inputbotinlinemessageid.md)
+
+* [InputBotInlineResult](inputbotinlineresult.md)
 
 * [InputChannel](inputchannel.md)
 
@@ -118,8 +130,6 @@
 
 * [InputUser](inputuser.md)
 
-* [InputVideo](inputvideo.md)
-
 * [KeyboardButton](keyboardbutton.md)
 
 * [KeyboardButtonRow](keyboardbuttonrow.md)
@@ -130,7 +140,7 @@
 
 * [MessageEntity](messageentity.md)
 
-* [MessageGroup](messagegroup.md)
+* [MessageFwdHeader](messagefwdheader.md)
 
 * [MessageMedia](messagemedia.md)
 
@@ -148,6 +158,8 @@
 
 * [PeerNotifySettings](peernotifysettings.md)
 
+* [PeerSettings](peersettings.md)
+
 * [Photo](photo.md)
 
 * [PhotoSize](photosize.md)
@@ -160,6 +172,8 @@
 
 * [ReplyMarkup](replymarkup.md)
 
+* [ReportReason](reportreason.md)
+
 * [SecretChatMessage](secretchatmessage.md)
 
 * [SendMessageAction](sendmessageaction.md)
@@ -167,6 +181,12 @@
 * [StickerPack](stickerpack.md)
 
 * [StickerSet](stickerset.md)
+
+* [TopPeer](toppeer.md)
+
+* [TopPeerCategory](toppeercategory.md)
+
+* [TopPeerCategoryPeers](toppeercategorypeers.md)
 
 * [True](true.md)
 
@@ -182,8 +202,6 @@
 
 * [UserStatus](userstatus.md)
 
-* [Video](video.md)
-
 * [WallPaper](wallpaper.md)
 
 * [WebPage](webpage.md)
@@ -198,17 +216,19 @@
 
 * [AccountPrivacyRules](accountprivacyrules.md)
 
-* [AccountSentChangePhoneCode](accountsentchangephonecode.md)
-
 * [AuthAuthorization](authauthorization.md)
 
 * [AuthCheckedPhone](authcheckedphone.md)
+
+* [AuthCodeType](authcodetype.md)
 
 * [AuthExportedAuthorization](authexportedauthorization.md)
 
 * [AuthPasswordRecovery](authpasswordrecovery.md)
 
 * [AuthSentCode](authsentcode.md)
+
+* [AuthSentCodeType](authsentcodetype.md)
 
 * [ChannelsChannelParticipant](channelschannelparticipant.md)
 
@@ -226,7 +246,7 @@
 
 * [ContactsResolvedPeer](contactsresolvedpeer.md)
 
-* [ContactsSuggested](contactssuggested.md)
+* [ContactsTopPeers](contactstoppeers.md)
 
 * [HelpAppChangelog](helpappchangelog.md)
 
@@ -236,11 +256,17 @@
 
 * [HelpSupport](helpsupport.md)
 
+* [HelpTermsOfService](helptermsofservice.md)
+
 * [MessagesAffectedHistory](messagesaffectedhistory.md)
 
 * [MessagesAffectedMessages](messagesaffectedmessages.md)
 
 * [MessagesAllStickers](messagesallstickers.md)
+
+* [MessagesBotCallbackAnswer](messagesbotcallbackanswer.md)
+
+* [MessagesBotResults](messagesbotresults.md)
 
 * [MessagesChatFull](messageschatfull.md)
 
@@ -250,7 +276,15 @@
 
 * [MessagesDialogs](messagesdialogs.md)
 
+* [MessagesFoundGifs](messagesfoundgifs.md)
+
+* [MessagesMessageEditData](messagesmessageeditdata.md)
+
 * [MessagesMessages](messagesmessages.md)
+
+* [MessagesPeerDialogs](messagespeerdialogs.md)
+
+* [MessagesSavedGifs](messagessavedgifs.md)
 
 * [MessagesSentEncryptedMessage](messagessentencryptedmessage.md)
 

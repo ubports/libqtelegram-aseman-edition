@@ -20,6 +20,7 @@ class LIBQTELEGRAMSHARED_EXPORT DcOptionObject : public TelegramTypeQObject
     Q_PROPERTY(bool ipv6 READ ipv6 WRITE setIpv6 NOTIFY ipv6Changed)
     Q_PROPERTY(bool mediaOnly READ mediaOnly WRITE setMediaOnly NOTIFY mediaOnlyChanged)
     Q_PROPERTY(qint32 port READ port WRITE setPort NOTIFY portChanged)
+    Q_PROPERTY(bool tcpoOnly READ tcpoOnly WRITE setTcpoOnly NOTIFY tcpoOnlyChanged)
     Q_PROPERTY(DcOption core READ core WRITE setCore NOTIFY coreChanged)
     Q_PROPERTY(quint32 classType READ classType WRITE setClassType NOTIFY classTypeChanged)
 
@@ -50,6 +51,9 @@ public:
     void setPort(qint32 port);
     qint32 port() const;
 
+    void setTcpoOnly(bool tcpoOnly);
+    bool tcpoOnly() const;
+
     void setClassType(quint32 classType);
     quint32 classType() const;
 
@@ -68,6 +72,7 @@ Q_SIGNALS:
     void ipv6Changed();
     void mediaOnlyChanged();
     void portChanged();
+    void tcpoOnlyChanged();
 
 private Q_SLOTS:
 
@@ -156,6 +161,17 @@ inline qint32 DcOptionObject::port() const {
     return m_core.port();
 }
 
+inline void DcOptionObject::setTcpoOnly(bool tcpoOnly) {
+    if(m_core.tcpoOnly() == tcpoOnly) return;
+    m_core.setTcpoOnly(tcpoOnly);
+    Q_EMIT tcpoOnlyChanged();
+    Q_EMIT coreChanged();
+}
+
+inline bool DcOptionObject::tcpoOnly() const {
+    return m_core.tcpoOnly();
+}
+
 inline DcOptionObject &DcOptionObject::operator =(const DcOption &b) {
     if(m_core == b) return *this;
     m_core = b;
@@ -166,6 +182,7 @@ inline DcOptionObject &DcOptionObject::operator =(const DcOption &b) {
     Q_EMIT ipv6Changed();
     Q_EMIT mediaOnlyChanged();
     Q_EMIT portChanged();
+    Q_EMIT tcpoOnlyChanged();
     Q_EMIT coreChanged();
     return *this;
 }

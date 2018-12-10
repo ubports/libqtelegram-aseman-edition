@@ -16,12 +16,10 @@
 #include <QDataStream>
 
 #include <QString>
-#include "audio.h"
 #include "document.h"
 #include "geopoint.h"
 #include "photo.h"
 #include <QtGlobal>
-#include "video.h"
 #include "webpage.h"
 
 class LIBQTELEGRAMSHARED_EXPORT MessageMedia : public TelegramTypeObject
@@ -30,12 +28,10 @@ public:
     enum MessageMediaClassType {
         typeMessageMediaEmpty = 0x3ded6320,
         typeMessageMediaPhoto = 0x3d8ce53d,
-        typeMessageMediaVideo = 0x5bcf1675,
         typeMessageMediaGeo = 0x56e0d474,
         typeMessageMediaContact = 0x5e7d2f39,
         typeMessageMediaUnsupported = 0x9f84f49e,
-        typeMessageMediaDocument = 0x2fda2204,
-        typeMessageMediaAudio = 0xc6b68300,
+        typeMessageMediaDocument = 0xf3e02ea8,
         typeMessageMediaWebPage = 0xa32dd600,
         typeMessageMediaVenue = 0x7912b71f
     };
@@ -47,9 +43,6 @@ public:
 
     void setAddress(const QString &address);
     QString address() const;
-
-    void setAudio(const Audio &audio);
-    Audio audio() const;
 
     void setCaption(const QString &caption);
     QString caption() const;
@@ -84,9 +77,6 @@ public:
     void setVenueId(const QString &venueId);
     QString venueId() const;
 
-    void setVideo(const Video &video);
-    Video video() const;
-
     void setWebpage(const WebPage &webpage);
     WebPage webpage() const;
 
@@ -108,7 +98,6 @@ public:
 
 private:
     QString m_address;
-    Audio m_audio;
     QString m_caption;
     Document m_document;
     QString m_firstName;
@@ -120,7 +109,6 @@ private:
     QString m_title;
     qint32 m_userId;
     QString m_venueId;
-    Video m_video;
     WebPage m_webpage;
     MessageMediaClassType m_classType;
 };
@@ -160,14 +148,6 @@ inline void MessageMedia::setAddress(const QString &address) {
 
 inline QString MessageMedia::address() const {
     return m_address;
-}
-
-inline void MessageMedia::setAudio(const Audio &audio) {
-    m_audio = audio;
-}
-
-inline Audio MessageMedia::audio() const {
-    return m_audio;
 }
 
 inline void MessageMedia::setCaption(const QString &caption) {
@@ -258,14 +238,6 @@ inline QString MessageMedia::venueId() const {
     return m_venueId;
 }
 
-inline void MessageMedia::setVideo(const Video &video) {
-    m_video = video;
-}
-
-inline Video MessageMedia::video() const {
-    return m_video;
-}
-
 inline void MessageMedia::setWebpage(const WebPage &webpage) {
     m_webpage = webpage;
 }
@@ -277,7 +249,6 @@ inline WebPage MessageMedia::webpage() const {
 inline bool MessageMedia::operator ==(const MessageMedia &b) const {
     return m_classType == b.m_classType &&
            m_address == b.m_address &&
-           m_audio == b.m_audio &&
            m_caption == b.m_caption &&
            m_document == b.m_document &&
            m_firstName == b.m_firstName &&
@@ -289,7 +260,6 @@ inline bool MessageMedia::operator ==(const MessageMedia &b) const {
            m_title == b.m_title &&
            m_userId == b.m_userId &&
            m_venueId == b.m_venueId &&
-           m_video == b.m_video &&
            m_webpage == b.m_webpage;
 }
 
@@ -313,14 +283,6 @@ inline bool MessageMedia::fetch(InboundPkt *in) {
     
     case typeMessageMediaPhoto: {
         m_photo.fetch(in);
-        m_caption = in->fetchQString();
-        m_classType = static_cast<MessageMediaClassType>(x);
-        return true;
-    }
-        break;
-    
-    case typeMessageMediaVideo: {
-        m_video.fetch(in);
         m_caption = in->fetchQString();
         m_classType = static_cast<MessageMediaClassType>(x);
         return true;
@@ -352,13 +314,7 @@ inline bool MessageMedia::fetch(InboundPkt *in) {
     
     case typeMessageMediaDocument: {
         m_document.fetch(in);
-        m_classType = static_cast<MessageMediaClassType>(x);
-        return true;
-    }
-        break;
-    
-    case typeMessageMediaAudio: {
-        m_audio.fetch(in);
+        m_caption = in->fetchQString();
         m_classType = static_cast<MessageMediaClassType>(x);
         return true;
     }
@@ -403,13 +359,6 @@ inline bool MessageMedia::push(OutboundPkt *out) const {
     }
         break;
     
-    case typeMessageMediaVideo: {
-        m_video.push(out);
-        out->appendQString(m_caption);
-        return true;
-    }
-        break;
-    
     case typeMessageMediaGeo: {
         m_geo.push(out);
         return true;
@@ -432,12 +381,7 @@ inline bool MessageMedia::push(OutboundPkt *out) const {
     
     case typeMessageMediaDocument: {
         m_document.push(out);
-        return true;
-    }
-        break;
-    
-    case typeMessageMediaAudio: {
-        m_audio.push(out);
+        out->appendQString(m_caption);
         return true;
     }
         break;
@@ -480,14 +424,6 @@ inline QMap<QString, QVariant> MessageMedia::toMap() const {
     }
         break;
     
-    case typeMessageMediaVideo: {
-        result["classType"] = "MessageMedia::typeMessageMediaVideo";
-        result["video"] = m_video.toMap();
-        result["caption"] = QVariant::fromValue<QString>(caption());
-        return result;
-    }
-        break;
-    
     case typeMessageMediaGeo: {
         result["classType"] = "MessageMedia::typeMessageMediaGeo";
         result["geo"] = m_geo.toMap();
@@ -514,13 +450,7 @@ inline QMap<QString, QVariant> MessageMedia::toMap() const {
     case typeMessageMediaDocument: {
         result["classType"] = "MessageMedia::typeMessageMediaDocument";
         result["document"] = m_document.toMap();
-        return result;
-    }
-        break;
-    
-    case typeMessageMediaAudio: {
-        result["classType"] = "MessageMedia::typeMessageMediaAudio";
-        result["audio"] = m_audio.toMap();
+        result["caption"] = QVariant::fromValue<QString>(caption());
         return result;
     }
         break;
@@ -560,12 +490,6 @@ inline MessageMedia MessageMedia::fromMap(const QMap<QString, QVariant> &map) {
         result.setCaption( map.value("caption").value<QString>() );
         return result;
     }
-    if(map.value("classType").toString() == "MessageMedia::typeMessageMediaVideo") {
-        result.setClassType(typeMessageMediaVideo);
-        result.setVideo( Video::fromMap(map.value("video").toMap()) );
-        result.setCaption( map.value("caption").value<QString>() );
-        return result;
-    }
     if(map.value("classType").toString() == "MessageMedia::typeMessageMediaGeo") {
         result.setClassType(typeMessageMediaGeo);
         result.setGeo( GeoPoint::fromMap(map.value("geo").toMap()) );
@@ -586,11 +510,7 @@ inline MessageMedia MessageMedia::fromMap(const QMap<QString, QVariant> &map) {
     if(map.value("classType").toString() == "MessageMedia::typeMessageMediaDocument") {
         result.setClassType(typeMessageMediaDocument);
         result.setDocument( Document::fromMap(map.value("document").toMap()) );
-        return result;
-    }
-    if(map.value("classType").toString() == "MessageMedia::typeMessageMediaAudio") {
-        result.setClassType(typeMessageMediaAudio);
-        result.setAudio( Audio::fromMap(map.value("audio").toMap()) );
+        result.setCaption( map.value("caption").value<QString>() );
         return result;
     }
     if(map.value("classType").toString() == "MessageMedia::typeMessageMediaWebPage") {
@@ -627,10 +547,6 @@ inline QDataStream &operator<<(QDataStream &stream, const MessageMedia &item) {
         stream << item.photo();
         stream << item.caption();
         break;
-    case MessageMedia::typeMessageMediaVideo:
-        stream << item.video();
-        stream << item.caption();
-        break;
     case MessageMedia::typeMessageMediaGeo:
         stream << item.geo();
         break;
@@ -645,9 +561,7 @@ inline QDataStream &operator<<(QDataStream &stream, const MessageMedia &item) {
         break;
     case MessageMedia::typeMessageMediaDocument:
         stream << item.document();
-        break;
-    case MessageMedia::typeMessageMediaAudio:
-        stream << item.audio();
+        stream << item.caption();
         break;
     case MessageMedia::typeMessageMediaWebPage:
         stream << item.webpage();
@@ -676,15 +590,6 @@ inline QDataStream &operator>>(QDataStream &stream, MessageMedia &item) {
         Photo m_photo;
         stream >> m_photo;
         item.setPhoto(m_photo);
-        QString m_caption;
-        stream >> m_caption;
-        item.setCaption(m_caption);
-    }
-        break;
-    case MessageMedia::typeMessageMediaVideo: {
-        Video m_video;
-        stream >> m_video;
-        item.setVideo(m_video);
         QString m_caption;
         stream >> m_caption;
         item.setCaption(m_caption);
@@ -719,12 +624,9 @@ inline QDataStream &operator>>(QDataStream &stream, MessageMedia &item) {
         Document m_document;
         stream >> m_document;
         item.setDocument(m_document);
-    }
-        break;
-    case MessageMedia::typeMessageMediaAudio: {
-        Audio m_audio;
-        stream >> m_audio;
-        item.setAudio(m_audio);
+        QString m_caption;
+        stream >> m_caption;
+        item.setCaption(m_caption);
     }
         break;
     case MessageMedia::typeMessageMediaWebPage: {

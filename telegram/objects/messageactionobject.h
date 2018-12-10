@@ -37,7 +37,9 @@ public:
         TypeMessageActionChatJoinedByLink,
         TypeMessageActionChannelCreate,
         TypeMessageActionChatMigrateTo,
-        TypeMessageActionChannelMigrateFrom
+        TypeMessageActionChannelMigrateFrom,
+        TypeMessageActionPinMessage,
+        TypeMessageActionHistoryClear
     };
 
     MessageActionObject(const MessageAction &core, QObject *parent = 0);
@@ -253,6 +255,12 @@ inline void MessageActionObject::setClassType(quint32 classType) {
     case TypeMessageActionChannelMigrateFrom:
         result = MessageAction::typeMessageActionChannelMigrateFrom;
         break;
+    case TypeMessageActionPinMessage:
+        result = MessageAction::typeMessageActionPinMessage;
+        break;
+    case TypeMessageActionHistoryClear:
+        result = MessageAction::typeMessageActionHistoryClear;
+        break;
     default:
         result = MessageAction::typeMessageActionEmpty;
         break;
@@ -299,6 +307,12 @@ inline quint32 MessageActionObject::classType() const {
         break;
     case MessageAction::typeMessageActionChannelMigrateFrom:
         result = TypeMessageActionChannelMigrateFrom;
+        break;
+    case MessageAction::typeMessageActionPinMessage:
+        result = TypeMessageActionPinMessage;
+        break;
+    case MessageAction::typeMessageActionHistoryClear:
+        result = TypeMessageActionHistoryClear;
         break;
     default:
         result = TypeMessageActionEmpty;
